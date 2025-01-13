@@ -11,6 +11,7 @@ type Message struct {
 }
 
 type AsyncMessagingPort interface {
+	Init(ctx context.Context) error
 	Publish(ctx context.Context, topic string, message Message) error
 	Subscribe(ctx context.Context, topic string, handler func(msg Message) error) error
 	Close() error
