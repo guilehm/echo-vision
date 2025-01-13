@@ -1,0 +1,44 @@
+services:
+
+  echo-vision:
+    build: ./echo-vision
+    image: echo-vision
+    container_name: echo-vision
+    command: go run .
+    volumes:
+      - ./echo-vision:/go/src/
+    working_dir: /go/src/
+    depends_on:
+      - rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: vision-rabbit
+    volumes:
+      - rabbitmq_etc:/etc/rabbitmq/
+      - rabbitmq_data:/var/lib/rabbitmq/
+      - rabbitmq_logs:/var/log/rabbitmq/
+    ports:
+      - 5672:5672
+      - 15672:15672
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.50"
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmqctl status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  rabbitmq_etc:
+    labels:
+      description: "RabbitMQ configuration"
+  rabbitmq_data:
+    labels:
+      description: "RabbitMQ data"
+  rabbitmq_logs:
+    labels:
+      description: "RabbitMQ logs"
