@@ -10,10 +10,12 @@ services:
     working_dir: /go/src/
     depends_on:
       - rabbitmq
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@vision-rabbitmq/
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
-    container_name: vision-rabbit
+    container_name: vision-rabbitmq
     volumes:
       - rabbitmq_etc:/etc/rabbitmq/
       - rabbitmq_data:/var/lib/rabbitmq/
