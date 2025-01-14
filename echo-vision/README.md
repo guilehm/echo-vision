@@ -12,12 +12,12 @@ ent new --target internal/infra/postgres/schema User
 
 ### Generate schema
 ```bash
-go run internal/infra/postgres/generated/entc.go
+docker compose exec echo-vision go run internal/infra/postgres/generated/entc.go
 ```
 
 ### Create migrations
 ```bash
-go run internal/infra/postgres/new.go users
+docker compose exec echo-vision go run internal/infra/postgres/new.go users
 ```
 
 ### Update migration hash
