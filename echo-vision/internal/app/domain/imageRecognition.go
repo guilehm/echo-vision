@@ -21,6 +21,12 @@ type Instance struct {
 	Confidence  float64     `json:"confidence"`
 }
 
+// FaceDetail represents details about a detected face.
+type FaceDetail struct {
+	BoundingBox BoundingBox `json:"bounding_box"`
+	Confidence  float64     `json:"confidence"`
+}
+
 // BoundingBox represents the dimensions and position of an object in the image.
 type BoundingBox struct {
 	Height float64 `json:"height"`
