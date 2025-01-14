@@ -32,6 +32,9 @@ func main() {
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-east-2"),
 	})
+	if err != nil {
+		log.Fatalln("could not create aws session: ", err)
+	}
 	svc := rekognition.New(sess)
 
 	fileName := "mage.jpeg"
