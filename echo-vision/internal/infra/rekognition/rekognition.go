@@ -13,7 +13,7 @@ type AWSRekognitionAdapter struct {
 }
 
 // NewAWSRekognitionAdapter creates a new AWSRekognitionAdapter.
-func NewAWSRekognitionAdapter(region string) (ports.ImageRecognitionPort, error) {
+func NewAWSRekognitionAdapter(region string) (ports.ImageRecognitionServicePort, error) {
 	sess, err := session.NewSession(&aws.Config{Region: aws.String(region)})
 	if err != nil {
 		return nil, err
