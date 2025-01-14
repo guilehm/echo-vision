@@ -29,6 +29,7 @@ func (a *AWSRekognitionAdapter) DetectLabels(imageBytes []byte) ([]domain.Label,
 		Image: &rekognition.Image{
 			Bytes: imageBytes,
 		},
+		// TODO: make these configurable
 		MaxLabels:     aws.Int64(10),
 		MinConfidence: aws.Float64(70.0),
 	}
@@ -45,7 +46,6 @@ func (a *AWSRekognitionAdapter) DetectLabels(imageBytes []byte) ([]domain.Label,
 			Confidence: aws.Float64Value(lbl.Confidence),
 		}
 	}
-
 	return labels, nil
 }
 

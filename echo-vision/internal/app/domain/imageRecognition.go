@@ -34,8 +34,3 @@ type BoundingBox struct {
 	Top    float64 `json:"top"`
 	Left   float64 `json:"left"`
 }
-
-// VisionAdapter defines an interface for vision service adapters.
-type VisionAdapter interface {
-	AnalyzeImage(imageData []byte) (VisionAnalysisResult, error)
-}
