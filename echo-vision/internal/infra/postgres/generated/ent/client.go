@@ -10,12 +10,12 @@ import (
 	"reflect"
 
 	"github.com/google/uuid"
-	"github.com/guilehm/echo-docs/internal/infra/postgres/generated/ent/migrate"
+	"github.com/guilehm/echo-vision/internal/infra/postgres/generated/ent/migrate"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
-	"github.com/guilehm/echo-docs/internal/infra/postgres/generated/ent/user"
+	"github.com/guilehm/echo-vision/internal/infra/postgres/generated/ent/user"
 )
 
 // Client is the client that holds all ent builders.

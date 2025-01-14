@@ -11,8 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/guilehm/echo-docs/internal/infra/postgres/generated/ent/predicate"
-	"github.com/guilehm/echo-docs/internal/infra/postgres/generated/ent/user"
+	"github.com/guilehm/echo-vision/internal/infra/postgres/generated/ent/predicate"
+	"github.com/guilehm/echo-vision/internal/infra/postgres/generated/ent/user"
 )
 
 // UserUpdate is the builder for updating User entities.

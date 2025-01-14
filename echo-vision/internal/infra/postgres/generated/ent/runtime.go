@@ -5,7 +5,7 @@ package ent
 import (
 	"time"
 
-	"github.com/guilehm/echo-docs/internal/infra/postgres/generated/ent/user"
+	"github.com/guilehm/echo-vision/internal/infra/postgres/generated/ent/user"
 	"github.com/guilehm/echo-vision/internal/infra/postgres/schema"
 )
 

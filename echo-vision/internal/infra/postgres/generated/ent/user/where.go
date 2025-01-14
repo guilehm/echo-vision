@@ -7,7 +7,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/guilehm/echo-docs/internal/infra/postgres/generated/ent/predicate"
+	"github.com/guilehm/echo-vision/internal/infra/postgres/generated/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.

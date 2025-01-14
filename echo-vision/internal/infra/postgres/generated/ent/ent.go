@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/guilehm/echo-docs/internal/infra/postgres/generated/ent/user"
+	"github.com/guilehm/echo-vision/internal/infra/postgres/generated/ent/user"
 )
 
 // ent aliases to avoid import conflicts in user's code.

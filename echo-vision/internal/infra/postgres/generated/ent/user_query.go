@@ -13,8 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/guilehm/echo-docs/internal/infra/postgres/generated/ent/predicate"
-	"github.com/guilehm/echo-docs/internal/infra/postgres/generated/ent/user"
+	"github.com/guilehm/echo-vision/internal/infra/postgres/generated/ent/predicate"
+	"github.com/guilehm/echo-vision/internal/infra/postgres/generated/ent/user"
 )
 
 // UserQuery is the builder for querying User entities.

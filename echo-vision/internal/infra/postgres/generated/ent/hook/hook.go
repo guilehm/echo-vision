@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/guilehm/echo-docs/internal/infra/postgres/generated/ent"
+	"github.com/guilehm/echo-vision/internal/infra/postgres/generated/ent"
 )
 
 // The UserFunc type is an adapter to allow the use of ordinary

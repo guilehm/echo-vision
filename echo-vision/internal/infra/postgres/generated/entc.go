@@ -12,8 +12,8 @@ import (
 func main() {
 	err := entc.Generate("./internal/infra/postgres/schema", &gen.Config{
 		Target:  "./internal/infra/postgres/generated/ent",
-		Schema:  "github.com/guilehm/echo-docs/internal/infra/postgres/schema",
-		Package: "github.com/guilehm/echo-docs/internal/infra/postgres/generated/ent",
+		Schema:  "github.com/guilehm/echo-vision/internal/infra/postgres/schema",
+		Package: "github.com/guilehm/echo-vision/internal/infra/postgres/generated/ent",
 		Features: []gen.Feature{
 			gen.FeatureLock,
 			gen.FeatureVersionedMigration,

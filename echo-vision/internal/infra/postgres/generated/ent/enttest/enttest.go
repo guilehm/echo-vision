@@ -5,12 +5,12 @@ package enttest
 import (
 	"context"
 
-	"github.com/guilehm/echo-docs/internal/infra/postgres/generated/ent"
+	"github.com/guilehm/echo-vision/internal/infra/postgres/generated/ent"
 	// required by schema hooks.
-	_ "github.com/guilehm/echo-docs/internal/infra/postgres/generated/ent/runtime"
+	_ "github.com/guilehm/echo-vision/internal/infra/postgres/generated/ent/runtime"
 
 	"entgo.io/ent/dialect/sql/schema"
-	"github.com/guilehm/echo-docs/internal/infra/postgres/generated/ent/migrate"
+	"github.com/guilehm/echo-vision/internal/infra/postgres/generated/ent/migrate"
 )
 
 type (
