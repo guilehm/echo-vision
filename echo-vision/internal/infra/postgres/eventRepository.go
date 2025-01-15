@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"log/slog"
 	"strings"
 
 	"github.com/guilehm/echo-vision/internal/app/domain"
@@ -37,7 +38,7 @@ func (r *EventRepository) WithTransaction(ctx context.Context, fn func(ctx conte
 		if v := recover(); v != nil {
 			err := tx.Rollback()
 			if err != nil {
-				logger.Error("error rolling back transaction", err)
+				logger.Error("error rolling back transaction", slog.String("error", err.Error()))
 			}
 			panic(v)
 		}
@@ -45,15 +46,15 @@ func (r *EventRepository) WithTransaction(ctx context.Context, fn func(ctx conte
 
 	err = fn(ctx, tx)
 	if err != nil {
-		logger.Debug("rolling back transaction", err)
+		logger.Debug("rolling back transaction", slog.String("error", err.Error()))
 		rollbackErr := tx.Rollback()
 		if rollbackErr != nil {
-			logger.Error("error rolling back transaction", rollbackErr)
+			logger.Error("error rolling back transaction", slog.String("error", rollbackErr.Error()))
 			return eris.Wrap(rollbackErr, "error rolling back transaction")
 		}
 
 		if strings.Contains(err.Error(), "could not obtain lock on row in relation") {
-			logger.Warn("could not obtain lock on row", err)
+			logger.Warn("could not obtain lock on row", slog.String("error", err.Error()))
 			return ErrCouldNotAcquireLock
 		}
 		return err
