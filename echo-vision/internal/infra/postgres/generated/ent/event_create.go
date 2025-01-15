@@ -29,9 +29,9 @@ func (ec *EventCreate) SetType(e event.Type) *EventCreate {
 	return ec
 }
 
-// SetSubtype sets the "subtype" field.
-func (ec *EventCreate) SetSubtype(e event.Subtype) *EventCreate {
-	ec.mutation.SetSubtype(e)
+// SetSubType sets the "sub_type" field.
+func (ec *EventCreate) SetSubType(et event.SubType) *EventCreate {
+	ec.mutation.SetSubType(et)
 	return ec
 }
 
@@ -153,12 +153,12 @@ func (ec *EventCreate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Event.type": %w`, err)}
 		}
 	}
-	if _, ok := ec.mutation.Subtype(); !ok {
-		return &ValidationError{Name: "subtype", err: errors.New(`ent: missing required field "Event.subtype"`)}
+	if _, ok := ec.mutation.SubType(); !ok {
+		return &ValidationError{Name: "sub_type", err: errors.New(`ent: missing required field "Event.sub_type"`)}
 	}
-	if v, ok := ec.mutation.Subtype(); ok {
-		if err := event.SubtypeValidator(v); err != nil {
-			return &ValidationError{Name: "subtype", err: fmt.Errorf(`ent: validator failed for field "Event.subtype": %w`, err)}
+	if v, ok := ec.mutation.SubType(); ok {
+		if err := event.SubTypeValidator(v); err != nil {
+			return &ValidationError{Name: "sub_type", err: fmt.Errorf(`ent: validator failed for field "Event.sub_type": %w`, err)}
 		}
 	}
 	if _, ok := ec.mutation.Status(); !ok {
@@ -220,9 +220,9 @@ func (ec *EventCreate) createSpec() (*Event, *sqlgraph.CreateSpec) {
 		_spec.SetField(event.FieldType, field.TypeEnum, value)
 		_node.Type = value
 	}
-	if value, ok := ec.mutation.Subtype(); ok {
-		_spec.SetField(event.FieldSubtype, field.TypeEnum, value)
-		_node.Subtype = value
+	if value, ok := ec.mutation.SubType(); ok {
+		_spec.SetField(event.FieldSubType, field.TypeEnum, value)
+		_node.SubType = value
 	}
 	if value, ok := ec.mutation.Status(); ok {
 		_spec.SetField(event.FieldStatus, field.TypeEnum, value)

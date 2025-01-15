@@ -38,7 +38,7 @@ type EventMutation struct {
 	typ           string
 	id            *uuid.UUID
 	_type         *event.Type
-	subtype       *event.Subtype
+	sub_type      *event.SubType
 	status        *event.Status
 	payload       *json.RawMessage
 	appendpayload json.RawMessage
@@ -194,40 +194,40 @@ func (m *EventMutation) ResetType() {
 	m._type = nil
 }
 
-// SetSubtype sets the "subtype" field.
-func (m *EventMutation) SetSubtype(e event.Subtype) {
-	m.subtype = &e
+// SetSubType sets the "sub_type" field.
+func (m *EventMutation) SetSubType(et event.SubType) {
+	m.sub_type = &et
 }
 
-// Subtype returns the value of the "subtype" field in the mutation.
-func (m *EventMutation) Subtype() (r event.Subtype, exists bool) {
-	v := m.subtype
+// SubType returns the value of the "sub_type" field in the mutation.
+func (m *EventMutation) SubType() (r event.SubType, exists bool) {
+	v := m.sub_type
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSubtype returns the old "subtype" field's value of the Event entity.
+// OldSubType returns the old "sub_type" field's value of the Event entity.
 // If the Event object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *EventMutation) OldSubtype(ctx context.Context) (v event.Subtype, err error) {
+func (m *EventMutation) OldSubType(ctx context.Context) (v event.SubType, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSubtype is only allowed on UpdateOne operations")
+		return v, errors.New("OldSubType is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSubtype requires an ID field in the mutation")
+		return v, errors.New("OldSubType requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSubtype: %w", err)
+		return v, fmt.Errorf("querying old value for OldSubType: %w", err)
 	}
-	return oldValue.Subtype, nil
+	return oldValue.SubType, nil
 }
 
-// ResetSubtype resets all changes to the "subtype" field.
-func (m *EventMutation) ResetSubtype() {
-	m.subtype = nil
+// ResetSubType resets all changes to the "sub_type" field.
+func (m *EventMutation) ResetSubType() {
+	m.sub_type = nil
 }
 
 // SetStatus sets the "status" field.
@@ -531,8 +531,8 @@ func (m *EventMutation) Fields() []string {
 	if m._type != nil {
 		fields = append(fields, event.FieldType)
 	}
-	if m.subtype != nil {
-		fields = append(fields, event.FieldSubtype)
+	if m.sub_type != nil {
+		fields = append(fields, event.FieldSubType)
 	}
 	if m.status != nil {
 		fields = append(fields, event.FieldStatus)
@@ -559,8 +559,8 @@ func (m *EventMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case event.FieldType:
 		return m.GetType()
-	case event.FieldSubtype:
-		return m.Subtype()
+	case event.FieldSubType:
+		return m.SubType()
 	case event.FieldStatus:
 		return m.Status()
 	case event.FieldPayload:
@@ -582,8 +582,8 @@ func (m *EventMutation) OldField(ctx context.Context, name string) (ent.Value, e
 	switch name {
 	case event.FieldType:
 		return m.OldType(ctx)
-	case event.FieldSubtype:
-		return m.OldSubtype(ctx)
+	case event.FieldSubType:
+		return m.OldSubType(ctx)
 	case event.FieldStatus:
 		return m.OldStatus(ctx)
 	case event.FieldPayload:
@@ -610,12 +610,12 @@ func (m *EventMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetType(v)
 		return nil
-	case event.FieldSubtype:
-		v, ok := value.(event.Subtype)
+	case event.FieldSubType:
+		v, ok := value.(event.SubType)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSubtype(v)
+		m.SetSubType(v)
 		return nil
 	case event.FieldStatus:
 		v, ok := value.(event.Status)
@@ -713,8 +713,8 @@ func (m *EventMutation) ResetField(name string) error {
 	case event.FieldType:
 		m.ResetType()
 		return nil
-	case event.FieldSubtype:
-		m.ResetSubtype()
+	case event.FieldSubType:
+		m.ResetSubType()
 		return nil
 	case event.FieldStatus:
 		m.ResetStatus()

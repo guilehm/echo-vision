@@ -17,8 +17,8 @@ const (
 	FieldID = "id"
 	// FieldType holds the string denoting the type field in the database.
 	FieldType = "type"
-	// FieldSubtype holds the string denoting the subtype field in the database.
-	FieldSubtype = "subtype"
+	// FieldSubType holds the string denoting the sub_type field in the database.
+	FieldSubType = "sub_type"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// FieldPayload holds the string denoting the payload field in the database.
@@ -46,7 +46,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldType,
-	FieldSubtype,
+	FieldSubType,
 	FieldStatus,
 	FieldPayload,
 	FieldResult,
@@ -106,25 +106,25 @@ func TypeValidator(_type Type) error {
 	}
 }
 
-// Subtype defines the type for the "subtype" enum field.
-type Subtype string
+// SubType defines the type for the "sub_type" enum field.
+type SubType string
 
-// Subtype values.
+// SubType values.
 const (
-	SubtypeDetectLabels Subtype = "detect_labels"
+	SubTypeDetectLabels SubType = "detect_labels"
 )
 
-func (s Subtype) String() string {
-	return string(s)
+func (st SubType) String() string {
+	return string(st)
 }
 
-// SubtypeValidator is a validator for the "subtype" field enum values. It is called by the builders before save.
-func SubtypeValidator(s Subtype) error {
-	switch s {
-	case SubtypeDetectLabels:
+// SubTypeValidator is a validator for the "sub_type" field enum values. It is called by the builders before save.
+func SubTypeValidator(st SubType) error {
+	switch st {
+	case SubTypeDetectLabels:
 		return nil
 	default:
-		return fmt.Errorf("event: invalid enum value for subtype field: %q", s)
+		return fmt.Errorf("event: invalid enum value for sub_type field: %q", st)
 	}
 }
 
@@ -166,9 +166,9 @@ func ByType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldType, opts...).ToFunc()
 }
 
-// BySubtype orders the results by the subtype field.
-func BySubtype(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSubtype, opts...).ToFunc()
+// BySubType orders the results by the sub_type field.
+func BySubType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSubType, opts...).ToFunc()
 }
 
 // ByStatus orders the results by the status field.

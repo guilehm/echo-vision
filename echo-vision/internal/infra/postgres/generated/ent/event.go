@@ -22,8 +22,8 @@ type Event struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// Type holds the value of the "type" field.
 	Type event.Type `json:"type,omitempty"`
-	// Subtype holds the value of the "subtype" field.
-	Subtype event.Subtype `json:"subtype,omitempty"`
+	// SubType holds the value of the "sub_type" field.
+	SubType event.SubType `json:"sub_type,omitempty"`
 	// Status holds the value of the "status" field.
 	Status event.Status `json:"status,omitempty"`
 	// Payload holds the value of the "payload" field.
@@ -68,7 +68,7 @@ func (*Event) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case event.FieldPayload, event.FieldResult:
 			values[i] = new([]byte)
-		case event.FieldType, event.FieldSubtype, event.FieldStatus:
+		case event.FieldType, event.FieldSubType, event.FieldStatus:
 			values[i] = new(sql.NullString)
 		case event.FieldCreatedAt, event.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -103,11 +103,11 @@ func (e *Event) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				e.Type = event.Type(value.String)
 			}
-		case event.FieldSubtype:
+		case event.FieldSubType:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field subtype", values[i])
+				return fmt.Errorf("unexpected type %T for field sub_type", values[i])
 			} else if value.Valid {
-				e.Subtype = event.Subtype(value.String)
+				e.SubType = event.SubType(value.String)
 			}
 		case event.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -194,8 +194,8 @@ func (e *Event) String() string {
 	builder.WriteString("type=")
 	builder.WriteString(fmt.Sprintf("%v", e.Type))
 	builder.WriteString(", ")
-	builder.WriteString("subtype=")
-	builder.WriteString(fmt.Sprintf("%v", e.Subtype))
+	builder.WriteString("sub_type=")
+	builder.WriteString(fmt.Sprintf("%v", e.SubType))
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", e.Status))

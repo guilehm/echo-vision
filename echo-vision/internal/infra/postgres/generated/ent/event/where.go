@@ -86,24 +86,24 @@ func TypeNotIn(vs ...Type) predicate.Event {
 	return predicate.Event(sql.FieldNotIn(FieldType, vs...))
 }
 
-// SubtypeEQ applies the EQ predicate on the "subtype" field.
-func SubtypeEQ(v Subtype) predicate.Event {
-	return predicate.Event(sql.FieldEQ(FieldSubtype, v))
+// SubTypeEQ applies the EQ predicate on the "sub_type" field.
+func SubTypeEQ(v SubType) predicate.Event {
+	return predicate.Event(sql.FieldEQ(FieldSubType, v))
 }
 
-// SubtypeNEQ applies the NEQ predicate on the "subtype" field.
-func SubtypeNEQ(v Subtype) predicate.Event {
-	return predicate.Event(sql.FieldNEQ(FieldSubtype, v))
+// SubTypeNEQ applies the NEQ predicate on the "sub_type" field.
+func SubTypeNEQ(v SubType) predicate.Event {
+	return predicate.Event(sql.FieldNEQ(FieldSubType, v))
 }
 
-// SubtypeIn applies the In predicate on the "subtype" field.
-func SubtypeIn(vs ...Subtype) predicate.Event {
-	return predicate.Event(sql.FieldIn(FieldSubtype, vs...))
+// SubTypeIn applies the In predicate on the "sub_type" field.
+func SubTypeIn(vs ...SubType) predicate.Event {
+	return predicate.Event(sql.FieldIn(FieldSubType, vs...))
 }
 
-// SubtypeNotIn applies the NotIn predicate on the "subtype" field.
-func SubtypeNotIn(vs ...Subtype) predicate.Event {
-	return predicate.Event(sql.FieldNotIn(FieldSubtype, vs...))
+// SubTypeNotIn applies the NotIn predicate on the "sub_type" field.
+func SubTypeNotIn(vs ...SubType) predicate.Event {
+	return predicate.Event(sql.FieldNotIn(FieldSubType, vs...))
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.

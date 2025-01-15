@@ -46,16 +46,16 @@ func (eu *EventUpdate) SetNillableType(e *event.Type) *EventUpdate {
 	return eu
 }
 
-// SetSubtype sets the "subtype" field.
-func (eu *EventUpdate) SetSubtype(e event.Subtype) *EventUpdate {
-	eu.mutation.SetSubtype(e)
+// SetSubType sets the "sub_type" field.
+func (eu *EventUpdate) SetSubType(et event.SubType) *EventUpdate {
+	eu.mutation.SetSubType(et)
 	return eu
 }
 
-// SetNillableSubtype sets the "subtype" field if the given value is not nil.
-func (eu *EventUpdate) SetNillableSubtype(e *event.Subtype) *EventUpdate {
-	if e != nil {
-		eu.SetSubtype(*e)
+// SetNillableSubType sets the "sub_type" field if the given value is not nil.
+func (eu *EventUpdate) SetNillableSubType(et *event.SubType) *EventUpdate {
+	if et != nil {
+		eu.SetSubType(*et)
 	}
 	return eu
 }
@@ -189,9 +189,9 @@ func (eu *EventUpdate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Event.type": %w`, err)}
 		}
 	}
-	if v, ok := eu.mutation.Subtype(); ok {
-		if err := event.SubtypeValidator(v); err != nil {
-			return &ValidationError{Name: "subtype", err: fmt.Errorf(`ent: validator failed for field "Event.subtype": %w`, err)}
+	if v, ok := eu.mutation.SubType(); ok {
+		if err := event.SubTypeValidator(v); err != nil {
+			return &ValidationError{Name: "sub_type", err: fmt.Errorf(`ent: validator failed for field "Event.sub_type": %w`, err)}
 		}
 	}
 	if v, ok := eu.mutation.Status(); ok {
@@ -220,8 +220,8 @@ func (eu *EventUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := eu.mutation.GetType(); ok {
 		_spec.SetField(event.FieldType, field.TypeEnum, value)
 	}
-	if value, ok := eu.mutation.Subtype(); ok {
-		_spec.SetField(event.FieldSubtype, field.TypeEnum, value)
+	if value, ok := eu.mutation.SubType(); ok {
+		_spec.SetField(event.FieldSubType, field.TypeEnum, value)
 	}
 	if value, ok := eu.mutation.Status(); ok {
 		_spec.SetField(event.FieldStatus, field.TypeEnum, value)
@@ -314,16 +314,16 @@ func (euo *EventUpdateOne) SetNillableType(e *event.Type) *EventUpdateOne {
 	return euo
 }
 
-// SetSubtype sets the "subtype" field.
-func (euo *EventUpdateOne) SetSubtype(e event.Subtype) *EventUpdateOne {
-	euo.mutation.SetSubtype(e)
+// SetSubType sets the "sub_type" field.
+func (euo *EventUpdateOne) SetSubType(et event.SubType) *EventUpdateOne {
+	euo.mutation.SetSubType(et)
 	return euo
 }
 
-// SetNillableSubtype sets the "subtype" field if the given value is not nil.
-func (euo *EventUpdateOne) SetNillableSubtype(e *event.Subtype) *EventUpdateOne {
-	if e != nil {
-		euo.SetSubtype(*e)
+// SetNillableSubType sets the "sub_type" field if the given value is not nil.
+func (euo *EventUpdateOne) SetNillableSubType(et *event.SubType) *EventUpdateOne {
+	if et != nil {
+		euo.SetSubType(*et)
 	}
 	return euo
 }
@@ -470,9 +470,9 @@ func (euo *EventUpdateOne) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Event.type": %w`, err)}
 		}
 	}
-	if v, ok := euo.mutation.Subtype(); ok {
-		if err := event.SubtypeValidator(v); err != nil {
-			return &ValidationError{Name: "subtype", err: fmt.Errorf(`ent: validator failed for field "Event.subtype": %w`, err)}
+	if v, ok := euo.mutation.SubType(); ok {
+		if err := event.SubTypeValidator(v); err != nil {
+			return &ValidationError{Name: "sub_type", err: fmt.Errorf(`ent: validator failed for field "Event.sub_type": %w`, err)}
 		}
 	}
 	if v, ok := euo.mutation.Status(); ok {
@@ -518,8 +518,8 @@ func (euo *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error
 	if value, ok := euo.mutation.GetType(); ok {
 		_spec.SetField(event.FieldType, field.TypeEnum, value)
 	}
-	if value, ok := euo.mutation.Subtype(); ok {
-		_spec.SetField(event.FieldSubtype, field.TypeEnum, value)
+	if value, ok := euo.mutation.SubType(); ok {
+		_spec.SetField(event.FieldSubType, field.TypeEnum, value)
 	}
 	if value, ok := euo.mutation.Status(); ok {
 		_spec.SetField(event.FieldStatus, field.TypeEnum, value)
