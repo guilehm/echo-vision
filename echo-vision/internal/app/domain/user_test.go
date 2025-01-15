@@ -70,14 +70,13 @@ func TestUser_Validate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			u := domain.NewUser(tt.id, tt.firstName, tt.lastName, tt.email, tt.createdAt, tt.updatedAt)
 			gotErr := u.Validate()
-			if gotErr != nil {
-				if !tt.wantErr {
-					t.Errorf("Validate() failed: %v", gotErr)
-				}
-				return
+
+			if (gotErr != nil) != tt.wantErr {
+				t.Errorf("Validate() error = %v, wantErr %v", gotErr, tt.wantErr)
 			}
-			if tt.wantErr {
-				t.Fatal("Validate() succeeded unexpectedly")
+
+			if gotErr != nil && gotErr != tt.expectedErr {
+				t.Errorf("Validate() error type = %v, expected %v", gotErr, tt.expectedErr)
 			}
 		})
 	}
