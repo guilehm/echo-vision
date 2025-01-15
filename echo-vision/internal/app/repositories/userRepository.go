@@ -7,6 +7,6 @@ import (
 )
 
 type UserRepository interface {
-	Save(ctx context.Context, tx Transaction, event *domain.User) error
-	FindByEmail(ctx context.Context, email string) (*domain.User, error)
+	SaveUser(ctx context.Context, tx Transaction, event *domain.User) error
+	FindUserByEmail(ctx context.Context, email string) (*domain.User, error)
 }

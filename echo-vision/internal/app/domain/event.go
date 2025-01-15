@@ -80,6 +80,7 @@ func NewEvent(
 	payload json.RawMessage,
 	result json.RawMessage,
 	status EventStatus,
+	createdAt, updatedAt time.Time,
 ) *Event {
 	return &Event{
 		id:        id,
@@ -88,8 +89,8 @@ func NewEvent(
 		status:    status,
 		payload:   payload,
 		result:    result,
-		createdAt: time.Now(),
-		updatedAt: time.Now(),
+		createdAt: createdAt,
+		updatedAt: updatedAt,
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/guilehm/echo-vision/internal/app/domain"
@@ -21,6 +22,8 @@ func TestEvent_Validate(t *testing.T) {
 		result      json.RawMessage
 		wantErr     bool
 		expectedErr error
+		createdAt   time.Time
+		updatedAt   time.Time
 	}{
 		{
 			name:        "Valid event",
@@ -32,6 +35,8 @@ func TestEvent_Validate(t *testing.T) {
 			result:      json.RawMessage(`{"result": "success"}`),
 			wantErr:     false,
 			expectedErr: nil,
+			createdAt:   time.Now(),
+			updatedAt:   time.Now(),
 		},
 		{
 			name:        "Invalid event ID",
@@ -54,6 +59,8 @@ func TestEvent_Validate(t *testing.T) {
 			result:      json.RawMessage(`{"result": "success"}`),
 			wantErr:     true,
 			expectedErr: shared.ErrInvalidEventType,
+			createdAt:   time.Now(),
+			updatedAt:   time.Now(),
 		},
 		{
 			name:        "Nil payload",
@@ -65,6 +72,8 @@ func TestEvent_Validate(t *testing.T) {
 			result:      json.RawMessage(`{"result": "updated"}`),
 			wantErr:     true,
 			expectedErr: shared.ErrInvalidPayload,
+			createdAt:   time.Now(),
+			updatedAt:   time.Now(),
 		},
 		{
 			name:        "Empty status",
@@ -76,12 +85,16 @@ func TestEvent_Validate(t *testing.T) {
 			result:      json.RawMessage(`{"result": "deleted"}`),
 			wantErr:     true,
 			expectedErr: shared.ErrInvalidStatus,
+			createdAt:   time.Now(),
+			updatedAt:   time.Now(),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			e := domain.NewEvent(tt.id, tt.eventType, tt.subType, tt.payload, tt.result, tt.status)
+			e := domain.NewEvent(
+				tt.id, tt.eventType, tt.subType, tt.payload, tt.result, tt.status, tt.createdAt, tt.updatedAt,
+			)
 
 			gotErr := e.Validate()
 			if (gotErr != nil) != tt.wantErr {
