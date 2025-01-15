@@ -38,6 +38,15 @@ docker compose exec echo-vision sh -c "yes | migrate -path ./internal/infra/post
 ```
 
 # Tests
+install ginkgo
+```bash
+go install github.com/onsi/ginkgo/v2/ginkgo@latest 
+```
+
 ```bash
 go test -v ./...
+```
+
+```bash
+ginkgo -v echo-vision/tests/
 ```
