@@ -45,3 +45,27 @@ func (u *User) Validate() error {
 	}
 	return nil
 }
+
+func (u *User) ID() uuid.UUID {
+	return u.id
+}
+
+func (u *User) FirstName() string {
+	return u.firstName
+}
+
+func (u *User) LastName() string {
+	return u.lastName
+}
+
+func (u *User) Email() string {
+	return u.email
+}
+
+func (u *User) CreatedAt() time.Time {
+	return u.createdAt
+}
+
+func (u *User) UpdatedAt() time.Time {
+	return u.updatedAt
+}
