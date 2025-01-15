@@ -31,4 +31,5 @@ require (
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/fergusstrange/embedded-postgres v1.29.0
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/rotisserie/eris v0.5.4
 )
