@@ -22,7 +22,7 @@ docker compose exec echo-vision go run internal/infra/postgres/new.go users
 
 ### Update migration hash
 ```bash
-docker compose exec echo-vision atlas migrate hash --dir file://./internal/infra/postgres/migrations/
+atlas migrate hash --dir file://./internal/infra/postgres/migrations
 ```
 
 # Migrations
@@ -37,4 +37,7 @@ docker compose exec echo-vision migrate -path ./internal/infra/postgres/migratio
 docker compose exec echo-vision sh -c "yes | migrate -path ./internal/infra/postgres/migrations -database 'postgres://postgres:postgres@db:5432/echo-vision?sslmode=disable' down"
 ```
 
-
+# Tests
+```bash
+go test -v ./...
+```

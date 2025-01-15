@@ -7,4 +7,5 @@ var (
 	ErrInvalidStatus    = errors.New("invalid status")
 	ErrInvalidEventType = errors.New("invalid event type")
 	ErrInvalidPayload   = errors.New("invalid payload")
+	ErrInvalidEmail     = errors.New("invalid email")
 )
