@@ -10,7 +10,7 @@ import (
 )
 
 // FindByEmail implements repositories.UserRepository.
-func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
+func (r *Repository) FindUserByEmail(ctx context.Context, email string) (*domain.User, error) {
 	user, err := r.entClient.User.Query().
 		Where(user.Email(email)).
 		Only(ctx)
@@ -18,7 +18,7 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*domain
 }
 
 // Save implements repositories.UserRepository.
-func (r *UserRepository) Save(ctx context.Context, tx repositories.Transaction, user *domain.User) error {
+func (r *Repository) SaveUser(ctx context.Context, tx repositories.Transaction, user *domain.User) error {
 	err := r.entClient.User.Create().
 		SetID(user.ID()).
 		SetFirstName(user.FirstName()).

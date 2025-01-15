@@ -23,7 +23,7 @@ func (Event) Fields() []ent.Field {
 			Immutable(),
 		field.Enum("type").
 			Values(domain.EventType("").StringValues()...),
-		field.Enum("subtype").
+		field.Enum("sub_type").
 			Values(domain.EventSubType("").StringValues()...),
 		field.Enum("status").
 			Values(domain.EventStatus("").StringValues()...),
