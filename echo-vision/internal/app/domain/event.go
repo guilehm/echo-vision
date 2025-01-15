@@ -28,7 +28,7 @@ type EventSubType string
 
 func (est EventSubType) Values() []EventSubType {
 	return []EventSubType{
-		EventSubTypeDetecLabels,
+		EventSubTypeDetectLabels,
 	}
 }
 
@@ -37,7 +37,7 @@ func (est EventSubType) StringValues() []string {
 }
 
 const (
-	EventSubTypeDetecLabels EventSubType = "detect_labels"
+	EventSubTypeDetectLabels EventSubType = "detect_labels"
 )
 
 type EventStatus string
@@ -79,12 +79,13 @@ func NewEvent(
 	subType EventSubType,
 	payload json.RawMessage,
 	result json.RawMessage,
+	status EventStatus,
 ) *Event {
 	return &Event{
 		id:        id,
 		eventType: eventType,
 		subType:   subType,
-		status:    EventStatusPending,
+		status:    status,
 		payload:   payload,
 		result:    result,
 		createdAt: time.Now(),
@@ -106,4 +107,36 @@ func (e *Event) Validate() error {
 		return shared.ErrInvalidPayload
 	}
 	return nil
+}
+
+func (e *Event) ID() uuid.UUID {
+	return e.id
+}
+
+func (e *Event) EventType() EventType {
+	return e.eventType
+}
+
+func (e *Event) SubType() EventSubType {
+	return e.subType
+}
+
+func (e *Event) Status() EventStatus {
+	return e.status
+}
+
+func (e *Event) Payload() json.RawMessage {
+	return e.payload
+}
+
+func (e *Event) Result() json.RawMessage {
+	return e.result
+}
+
+func (e *Event) CreatedAt() time.Time {
+	return e.createdAt
+}
+
+func (e *Event) UpdatedAt() time.Time {
+	return e.updatedAt
 }
