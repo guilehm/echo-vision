@@ -15,7 +15,7 @@ var logger = logging.NewLogger()
 
 // Save implements repositories.EventRepository.
 func (r *Repository) SaveEvent(ctx context.Context, tx repositories.Transaction, e *domain.Event) error {
-	err := r.entClient.Event.Create().
+	return r.entClient.Event.Create().
 		SetID(e.ID()).
 		SetType(event.Type(e.EventType())).
 		SetSubType(event.SubType(e.SubType())).
@@ -25,7 +25,6 @@ func (r *Repository) SaveEvent(ctx context.Context, tx repositories.Transaction,
 		SetCreatedAt(e.CreatedAt()).
 		SetUpdatedAt(e.UpdatedAt()).
 		Exec(ctx)
-	return err
 }
 
 // FindEventByID implements repositories.EventRepository.
@@ -33,13 +32,13 @@ func (r *Repository) FindEventByID(ctx context.Context, tx repositories.Transact
 	e, err := r.entClient.Event.Query().
 		Where(event.ID(id)).
 		Only(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return eventToDomain(e), nil
+	return eventToDomain(e), err
 }
 
 func eventToDomain(e *ent.Event) *domain.Event {
+	if e == nil {
+		return nil
+	}
 	return domain.NewEvent(
 		e.ID,
 		domain.EventType(e.Type.String()),

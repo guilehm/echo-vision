@@ -29,6 +29,9 @@ func (r *Repository) SaveUser(ctx context.Context, tx repositories.Transaction, 
 }
 
 func userToDomain(entUser *ent.User) *domain.User {
+	if entUser == nil {
+		return nil
+	}
 	return domain.NewUser(
 		entUser.ID,
 		entUser.FirstName,
