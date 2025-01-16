@@ -2,6 +2,7 @@ package domain
 
 import (
 	"net/mail"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -29,7 +30,7 @@ func NewUser(
 		id:        id,
 		firstName: firstName,
 		lastName:  lastName,
-		email:     email,
+		email:     strings.ToLower(email),
 		createdAt: createdAt,
 		updatedAt: updatedAt,
 	}

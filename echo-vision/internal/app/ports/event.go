@@ -13,15 +13,15 @@ type EventPort interface {
 }
 
 type EventCreateInput struct {
-	EventType string `json:"event_type"`
-	SubType   string `json:"sub_type"`
+	EventType string `json:"eventType"`
+	SubType   string `json:"subType"`
 }
 
 type EventResponse struct {
-	UserID    uuid.UUID `json:"user_id"`
+	UserID    uuid.UUID `json:"userID"`
 	ID        uuid.UUID `json:"id"`
-	EventType string    `json:"event_type"`
-	SubType   string    `json:"sub_type"`
+	EventType string    `json:"eventType"`
+	SubType   string    `json:"subType"`
 	Status    string    `json:"status"`
 }
 
