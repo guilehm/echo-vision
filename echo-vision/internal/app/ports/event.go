@@ -9,28 +9,7 @@ import (
 
 type EventPort interface {
 	FindEventByID(ctx context.Context, id uuid.UUID) (*domain.Event, error)
+	CreateEvent(ctx context.Context, userID uuid.UUID, eventType, subType string) (*domain.Event, error)
 	SaveEvent(ctx context.Context, event *domain.Event) (uuid.UUID, error)
-}
-
-type EventCreateInput struct {
-	EventType string `json:"eventType"`
-	SubType   string `json:"subType"`
-}
-
-type EventResponse struct {
-	UserID    uuid.UUID `json:"userID"`
-	ID        uuid.UUID `json:"id"`
-	EventType string    `json:"eventType"`
-	SubType   string    `json:"subType"`
-	Status    string    `json:"status"`
-}
-
-type EventListResponse struct {
-	Events []*EventResponse `json:"events"`
-	Page   int              `json:"page"`
-	Count  int              `json:"count"`
-}
-
-type EventCreateResponse struct {
-	ID uuid.UUID `json:"id"`
+	EventsByUser(ctx context.Context, userID uuid.UUID) ([]*domain.Event, error)
 }

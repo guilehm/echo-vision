@@ -19,6 +19,8 @@ func NewRouter(up ports.UserPort, ep ports.EventPort) http.Handler {
 	r := chi.NewRouter()
 
 	// middlewares
+	authMiddleware := newAuthenticationMiddleware(up)
+
 	r.Use(setHeaders)
 	r.Use(corsMiddleware)
 	r.Use(logRequest)
@@ -28,13 +30,20 @@ func NewRouter(up ports.UserPort, ep ports.EventPort) http.Handler {
 		r.Post("/", uh.CreateUser)
 		r.Post("/login", uh.Login)
 
+		r.Route("/{userID}", func(r chi.Router) {
+			r.Use(authMiddleware)
+			r.Get("/events", eh.ListEvents)
+		})
 		r.Route("/me", func(r chi.Router) {
-			r.Use(newAuthenticationMiddleware(up))
+			r.Use(authMiddleware)
 			r.Get("/", uh.MeUser)
 		})
 	})
+
 	r.Route("/events", func(r chi.Router) {
+		r.Use(authMiddleware)
 		r.Post("/", eh.CreateEvent)
 	})
+
 	return r
 }

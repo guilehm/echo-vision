@@ -2,7 +2,6 @@ package web
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -48,10 +47,6 @@ func newAuthenticationMiddleware(userPort ports.UserPort) func(next http.Handler
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			token := r.Header.Get("Authorization")
-			for x, y := range r.Header {
-				fmt.Println(x, y)
-			}
-			fmt.Println("CHEGOU NO MIDDLEWARE", token)
 			if token == "" {
 				handleApiResponse(w, apiResponse[any](nil, newApiError(
 					http.StatusForbidden,
@@ -71,7 +66,7 @@ func newAuthenticationMiddleware(userPort ports.UserPort) func(next http.Handler
 				return
 			}
 
-			fmt.Println("USER SUCCESSFULLY AUTHENTICATED")
+			slog.Info("user authenticated", slog.String("email", user.Email()))
 			ctx = context.WithValue(r.Context(), contextKeyMeUser, user)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})

@@ -9,6 +9,7 @@ import (
 	"github.com/guilehm/echo-vision/internal/app/domain"
 )
 
+// TODO: remove validUser and validEvent
 var validUser = domain.NewUser(
 	uuid.New(),
 	"Arthur",
@@ -31,3 +32,28 @@ var validEvent = domain.NewEvent(
 )
 
 var ctx = context.Background()
+
+func makeUser(email string) *domain.User {
+	return domain.NewUser(
+		uuid.New(),
+		"Arthur",
+		"Morgan",
+		email,
+		time.Now(),
+		time.Now(),
+	)
+}
+
+func makeEvent(u *domain.User) *domain.Event {
+	return domain.NewEvent(
+		u.ID(),
+		uuid.New(),
+		domain.EventTypeImageAnalysis,
+		domain.EventSubTypeDetectLabels,
+		json.RawMessage(`{"key": "value"}`),
+		json.RawMessage(`{"result": "success"}`),
+		domain.EventStatusPending,
+		time.Now(),
+		time.Now(),
+	)
+}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/guilehm/echo-vision/internal/app/domain"
 	"github.com/guilehm/echo-vision/internal/app/ports"
+	"github.com/guilehm/echo-vision/internal/app/shared"
 )
 
 type UserHandler struct {
@@ -26,7 +27,7 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		logger.Error("error decoding request body", slog.String("error", err.Error()))
 		handleApiResponse(w, apiResponse[any](nil, newApiError(
 			http.StatusBadRequest,
-			"error decoding request body",
+			shared.ErrDecodingRequestBody.Error(),
 		)))
 		return
 	}
@@ -70,7 +71,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		logger.Error("error decoding request body", slog.String("error", err.Error()))
 		handleApiResponse(w, apiResponse[any](nil, newApiError(
 			http.StatusBadRequest,
-			"error decoding request body",
+			shared.ErrDecodingRequestBody.Error(),
 		)))
 		return
 	}
@@ -90,7 +91,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 // MeUser implements ports.UserWebPort.
 func (h *UserHandler) MeUser(w http.ResponseWriter, r *http.Request) {
-	u, err := fromContext(r.Context(), contextKeyMeUser, &domain.User{})
+	u, err := fromContext[domain.User](r.Context(), contextKeyMeUser)
 	if err != nil {
 		logger.Error("error getting user from context", slog.String("error", err.Error()))
 		handleApiResponse(w, apiResponse[any](nil, newApiError(

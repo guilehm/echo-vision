@@ -55,6 +55,27 @@ func (r *Repository) FindEventByID(
 	return eventToDomain(e), err
 }
 
+// FindEventsByUserID implements repositories.EventRepository.
+func (r *Repository) FindEventsByUserID(
+	ctx context.Context,
+	tx repositories.Transaction,
+	userID uuid.UUID,
+) ([]*domain.Event, error) {
+	// TODO: paginate with cursor
+	c := r.resolveClient(tx)
+	events, err := c.Event.Query().
+		Where(event.UserID(userID)).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var result []*domain.Event
+	for _, e := range events {
+		result = append(result, eventToDomain(e))
+	}
+	return result, nil
+}
+
 // eventToDomain transfer the ent object to the domain object
 func eventToDomain(e *ent.Event) *domain.Event {
 	if e == nil {

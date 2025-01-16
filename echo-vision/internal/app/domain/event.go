@@ -57,6 +57,10 @@ const (
 	EventStatusFailed     EventStatus = "failed"
 )
 
+func (es EventStatus) String() string {
+	return string(es)
+}
+
 func (es EventStatus) Values() []EventStatus {
 	return []EventStatus{
 		EventStatusPending,
@@ -115,9 +119,10 @@ func (e *Event) Validate() error {
 	if e.eventType == "" {
 		return shared.ErrInvalidEventType
 	}
-	if e.payload == nil {
-		return shared.ErrInvalidPayload
-	}
+	// TODO: enable payload validation
+	// if e.payload == nil {
+	// 	return shared.ErrInvalidPayload
+	// }
 	if err := e.validateTypes(); err != nil {
 		return err
 	}
@@ -136,7 +141,6 @@ func (e *Event) validateTypes() error {
 	}
 	return nil
 }
-
 
 func (e *Event) ID() uuid.UUID {
 	return e.id

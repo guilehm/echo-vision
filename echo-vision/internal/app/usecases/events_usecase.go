@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/guilehm/echo-vision/internal/app/domain"
@@ -11,6 +12,37 @@ import (
 
 type ManageEvents struct {
 	Repository repositories.Repository
+}
+
+func NewManageEventsUseCase(repository repositories.Repository) ports.EventPort {
+	return &ManageEvents{
+		Repository: repository,
+	}
+}
+
+// CreateEvent implements ports.EventPort.
+func (uc *ManageEvents) CreateEvent(
+	ctx context.Context,
+	userID uuid.UUID,
+	eventType string,
+	subType string,
+) (*domain.Event, error) {
+	now := time.Now()
+	event := domain.NewEvent(
+		userID,
+		uuid.New(),
+		domain.EventType(eventType),
+		domain.EventSubType(subType),
+		nil,
+		nil,
+		domain.EventStatusPending,
+		now,
+		now,
+	)
+	if err := event.Validate(); err != nil {
+		return nil, err
+	}
+	return event, nil
 }
 
 func (uc *ManageEvents) FindEventByID(
@@ -27,8 +59,7 @@ func (uc *ManageEvents) SaveEvent(
 	return uc.Repository.SaveEvent(ctx, nil, event)
 }
 
-func NewManageEventsUseCase(repository repositories.Repository) ports.EventPort {
-	return &ManageEvents{
-		Repository: repository,
-	}
+// EventsByUser implements ports.EventPort.
+func (uc *ManageEvents) EventsByUser(ctx context.Context, userID uuid.UUID) ([]*domain.Event, error) {
+	return uc.Repository.FindEventsByUserID(ctx, nil, userID)
 }

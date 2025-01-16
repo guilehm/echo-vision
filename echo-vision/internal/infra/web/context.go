@@ -12,8 +12,13 @@ const (
 	contextKeyMeUser contextKey = "me_user"
 )
 
-func fromContext[target any](ctx context.Context, key contextKey, t *target) (*target, error) {
-	t, ok := ctx.Value(key).(*target)
+func fromContext[T any](ctx context.Context, key contextKey) (*T, error) {
+	value := ctx.Value(key)
+	if value == nil {
+		return nil, shared.ErrContextValueNotFound
+	}
+
+	t, ok := value.(*T)
 	if !ok {
 		return nil, shared.ErrContextValueNotFound
 	}
