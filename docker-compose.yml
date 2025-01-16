@@ -2,9 +2,10 @@ services:
 
   echo-vision:
     build: ./echo-vision
-    # image: echo-vision
     container_name: echo-vision
     command: go run .
+    ports:
+      - 8080:8080
     volumes:
       - ./echo-vision:/go/src/
     working_dir: /go/src/

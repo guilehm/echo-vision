@@ -41,6 +41,8 @@ require (
 	entgo.io/ent v0.14.1
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/fergusstrange/embedded-postgres v1.29.0
+	github.com/go-chi/chi/v5 v5.2.0
+	github.com/go-chi/cors v1.2.1
 	github.com/golang-migrate/migrate/v4 v4.18.1
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/rotisserie/eris v0.5.4

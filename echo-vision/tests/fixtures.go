@@ -19,7 +19,7 @@ var validUser = domain.NewUser(
 )
 
 var validEvent = domain.NewEvent(
-	validUser,
+	validUser.ID(),
 	uuid.New(),
 	domain.EventTypeImageAnalysis,
 	domain.EventSubTypeDetectLabels,

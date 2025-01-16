@@ -21,6 +21,7 @@ func (Event) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
 			Immutable(),
+		field.UUID("user_id", uuid.UUID{}),
 		field.Enum("type").
 			Values(domain.EventType("").StringValues()...),
 		field.Enum("sub_type").
@@ -44,6 +45,7 @@ func (Event) Edges() []ent.Edge {
 		edge.From("user", User.Type).
 			Ref("events").
 			Unique().
-			Required(),
+			Required().
+			Field("user_id"),
 	}
 }

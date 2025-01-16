@@ -1,0 +1,38 @@
+package ports
+
+import (
+	"context"
+
+	"github.com/google/uuid"
+	"github.com/guilehm/echo-vision/internal/app/domain"
+)
+
+type EventPort interface {
+	FindEventByID(ctx context.Context, id uuid.UUID) (*domain.Event, error)
+	SaveEvent(ctx context.Context, event *domain.Event) (uuid.UUID, error)
+}
+
+type EventCreateInput struct {
+	EventType string `json:"event_type"`
+	SubType   string `json:"sub_type"`
+}
+
+type EventResponse struct {
+	UserID    uuid.UUID `json:"user_id"`
+	ID        uuid.UUID `json:"id"`
+	EventType string    `json:"event_type"`
+	SubType   string    `json:"sub_type"`
+	Status    string    `json:"status"`
+}
+
+type EventListResponse struct {
+	Events []*EventResponse `json:"events"`
+	Page   int              `json:"page"`
+	Count  int              `json:"count"`
+}
+
+// type EventPort interface {
+// 	FindEventByID(ctx context.Context, id uuid.UUID) (*EventResponse, error)
+// 	SaveEvent(ctx context.Context, event *domain.Event) (*EventResponse, error)
+// 	ListEvents(ctx context.Context) (*EventListResponse, error)
+// }

@@ -3,8 +3,13 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
+	"os"
 
+	"github.com/guilehm/echo-vision/internal/app/usecases"
+	"github.com/guilehm/echo-vision/internal/infra/postgres"
 	"github.com/guilehm/echo-vision/internal/infra/rabbitmq"
+	"github.com/guilehm/echo-vision/internal/infra/web"
 )
 
 func main() {
@@ -23,6 +28,17 @@ func main() {
 
 	fmt.Println("channel", ch)
 
+	e := postgres.NewEnt(os.Getenv("DATABASE_URL"))
+
+	repo := postgres.NewRepository(e)
+	userUseCase := usecases.NewManageUsersUseCase(repo)
+	eventUseCase := usecases.NewManageEventsUseCase(repo)
+	router := web.NewRouter(userUseCase, eventUseCase)
+
+	err = http.ListenAndServe(":8080", router)
+	if err != nil {
+		log.Fatalln("could not start server: ", err)
+	}
 	// sess, err := session.NewSession(&aws.Config{
 	// 	Region: aws.String("us-east-2"),
 	// })

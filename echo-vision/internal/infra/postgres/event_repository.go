@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/guilehm/echo-vision/internal/app/domain"
 	"github.com/guilehm/echo-vision/internal/app/repositories"
+	"github.com/guilehm/echo-vision/internal/app/shared"
 	"github.com/guilehm/echo-vision/internal/infra/logging"
 	"github.com/guilehm/echo-vision/internal/infra/postgres/generated/ent"
 	"github.com/guilehm/echo-vision/internal/infra/postgres/generated/ent/event"
@@ -21,7 +22,7 @@ func (r *Repository) SaveEvent(
 ) (uuid.UUID, error) {
 	c := r.resolveClient(tx)
 	entEvent, err := c.Event.Create().
-		SetUserID(e.User().ID()).
+		SetUserID(e.UserID()).
 		SetID(e.ID()).
 		SetType(event.Type(e.EventType())).
 		SetSubType(event.SubType(e.SubType())).
@@ -47,6 +48,10 @@ func (r *Repository) FindEventByID(
 	e, err := c.Event.Query().
 		Where(event.ID(id)).
 		Only(ctx)
+
+	if ent.IsNotFound(err) {
+		return nil, shared.ErrNotNound
+	}
 	return eventToDomain(e), err
 }
 
@@ -56,7 +61,7 @@ func eventToDomain(e *ent.Event) *domain.Event {
 		return nil
 	}
 	return domain.NewEvent(
-		userToDomain(e.Edges.User),
+		e.UserID,
 		e.ID,
 		domain.EventType(e.Type.String()),
 		domain.EventSubType(e.SubType.String()),

@@ -32,6 +32,20 @@ func (eu *EventUpdate) Where(ps ...predicate.Event) *EventUpdate {
 	return eu
 }
 
+// SetUserID sets the "user_id" field.
+func (eu *EventUpdate) SetUserID(u uuid.UUID) *EventUpdate {
+	eu.mutation.SetUserID(u)
+	return eu
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (eu *EventUpdate) SetNillableUserID(u *uuid.UUID) *EventUpdate {
+	if u != nil {
+		eu.SetUserID(*u)
+	}
+	return eu
+}
+
 // SetType sets the "type" field.
 func (eu *EventUpdate) SetType(e event.Type) *EventUpdate {
 	eu.mutation.SetType(e)
@@ -121,12 +135,6 @@ func (eu *EventUpdate) SetNillableCreatedAt(t *time.Time) *EventUpdate {
 // SetUpdatedAt sets the "updated_at" field.
 func (eu *EventUpdate) SetUpdatedAt(t time.Time) *EventUpdate {
 	eu.mutation.SetUpdatedAt(t)
-	return eu
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (eu *EventUpdate) SetUserID(id uuid.UUID) *EventUpdate {
-	eu.mutation.SetUserID(id)
 	return eu
 }
 
@@ -300,6 +308,20 @@ type EventUpdateOne struct {
 	mutation *EventMutation
 }
 
+// SetUserID sets the "user_id" field.
+func (euo *EventUpdateOne) SetUserID(u uuid.UUID) *EventUpdateOne {
+	euo.mutation.SetUserID(u)
+	return euo
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (euo *EventUpdateOne) SetNillableUserID(u *uuid.UUID) *EventUpdateOne {
+	if u != nil {
+		euo.SetUserID(*u)
+	}
+	return euo
+}
+
 // SetType sets the "type" field.
 func (euo *EventUpdateOne) SetType(e event.Type) *EventUpdateOne {
 	euo.mutation.SetType(e)
@@ -389,12 +411,6 @@ func (euo *EventUpdateOne) SetNillableCreatedAt(t *time.Time) *EventUpdateOne {
 // SetUpdatedAt sets the "updated_at" field.
 func (euo *EventUpdateOne) SetUpdatedAt(t time.Time) *EventUpdateOne {
 	euo.mutation.SetUpdatedAt(t)
-	return euo
-}
-
-// SetUserID sets the "user" edge to the User entity by ID.
-func (euo *EventUpdateOne) SetUserID(id uuid.UUID) *EventUpdateOne {
-	euo.mutation.SetUserID(id)
 	return euo
 }
 

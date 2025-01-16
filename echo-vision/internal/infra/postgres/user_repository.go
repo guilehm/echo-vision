@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/guilehm/echo-vision/internal/app/domain"
 	"github.com/guilehm/echo-vision/internal/app/repositories"
+	"github.com/guilehm/echo-vision/internal/app/shared"
 	"github.com/guilehm/echo-vision/internal/infra/postgres/generated/ent"
 	"github.com/guilehm/echo-vision/internal/infra/postgres/generated/ent/user"
 )
@@ -20,6 +21,11 @@ func (r *Repository) FindUserByID(
 	user, err := c.User.Query().
 		Where(user.ID(id)).
 		Only(ctx)
+
+	if ent.IsNotFound(err) {
+		return nil, shared.ErrNotNound
+	}
+
 	return userToDomain(user), err
 }
 
@@ -33,6 +39,11 @@ func (r *Repository) FindUserByEmail(
 	user, err := c.User.Query().
 		Where(user.Email(email)).
 		Only(ctx)
+
+	if ent.IsNotFound(err) {
+		return nil, shared.ErrNotNound
+	}
+
 	return userToDomain(user), err
 }
 

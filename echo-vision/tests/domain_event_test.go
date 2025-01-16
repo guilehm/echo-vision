@@ -99,7 +99,7 @@ var _ = Describe("Event Domain Validation", func() {
 		for _, t := range eventCreationTests {
 			It(t.name, func() {
 				e := domain.NewEvent(
-					validUser,
+					validUser.ID(),
 					t.id,
 					t.eventType,
 					t.subType,

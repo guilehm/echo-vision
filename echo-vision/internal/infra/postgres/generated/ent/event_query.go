@@ -26,7 +26,6 @@ type EventQuery struct {
 	inters     []Interceptor
 	predicates []predicate.Event
 	withUser   *UserQuery
-	withFKs    bool
 	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -302,12 +301,12 @@ func (eq *EventQuery) WithUser(opts ...func(*UserQuery)) *EventQuery {
 // Example:
 //
 //	var v []struct {
-//		Type event.Type `json:"type,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Event.Query().
-//		GroupBy(event.FieldType).
+//		GroupBy(event.FieldUserID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (eq *EventQuery) GroupBy(field string, fields ...string) *EventGroupBy {
@@ -325,11 +324,11 @@ func (eq *EventQuery) GroupBy(field string, fields ...string) *EventGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Type event.Type `json:"type,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //	}
 //
 //	client.Event.Query().
-//		Select(event.FieldType).
+//		Select(event.FieldUserID).
 //		Scan(ctx, &v)
 func (eq *EventQuery) Select(fields ...string) *EventSelect {
 	eq.ctx.Fields = append(eq.ctx.Fields, fields...)
@@ -373,18 +372,11 @@ func (eq *EventQuery) prepareQuery(ctx context.Context) error {
 func (eq *EventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Event, error) {
 	var (
 		nodes       = []*Event{}
-		withFKs     = eq.withFKs
 		_spec       = eq.querySpec()
 		loadedTypes = [1]bool{
 			eq.withUser != nil,
 		}
 	)
-	if eq.withUser != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, event.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Event).scanValues(nil, columns)
 	}
@@ -419,10 +411,7 @@ func (eq *EventQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*E
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Event)
 	for i := range nodes {
-		if nodes[i].user_id == nil {
-			continue
-		}
-		fk := *nodes[i].user_id
+		fk := nodes[i].UserID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -475,6 +464,9 @@ func (eq *EventQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != event.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if eq.withUser != nil {
+			_spec.Node.AddColumnOnce(event.FieldUserID)
 		}
 	}
 	if ps := eq.predicates; len(ps) > 0 {

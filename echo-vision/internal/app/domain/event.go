@@ -63,7 +63,7 @@ func (es EventStatus) StringValues() []string {
 }
 
 type Event struct {
-	user      *User
+	userID    uuid.UUID
 	id        uuid.UUID
 	eventType EventType
 	subType   EventSubType
@@ -75,7 +75,7 @@ type Event struct {
 }
 
 func NewEvent(
-	user *User,
+	userID uuid.UUID,
 	id uuid.UUID,
 	eventType EventType,
 	subType EventSubType,
@@ -85,7 +85,7 @@ func NewEvent(
 	createdAt, updatedAt time.Time,
 ) *Event {
 	return &Event{
-		user:      user,
+		userID:    userID,
 		id:        id,
 		eventType: eventType,
 		subType:   subType,
@@ -117,8 +117,8 @@ func (e *Event) ID() uuid.UUID {
 	return e.id
 }
 
-func (e *Event) User() *User {
-	return e.user
+func (e *Event) UserID() uuid.UUID {
+	return e.userID
 }
 
 func (e *Event) EventType() EventType {

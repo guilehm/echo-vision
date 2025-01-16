@@ -23,6 +23,12 @@ type EventCreate struct {
 	hooks    []Hook
 }
 
+// SetUserID sets the "user_id" field.
+func (ec *EventCreate) SetUserID(u uuid.UUID) *EventCreate {
+	ec.mutation.SetUserID(u)
+	return ec
+}
+
 // SetType sets the "type" field.
 func (ec *EventCreate) SetType(e event.Type) *EventCreate {
 	ec.mutation.SetType(e)
@@ -87,12 +93,6 @@ func (ec *EventCreate) SetID(u uuid.UUID) *EventCreate {
 	return ec
 }
 
-// SetUserID sets the "user" edge to the User entity by ID.
-func (ec *EventCreate) SetUserID(id uuid.UUID) *EventCreate {
-	ec.mutation.SetUserID(id)
-	return ec
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (ec *EventCreate) SetUser(u *User) *EventCreate {
 	return ec.SetUserID(u.ID)
@@ -145,6 +145,9 @@ func (ec *EventCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (ec *EventCreate) check() error {
+	if _, ok := ec.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "Event.user_id"`)}
+	}
 	if _, ok := ec.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Event.type"`)}
 	}
@@ -258,7 +261,7 @@ func (ec *EventCreate) createSpec() (*Event, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.user_id = &nodes[0]
+		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
