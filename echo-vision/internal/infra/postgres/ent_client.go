@@ -3,7 +3,6 @@ package postgres
 import (
 	"database/sql"
 	"log"
-	"os"
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
@@ -11,8 +10,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func NewEnt() *ent.Client {
-	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
+func NewEnt(dbURL string) *ent.Client {
+	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Fatalf("failed connecting to postgres: %v", err)
 	}

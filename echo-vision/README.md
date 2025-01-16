@@ -17,12 +17,12 @@ docker compose exec echo-vision go run internal/infra/postgres/generated/entc.go
 
 ### Create migrations
 ```bash
-docker compose exec echo-vision go run internal/infra/postgres/new.go users
+go run ./internal/infra/postgres/new.go users
 ```
 
 ### Update migration hash
 ```bash
-atlas migrate hash --dir file://./internal/infra/postgres/migrations
+atlas migrate hash --dir file://./echo-vision/internal/infra/postgres/migrations
 ```
 
 # Migrations

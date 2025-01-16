@@ -2,7 +2,7 @@
 CREATE TABLE "events" (
   "id" uuid NOT NULL,
   "type" character varying NOT NULL,
-  "subtype" character varying NOT NULL,
+  "sub_type" character varying NOT NULL,
   "status" character varying NOT NULL,
   "payload" jsonb NOT NULL,
   "result" jsonb NULL,

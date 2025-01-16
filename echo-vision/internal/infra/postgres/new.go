@@ -26,10 +26,10 @@ func main() {
 
 	migrationName := os.Args[1]
 
-	dbName := "postgres-migration"
-	dbUser := "service-migrator"
-	dbPassword := "password"
-	var dbPort uint32 = 54323
+	dbName := "echo-vision"
+	dbUser := "echo-vision"
+	dbPassword := "echo-vision"
+	var dbPort uint32 = 15432
 
 	dbURL := fmt.Sprintf("postgresql://%s:%s@localhost:%d/%s?sslmode=disable", dbUser, dbPassword, dbPort, dbName)
 	postgres := embeddedpostgres.NewDatabase(

@@ -8,6 +8,6 @@ import (
 )
 
 type EventRepository interface {
-	SaveEvent(ctx context.Context, tx Transaction, event *domain.Event) error
+	SaveEvent(ctx context.Context, tx Transaction, event *domain.Event) (uuid.UUID, error)
 	FindEventByID(ctx context.Context, tx Transaction, id uuid.UUID) (*domain.Event, error)
 }

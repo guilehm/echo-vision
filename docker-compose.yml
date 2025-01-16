@@ -2,7 +2,7 @@ services:
 
   echo-vision:
     build: ./echo-vision
-    image: echo-vision
+    # image: echo-vision
     container_name: echo-vision
     command: go run .
     volumes:
@@ -12,8 +12,6 @@ services:
       - rabbitmq
     environment:
       RABBITMQ_URL: amqp://guest:guest@vision-rabbitmq/
-    env_file:
-      - .env
 
   rabbitmq:
     image: rabbitmq:3-management-alpine

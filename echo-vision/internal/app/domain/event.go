@@ -63,6 +63,7 @@ func (es EventStatus) StringValues() []string {
 }
 
 type Event struct {
+	user      *User
 	id        uuid.UUID
 	eventType EventType
 	subType   EventSubType
@@ -74,6 +75,7 @@ type Event struct {
 }
 
 func NewEvent(
+	user *User,
 	id uuid.UUID,
 	eventType EventType,
 	subType EventSubType,
@@ -83,6 +85,7 @@ func NewEvent(
 	createdAt, updatedAt time.Time,
 ) *Event {
 	return &Event{
+		user:      user,
 		id:        id,
 		eventType: eventType,
 		subType:   subType,
@@ -112,6 +115,10 @@ func (e *Event) Validate() error {
 
 func (e *Event) ID() uuid.UUID {
 	return e.id
+}
+
+func (e *Event) User() *User {
+	return e.user
 }
 
 func (e *Event) EventType() EventType {

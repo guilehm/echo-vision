@@ -9,7 +9,7 @@ import (
 	"github.com/rotisserie/eris"
 )
 
-// BeginTx implements repositories.GenericRepository.
+// BeginTx implements repositories.Repository.
 func (r *Repository) BeginTx(ctx context.Context) (repositories.Transaction, error) {
 	tx, err := r.entClient.BeginTx(ctx, nil)
 	if err != nil {
@@ -18,7 +18,7 @@ func (r *Repository) BeginTx(ctx context.Context) (repositories.Transaction, err
 	return &entTransaction{tx: tx}, nil
 }
 
-// WithTransaction implements repositories.GenericRepository.
+// WithTransaction implements repositories.Repository.
 func (r *Repository) WithTransaction(ctx context.Context, fn func(ctx context.Context, tx repositories.Transaction) error) error {
 	logger.Debug("starting transaction")
 

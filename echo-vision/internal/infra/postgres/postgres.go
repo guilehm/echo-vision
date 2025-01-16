@@ -9,12 +9,7 @@ type Repository struct {
 	entClient *ent.Client
 }
 
-// NewUserRepository creates a new instance of UserRepository.
-func NewUserRepository(entClient *ent.Client) repositories.UserRepository {
-	return &Repository{entClient: entClient}
-}
-
-// NewEventRepository creates a new instance of EventRepository.
-func NewEventRepository(entClient *ent.Client) repositories.EventRepository {
+// NewRepository creates a new instance of Repository.
+func NewRepository(entClient *ent.Client) repositories.Repository {
 	return &Repository{entClient: entClient}
 }

@@ -8,4 +8,5 @@ var (
 	ErrInvalidEventType = errors.New("invalid event type")
 	ErrInvalidPayload   = errors.New("invalid payload")
 	ErrInvalidEmail     = errors.New("invalid email")
+	ErrUserNotLoaded    = errors.New("user not loaded")
 )

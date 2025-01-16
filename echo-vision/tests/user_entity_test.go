@@ -16,7 +16,7 @@ var _ = Describe("User Validation", func() {
 		validTime = time.Now()
 	)
 
-	tests := []struct {
+	userCreationTests := []struct {
 		name        string
 		id          uuid.UUID
 		firstName   string
@@ -73,17 +73,19 @@ var _ = Describe("User Validation", func() {
 		},
 	}
 
-	for _, tt := range tests {
-		It(tt.name, func() {
-			u := domain.NewUser(tt.id, tt.firstName, tt.lastName, tt.email, tt.createdAt, tt.updatedAt)
-			gotErr := u.Validate()
+	Context("UserCreation", func() {
+		for _, tt := range userCreationTests {
+			It(tt.name, func() {
+				u := domain.NewUser(tt.id, tt.firstName, tt.lastName, tt.email, tt.createdAt, tt.updatedAt)
+				gotErr := u.Validate()
 
-			if tt.wantErr {
-				Expect(gotErr).To(HaveOccurred())
-				Expect(gotErr.Error()).To(Equal(tt.expectedErr.Error()))
-			} else {
-				Expect(gotErr).NotTo(HaveOccurred())
-			}
-		})
-	}
+				if tt.wantErr {
+					Expect(gotErr).To(HaveOccurred())
+					Expect(gotErr.Error()).To(Equal(tt.expectedErr.Error()))
+				} else {
+					Expect(gotErr).NotTo(HaveOccurred())
+				}
+			})
+		}
+	})
 })
