@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Event Validation", func() {
+var _ = Describe("Event Domain Validation", func() {
 	var (
 		validID   = uuid.New()
 		validTime = time.Now()

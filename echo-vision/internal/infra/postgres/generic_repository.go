@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/guilehm/echo-vision/internal/app/repositories"
+	"github.com/guilehm/echo-vision/internal/infra/postgres/generated/ent"
 	"github.com/rotisserie/eris"
 )
 
@@ -60,4 +61,12 @@ func (r *Repository) WithTransaction(ctx context.Context, fn func(ctx context.Co
 
 	logger.Debug("transaction successfully committed")
 	return nil
+}
+
+// resolveClient resolves the ent client
+func (r *Repository) resolveClient(tx repositories.Transaction) *ent.Client {
+	if tx == nil {
+		return r.entClient
+	}
+	return tx.(*entTransaction).tx.Client()
 }

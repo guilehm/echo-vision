@@ -14,8 +14,13 @@ import (
 var logger = logging.NewLogger()
 
 // Save implements repositories.EventRepository.
-func (r *Repository) SaveEvent(ctx context.Context, tx repositories.Transaction, e *domain.Event) (uuid.UUID, error) {
-	entEvent, err := r.entClient.Event.Create().
+func (r *Repository) SaveEvent(
+	ctx context.Context,
+	tx repositories.Transaction,
+	e *domain.Event,
+) (uuid.UUID, error) {
+	c := r.resolveClient(tx)
+	entEvent, err := c.Event.Create().
 		SetUserID(e.User().ID()).
 		SetID(e.ID()).
 		SetType(event.Type(e.EventType())).
@@ -33,13 +38,19 @@ func (r *Repository) SaveEvent(ctx context.Context, tx repositories.Transaction,
 }
 
 // FindEventByID implements repositories.EventRepository.
-func (r *Repository) FindEventByID(ctx context.Context, tx repositories.Transaction, id uuid.UUID) (*domain.Event, error) {
-	e, err := r.entClient.Event.Query().
+func (r *Repository) FindEventByID(
+	ctx context.Context,
+	tx repositories.Transaction,
+	id uuid.UUID,
+) (*domain.Event, error) {
+	c := r.resolveClient(tx)
+	e, err := c.Event.Query().
 		Where(event.ID(id)).
 		Only(ctx)
 	return eventToDomain(e), err
 }
 
+// eventToDomain transfer the ent object to the domain object
 func eventToDomain(e *ent.Event) *domain.Event {
 	if e == nil {
 		return nil

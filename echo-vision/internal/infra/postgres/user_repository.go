@@ -3,31 +3,59 @@ package postgres
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/guilehm/echo-vision/internal/app/domain"
 	"github.com/guilehm/echo-vision/internal/app/repositories"
 	"github.com/guilehm/echo-vision/internal/infra/postgres/generated/ent"
 	"github.com/guilehm/echo-vision/internal/infra/postgres/generated/ent/user"
 )
 
-// FindByEmail implements repositories.UserRepository.
-func (r *Repository) FindUserByEmail(ctx context.Context, email string) (*domain.User, error) {
-	user, err := r.entClient.User.Query().
+// FindUserByID implements repositories.UserRepository.
+func (r *Repository) FindUserByID(
+	ctx context.Context,
+	tx repositories.Transaction,
+	id uuid.UUID,
+) (*domain.User, error) {
+	c := r.resolveClient(tx)
+	user, err := c.User.Query().
+		Where(user.ID(id)).
+		Only(ctx)
+	return userToDomain(user), err
+}
+
+// FindUserByEmail implements repositories.UserRepository.
+func (r *Repository) FindUserByEmail(
+	ctx context.Context,
+	tx repositories.Transaction,
+	email string,
+) (*domain.User, error) {
+	c := r.resolveClient(tx)
+	user, err := c.User.Query().
 		Where(user.Email(email)).
 		Only(ctx)
 	return userToDomain(user), err
 }
 
-// Save implements repositories.UserRepository.
-func (r *Repository) SaveUser(ctx context.Context, tx repositories.Transaction, user *domain.User) error {
-	err := r.entClient.User.Create().
+// SaveUser implements repositories.UserRepository.
+func (r *Repository) SaveUser(
+	ctx context.Context,
+	tx repositories.Transaction,
+	user *domain.User,
+) (uuid.UUID, error) {
+	c := r.resolveClient(tx)
+	u, err := c.User.Create().
 		SetID(user.ID()).
 		SetFirstName(user.FirstName()).
 		SetLastName(user.LastName()).
 		SetEmail(user.Email()).
-		Exec(ctx)
-	return err
+		Save(ctx)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	return u.ID, nil
 }
 
+// userToDomain transfer the ent object to the domain object
 func userToDomain(entUser *ent.User) *domain.User {
 	if entUser == nil {
 		return nil

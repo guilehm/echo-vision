@@ -1,17 +1,23 @@
-package domain_test
+package tests
 
 import (
-	"testing"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/guilehm/echo-vision/internal/app/domain"
 	"github.com/guilehm/echo-vision/internal/app/shared"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
-func TestUser_Validate(t *testing.T) {
-	tests := []struct {
-		name        string // description of this test case
+var _ = Describe("User Domain Validation", func() {
+	var (
+		validID   = uuid.New()
+		validTime = time.Now()
+	)
+
+	userCreationTests := []struct {
+		name        string
 		id          uuid.UUID
 		firstName   string
 		lastName    string
@@ -23,12 +29,12 @@ func TestUser_Validate(t *testing.T) {
 	}{
 		{
 			name:        "Valid user",
-			id:          uuid.New(),
+			id:          validID,
 			firstName:   "John",
 			lastName:    "Doe",
 			email:       "john.doe@example.com",
-			createdAt:   time.Now(),
-			updatedAt:   time.Now(),
+			createdAt:   validTime,
+			updatedAt:   validTime,
 			wantErr:     false,
 			expectedErr: nil,
 		},
@@ -38,46 +44,48 @@ func TestUser_Validate(t *testing.T) {
 			firstName:   "Jane",
 			lastName:    "Doe",
 			email:       "jane.doe@example.com",
-			createdAt:   time.Now(),
-			updatedAt:   time.Now(),
+			createdAt:   validTime,
+			updatedAt:   validTime,
 			wantErr:     true,
 			expectedErr: shared.ErrInvalidID,
 		},
 		{
 			name:        "Invalid email format",
-			id:          uuid.New(),
+			id:          validID,
 			firstName:   "Alice",
 			lastName:    "Smith",
 			email:       "alice.smith@@example.com",
-			createdAt:   time.Now(),
-			updatedAt:   time.Now(),
+			createdAt:   validTime,
+			updatedAt:   validTime,
 			wantErr:     true,
 			expectedErr: shared.ErrInvalidEmail,
 		},
 		{
 			name:        "Empty email",
-			id:          uuid.New(),
+			id:          validID,
 			firstName:   "Bob",
 			lastName:    "Brown",
 			email:       "",
-			createdAt:   time.Now(),
-			updatedAt:   time.Now(),
+			createdAt:   validTime,
+			updatedAt:   validTime,
 			wantErr:     true,
 			expectedErr: shared.ErrInvalidEmail,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			u := domain.NewUser(tt.id, tt.firstName, tt.lastName, tt.email, tt.createdAt, tt.updatedAt)
-			gotErr := u.Validate()
 
-			if (gotErr != nil) != tt.wantErr {
-				t.Errorf("Validate() error = %v, wantErr %v", gotErr, tt.wantErr)
-			}
+	Context("UserCreation", func() {
+		for _, tt := range userCreationTests {
+			It(tt.name, func() {
+				u := domain.NewUser(tt.id, tt.firstName, tt.lastName, tt.email, tt.createdAt, tt.updatedAt)
+				gotErr := u.Validate()
 
-			if gotErr != nil && gotErr != tt.expectedErr {
-				t.Errorf("Validate() error type = %v, expected %v", gotErr, tt.expectedErr)
-			}
-		})
-	}
-}
+				if tt.wantErr {
+					Expect(gotErr).To(HaveOccurred())
+					Expect(gotErr.Error()).To(Equal(tt.expectedErr.Error()))
+				} else {
+					Expect(gotErr).NotTo(HaveOccurred())
+				}
+			})
+		}
+	})
+})
