@@ -1,0 +1,7 @@
+go 1.23.5
+
+use (
+	./echo-analyzer
+	./echo-common
+	./echo-hub
+)
