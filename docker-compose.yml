@@ -1,7 +1,9 @@
 services:
 
   echo-hub:
-    build: ./echo-hub
+    build:
+      context: ./
+      dockerfile: ./echo-hub/Dockerfile
     container_name: echo-hub
     command: go run .
     ports:
@@ -10,22 +12,23 @@ services:
       - .:/go/src/
     working_dir: /go/src/echo-hub
     depends_on:
-      - db-hub
+      - postgres
       - rabbitmq
     environment:
-      DATABASE_URL: postgres://postgres:postgres@db:5432/echo-hub?sslmode=disable
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/echo-vision?sslmode=disable
+      DATABASE_SCHEMA: echo_hub
       RABBITMQ_URL: amqp://guest:guest@vision-rabbitmq/
       JWT_SECRET: whatever
 
-  db-hub:
+  postgres:
     image: postgres:12.0-alpine
-    container_name: echo-db-hub
+    container_name: echo-vision-db
     environment:
-      POSTGRES_DB: echo-hub
+      POSTGRES_DB: echo-vision
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
-      - postgres-hub-data:/var/lib/postgresql/data
+      - postgres-vision-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
 
@@ -51,7 +54,7 @@ services:
       retries: 5
 
 volumes:
-  postgres-hub-data:
+  postgres-vision-data:
   rabbitmq_etc:
     labels:
       description: "RabbitMQ configuration"

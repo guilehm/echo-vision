@@ -39,7 +39,7 @@ func main() {
 	)
 	passwordAdapter := bcrypthasher.NewBcryptAdapter()
 
-	e := postgres.NewEnt(os.Getenv("DATABASE_URL"))
+	e := postgres.NewEnt(os.Getenv("DATABASE_URL"), os.Getenv("DATABASE_SCHEMA"))
 	repo := postgres.NewRepository(e)
 
 	userUseCase := usecases.NewManageUsersUseCase(repo, jwtAdapter, passwordAdapter)

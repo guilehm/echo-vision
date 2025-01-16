@@ -55,7 +55,15 @@ var _ = BeforeSuite(func() {
 	var dbPort uint32 = 15432
 
 	// setup embedded postgres
-	dbURL := fmt.Sprintf("postgresql://%s:%s@localhost:%d/%s?sslmode=disable", dbUser, dbPassword, dbPort, dbName)
+	dbSchema := "echo_hub"
+	dbURL := fmt.Sprintf(
+		"postgresql://%s:%s@localhost:%d/%s?sslmode=disable&search_path=%s",
+		dbUser,
+		dbPassword,
+		dbPort,
+		dbName,
+		dbSchema,
+	)
 	pg = embeddedpostgres.NewDatabase(embeddedpostgres.DefaultConfig().
 		Password(dbPassword).
 		Username(dbUser).
@@ -67,7 +75,7 @@ var _ = BeforeSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 
 	// setup ent postgres
-	entClient = postgres.NewEnt(dbURL)
+	entClient = postgres.NewEnt(dbURL, dbSchema)
 	repo = postgres.NewRepository(entClient)
 
 	// run migrations

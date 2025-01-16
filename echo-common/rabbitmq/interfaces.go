@@ -13,13 +13,33 @@ type Message struct {
 
 // AsyncMessagingPort defines the interface for asynchronous messaging.
 type AsyncMessagingPort interface {
-	CreateChannel() (MessagingChannel, error)
+	CreatePublisher() (Publisher, error)
+	CreateConsumer() (Consumer, error)
 	Close() error
 }
 
-// MessagingChannel defines operations that can be performed on a specific channel.
-type MessagingChannel interface {
+// type EventDecoder interface {
+// 	Decode(v interface{}) error
+// }
+
+type Handler interface {
+	Topics() []string
+	Handle(ctx context.Context, topic Topic, msg Message) HandlerResponse
+}
+
+type Publisher interface {
 	Publish(ctx context.Context, topic string, message Message) error
+	Close() error
+}
+
+type Consumer interface {
 	Subscribe(ctx context.Context, topic string, handler func(msg Message) error) error
 	Close() error
 }
+
+type HandlerResponse int
+
+const (
+	Success HandlerResponse = iota
+	DeadLetter
+)

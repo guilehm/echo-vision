@@ -1,19 +1,19 @@
 FROM golang:1.23.5-alpine
 
-RUN apk add --no-cache git
-ADD . /go/src
+RUN apk add --no-cache git curl
 
 WORKDIR /go/src
+ADD . /go/src
 
-RUN go mod tidy
-RUN go install
+ENV GOWORK=/go/src/go.work
+RUN go work sync
 
-RUN apk add --no-cache curl \
-    && curl -sSfL https://release.ariga.io/atlas/atlas-linux-amd64-latest -o /usr/local/bin/atlas \
+WORKDIR /go/src/echo-hub
+
+RUN curl -sSfL https://release.ariga.io/atlas/atlas-linux-amd64-latest -o /usr/local/bin/atlas \
     && chmod +x /usr/local/bin/atlas
 
-RUN apk add --no-cache curl \
-    && curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz | tar xvz \
+RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz | tar xvz \
     && mv migrate /usr/local/bin/migrate \
     && chmod +x /usr/local/bin/migrate
 

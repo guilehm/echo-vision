@@ -2,7 +2,6 @@ package rabbitmq
 
 import (
 	"errors"
-	"os"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -20,30 +19,73 @@ const (
 	ExchangeTypeHeaders ExchangeType = "headers"
 )
 
+type Config struct {
+	ExchangeName        ExchangeName
+	QueueName           QueueName
+	ConsumerName        ConsumerName
+	URL                 string
+	ConcurrentConsumers int
+	PrefetchCount       int // PrefetchCount is the number of messages to fetch from the queue at a time.
+}
+
 type RabbitMQClient struct {
 	connection *amqp.Connection
+	config     Config
 }
 
-func NewRabbitMQClient() (AsyncMessagingPort, error) {
-	rabbitURL := os.Getenv("RABBITMQ_URL")
-	if rabbitURL == "" {
-		return nil, errors.New("RABBITMQ_URL is required")
-	}
-
-	conn, err := amqp.Dial(rabbitURL)
-	if err != nil {
-		return nil, err
-	}
-	return &RabbitMQClient{connection: conn}, nil
-}
-
-func (r *RabbitMQClient) CreateChannel() (MessagingChannel, error) {
+func (r *RabbitMQClient) NewPublisher() (Publisher, error) {
 	ch, err := r.connection.Channel()
 	if err != nil {
 		return nil, err
 	}
-	return &RabbitMQChannel{channel: ch}, nil
+	return &RabbitMQPublisher{
+		ch: ch,
+	}, nil
 }
+
+func (r *RabbitMQClient) NewConsumer() (Publisher, error) {
+	ch, err := r.connection.Channel()
+	if err != nil {
+		return nil, err
+	}
+	return &RabbitMQConsumer{
+		ch:     ch,
+		config: r.config,
+	}, nil
+}
+
+// CreateConsumer implements AsyncMessagingPort.
+func (r *RabbitMQClient) CreateConsumer() (Consumer, error) {
+	panic("unimplemented")
+}
+
+// CreatePublisher implements AsyncMessagingPort.
+func (r *RabbitMQClient) CreatePublisher() (Publisher, error) {
+	panic("unimplemented")
+}
+
+func NewRabbitMQClient(config Config) (AsyncMessagingPort, error) {
+	if config.URL == "" {
+		return nil, errors.New("RabbitMQ URL is required")
+	}
+
+	conn, err := amqp.Dial(config.URL)
+	if err != nil {
+		return nil, err
+	}
+	return &RabbitMQClient{
+		connection: conn,
+		config:     config,
+	}, nil
+}
+
+// func (r *RabbitMQClient) CreateChannel() (MessagingChannel, error) {
+// 	ch, err := r.connection.Channel()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return &RabbitMQChannel{channel: ch}, nil
+// }
 
 func (r *RabbitMQClient) Close() error {
 	return r.connection.Close()
