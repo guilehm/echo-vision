@@ -8,3 +8,10 @@ type apiError struct {
 func (e apiError) Error() string {
 	return e.Message
 }
+
+func newApiError(status int, message string) *apiError {
+	return &apiError{
+		Status:  status,
+		Message: message,
+	}
+}

@@ -31,8 +31,6 @@ type EventListResponse struct {
 	Count  int              `json:"count"`
 }
 
-// type EventPort interface {
-// 	FindEventByID(ctx context.Context, id uuid.UUID) (*EventResponse, error)
-// 	SaveEvent(ctx context.Context, event *domain.Event) (*EventResponse, error)
-// 	ListEvents(ctx context.Context) (*EventListResponse, error)
-// }
+type EventCreateResponse struct {
+	ID uuid.UUID `json:"id"`
+}

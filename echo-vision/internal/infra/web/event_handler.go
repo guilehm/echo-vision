@@ -24,14 +24,20 @@ func NewEventHandler(up ports.EventPort) *EventHandler {
 func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	var input ports.EventCreateInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		logger.Info("error decoding request body", slog.String("error", err.Error()))
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		logger.Error("error decoding request body", slog.String("error", err.Error()))
+		handleApiResponse(w, apiResponse[any](nil, newApiError(
+			http.StatusBadRequest,
+			"error decoding request body",
+		)))
 		return
 	}
 	d, err := json.Marshal(input)
 	if err != nil {
 		logger.Error("error marshalling input", slog.String("error", err.Error()))
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		handleApiResponse(w, apiResponse[any](nil, newApiError(
+			http.StatusBadRequest,
+			"error marshalling input",
+		)))
 		return
 	}
 
@@ -48,17 +54,20 @@ func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		now,
 	)
 	if err := event.Validate(); err != nil {
-		logger.Info("error validating event", slog.String("error", err.Error()))
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-	}
-
-	// TODO: response cannot be hardcoded
-	eventResp, err := h.eventPort.SaveEvent(r.Context(), event)
-	if err != nil {
-		logger.Error("error creating event", slog.String("error", err.Error()))
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		logger.Error("error validating event", slog.String("error", err.Error()))
+		handleApiResponse(w, apiResponse[any](nil, newApiError(
+			http.StatusBadRequest,
+			err.Error(),
+		)))
 		return
 	}
 
-	writeJson(w, eventResp)
+	eventResp, err := h.eventPort.SaveEvent(r.Context(), event)
+	if err != nil {
+		logger.Error("error creating event", slog.String("error", err.Error()))
+		handleApiResponse(w, apiResponse[any](nil, err))
+		return
+	}
+
+	handleApiResponse(w, apiResponse[uuid.UUID](&eventResp, nil))
 }

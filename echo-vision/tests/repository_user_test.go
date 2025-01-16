@@ -1,6 +1,8 @@
 package tests
 
 import (
+	"github.com/google/uuid"
+	"github.com/guilehm/echo-vision/internal/app/shared"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -38,6 +40,11 @@ var _ = Describe("User Repository", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(u.ID().String()).To(Equal(validUser.ID().String()))
+		})
+		It("Returns error when user not found", func() {
+			_, err := repo.FindUserByID(ctx, nil, uuid.Nil)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(Equal(shared.ErrNotNound))
 		})
 	})
 })

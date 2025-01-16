@@ -11,7 +11,11 @@ import (
 var logger = logging.NewLogger()
 
 func NewRouter(up ports.UserPort, ep ports.EventPort) http.Handler {
+	// handlers
 	uh := NewUserHandler(up)
+	eh := NewEventHandler(ep)
+
+	// router
 	r := chi.NewRouter()
 
 	// middlewares
@@ -22,6 +26,9 @@ func NewRouter(up ports.UserPort, ep ports.EventPort) http.Handler {
 	// routes
 	r.Route("/users", func(r chi.Router) {
 		r.Post("/", uh.CreateUser)
+	})
+	r.Route("/events", func(r chi.Router) {
+		r.Post("/", eh.CreateEvent)
 	})
 	return r
 }

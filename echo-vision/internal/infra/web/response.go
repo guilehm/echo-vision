@@ -1,7 +1,6 @@
 package web
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -15,7 +14,7 @@ type ApiResponse[T any] struct {
 	Status int    `json:"status,omitempty"`
 }
 
-func apiResponse[T any](ctx context.Context, data *T, err error) *ApiResponse[T] {
+func apiResponse[T any](data *T, err error) *ApiResponse[T] {
 	var errorMessage string
 	var status int
 	if err != nil {

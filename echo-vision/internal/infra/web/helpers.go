@@ -1,16 +1,11 @@
 package web
 
 import (
-	"encoding/json"
 	"log/slog"
 	"net/http"
 
 	"github.com/lib/pq"
 )
-
-func writeJson(w http.ResponseWriter, data any) {
-	_ = json.NewEncoder(w).Encode(data)
-}
 
 func logPGError(pgErr *pq.Error) (int, string) {
 	logger.Error("database error",
@@ -20,6 +15,8 @@ func logPGError(pgErr *pq.Error) (int, string) {
 		slog.String("message", pgErr.Message),
 	)
 	switch pgErr.Code {
+	case "23503":
+		return http.StatusBadRequest, "foreign key violation constraint"
 	case "23505":
 		return http.StatusBadRequest, "unique constraint violation"
 	case "22001":

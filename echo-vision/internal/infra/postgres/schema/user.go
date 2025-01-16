@@ -26,6 +26,12 @@ func (User) Fields() []ent.Field {
 		field.String("email").
 			NotEmpty().
 			Unique(),
+		field.String("password").
+			Default(""),
+		field.String("access_token").
+			Default(""),
+		field.String("refresh_token").
+			Default(""),
 		field.Time("created_at").
 			Default(time.Now),
 		field.Time("updated_at").

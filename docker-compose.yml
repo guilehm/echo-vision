@@ -15,6 +15,7 @@ services:
     environment:
       DATABASE_URL: postgres://postgres:postgres@db:5432/echo-vision?sslmode=disable
       RABBITMQ_URL: amqp://guest:guest@vision-rabbitmq/
+      JWT_SECRET: whatever
 
   db:
     image: postgres:12.0-alpine

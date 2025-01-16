@@ -54,12 +54,23 @@ func (r *Repository) SaveUser(
 	user *domain.User,
 ) (uuid.UUID, error) {
 	c := r.resolveClient(tx)
-	u, err := c.User.Create().
+	b := c.User.Create().
 		SetID(user.ID()).
 		SetFirstName(user.FirstName()).
 		SetLastName(user.LastName()).
-		SetEmail(user.Email()).
-		Save(ctx)
+		SetEmail(user.Email())
+
+	if user.Password() != "" {
+		b.SetPassword(user.Password())
+	}
+	if user.AccessToken() != "" {
+		b.SetAccessToken(user.AccessToken())
+	}
+	if user.RefreshToken() != "" {
+		b.SetRefreshToken(user.RefreshToken())
+	}
+
+	u, err := b.Save(ctx)
 	if err != nil {
 		return uuid.Nil, err
 	}

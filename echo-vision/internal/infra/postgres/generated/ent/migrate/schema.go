@@ -40,6 +40,9 @@ var (
 		{Name: "first_name", Type: field.TypeString, Default: ""},
 		{Name: "last_name", Type: field.TypeString, Default: ""},
 		{Name: "email", Type: field.TypeString, Unique: true},
+		{Name: "password", Type: field.TypeString, Default: ""},
+		{Name: "access_token", Type: field.TypeString, Default: ""},
+		{Name: "refresh_token", Type: field.TypeString, Default: ""},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}

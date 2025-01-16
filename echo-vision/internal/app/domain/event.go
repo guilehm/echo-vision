@@ -24,6 +24,10 @@ func (et EventType) StringValues() []string {
 	return toStringValues(et.Values())
 }
 
+func (et EventType) String() string {
+	return string(et)
+}
+
 type EventSubType string
 
 func (est EventSubType) Values() []EventSubType {
@@ -34,6 +38,10 @@ func (est EventSubType) Values() []EventSubType {
 
 func (est EventSubType) StringValues() []string {
 	return toStringValues(est.Values())
+}
+
+func (est EventSubType) String() string {
+	return string(est)
 }
 
 const (
@@ -110,8 +118,25 @@ func (e *Event) Validate() error {
 	if e.payload == nil {
 		return shared.ErrInvalidPayload
 	}
+	if err := e.validateTypes(); err != nil {
+		return err
+	}
 	return nil
 }
+
+func (e *Event) validateTypes() error {
+	if !isIn(e.eventType, e.eventType.Values()) {
+		return shared.ErrInvalidEventType
+	}
+	if !isIn(e.subType, e.subType.Values()) {
+		return shared.ErrInvalidSubType
+	}
+	if !isIn(e.status, e.status.Values()) {
+		return shared.ErrInvalidStatus
+	}
+	return nil
+}
+
 
 func (e *Event) ID() uuid.UUID {
 	return e.id

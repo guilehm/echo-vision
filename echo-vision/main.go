@@ -5,8 +5,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/guilehm/echo-vision/internal/app/usecases"
+	bcrypthasher "github.com/guilehm/echo-vision/internal/infra/bcrypt_hasher"
+	jwtadapter "github.com/guilehm/echo-vision/internal/infra/jwt"
 	"github.com/guilehm/echo-vision/internal/infra/postgres"
 	"github.com/guilehm/echo-vision/internal/infra/rabbitmq"
 	"github.com/guilehm/echo-vision/internal/infra/web"
@@ -28,13 +31,21 @@ func main() {
 
 	fmt.Println("channel", ch)
 
+	// TODO: use environment variables
+	jwtAdapter := jwtadapter.NewJWTManager(
+		os.Getenv("JWT_SECRET"),
+		1*time.Hour,
+		24*time.Hour,
+	)
+	passwordAdapter := bcrypthasher.NewBcryptAdapter()
+
 	e := postgres.NewEnt(os.Getenv("DATABASE_URL"))
-
 	repo := postgres.NewRepository(e)
-	userUseCase := usecases.NewManageUsersUseCase(repo)
-	eventUseCase := usecases.NewManageEventsUseCase(repo)
-	router := web.NewRouter(userUseCase, eventUseCase)
 
+	userUseCase := usecases.NewManageUsersUseCase(repo, jwtAdapter, passwordAdapter)
+	eventUseCase := usecases.NewManageEventsUseCase(repo)
+
+	router := web.NewRouter(userUseCase, eventUseCase)
 	err = http.ListenAndServe(":8080", router)
 	if err != nil {
 		log.Fatalln("could not start server: ", err)

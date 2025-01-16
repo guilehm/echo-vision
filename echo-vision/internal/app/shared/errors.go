@@ -11,4 +11,11 @@ var (
 	ErrUserNotLoaded    = errors.New("user not loaded")
 	ErrNotNound         = errors.New("not found")
 	ErrInvalidRequest   = errors.New("invalid request")
+	ErrInvalidPassword  = errors.New("invalid password")
+	ErrInvalidType      = errors.New("invalid type")
+	ErrInvalidSubType   = errors.New("invalid sub type")
+
+	ErrInvalidToken        = errors.New("invalid token")
+	ErrInvalidRefreshToken = errors.New("invalid refresh token")
+	ErrInvalidSigningMethod = errors.New("invalid signing method")
 )
