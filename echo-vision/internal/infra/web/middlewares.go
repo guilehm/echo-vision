@@ -1,13 +1,18 @@
 package web
 
 import (
+	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 
 	"github.com/go-chi/cors"
+	"github.com/guilehm/echo-vision/internal/app/ports"
+	"github.com/guilehm/echo-vision/internal/app/shared"
+	"github.com/rotisserie/eris"
 )
 
-func CorsMiddleware(next http.Handler) http.Handler {
+func corsMiddleware(next http.Handler) http.Handler {
 	return cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"}, // TODO: do not allow all origins
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -18,7 +23,7 @@ func CorsMiddleware(next http.Handler) http.Handler {
 	}).Handler(next)
 }
 
-func LogRequest(next http.Handler) http.Handler {
+func logRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.InfoContext(
 			r.Context(),
@@ -32,9 +37,43 @@ func LogRequest(next http.Handler) http.Handler {
 	})
 }
 
-func SetHeaders(next http.Handler) http.Handler {
+func setHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		next.ServeHTTP(w, r)
 	})
+}
+
+func newAuthenticationMiddleware(userPort ports.UserPort) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			token := r.Header.Get("Authorization")
+			for x, y := range r.Header {
+				fmt.Println(x, y)
+			}
+			fmt.Println("CHEGOU NO MIDDLEWARE", token)
+			if token == "" {
+				handleApiResponse(w, apiResponse[any](nil, newApiError(
+					http.StatusForbidden,
+					http.StatusText(http.StatusForbidden),
+				)))
+				return
+			}
+
+			ctx := r.Context()
+
+			user, err := userPort.UserByAccessToken(ctx, token)
+			if err != nil {
+				handleApiResponse(w, apiResponse[any](nil, eris.Wrap(newApiError(
+					http.StatusUnauthorized,
+					shared.ErrInvalidToken.Error(),
+				), shared.ErrInvalidID.Error())))
+				return
+			}
+
+			fmt.Println("USER SUCCESSFULLY AUTHENTICATED")
+			ctx = context.WithValue(r.Context(), contextKeyMeUser, user)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
 }

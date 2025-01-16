@@ -51,6 +51,28 @@ var (
 		Name:       "users",
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "user_email",
+				Unique:  false,
+				Columns: []*schema.Column{UsersColumns[3]},
+			},
+			{
+				Name:    "user_access_token",
+				Unique:  false,
+				Columns: []*schema.Column{UsersColumns[5]},
+			},
+			{
+				Name:    "user_refresh_token",
+				Unique:  false,
+				Columns: []*schema.Column{UsersColumns[6]},
+			},
+			{
+				Name:    "user_email_password",
+				Unique:  false,
+				Columns: []*schema.Column{UsersColumns[3], UsersColumns[4]},
+			},
+		},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{

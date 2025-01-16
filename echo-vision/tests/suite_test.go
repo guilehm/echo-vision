@@ -30,6 +30,8 @@ var (
 	m               *migrate.Migrate
 	server          *httptest.Server
 	passwordAdapter ports.PasswordManager
+	userUseCase     ports.UserPort
+	eventUseCase    ports.EventPort
 )
 
 func TestEchoVision(t *testing.T) {
@@ -83,8 +85,8 @@ var _ = BeforeSuite(func() {
 	passwordAdapter = bcrypthasher.NewBcryptAdapter()
 
 	// setup usecases
-	userUseCase := usecases.NewManageUsersUseCase(repo, jwtAdapter, passwordAdapter)
-	eventUseCase := usecases.NewManageEventsUseCase(repo)
+	userUseCase = usecases.NewManageUsersUseCase(repo, jwtAdapter, passwordAdapter)
+	eventUseCase = usecases.NewManageEventsUseCase(repo)
 
 	// setup http server
 	router := web.NewRouter(userUseCase, eventUseCase)

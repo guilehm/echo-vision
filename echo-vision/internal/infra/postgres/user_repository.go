@@ -23,7 +23,7 @@ func (r *Repository) FindUserByID(
 		Only(ctx)
 
 	if ent.IsNotFound(err) {
-		return nil, shared.ErrNotNound
+		return nil, shared.ErrUserNotFound
 	}
 
 	return userToDomain(user), err
@@ -41,7 +41,7 @@ func (r *Repository) FindUserByEmail(
 		Only(ctx)
 
 	if ent.IsNotFound(err) {
-		return nil, shared.ErrNotNound
+		return nil, shared.ErrUserNotFound
 	}
 
 	return userToDomain(user), err
@@ -77,12 +77,61 @@ func (r *Repository) SaveUser(
 	return u.ID, nil
 }
 
+// UpdateTokens implements repositories.Repository.
+func (r *Repository) UpdateTokens(
+	ctx context.Context,
+	tx repositories.Transaction,
+	accessToken string,
+	refreshToken string,
+	userID uuid.UUID,
+) error {
+	c := r.resolveClient(tx)
+	err := c.User.UpdateOneID(userID).
+		SetAccessToken(accessToken).
+		SetRefreshToken(refreshToken).
+		Exec(ctx)
+	return err
+}
+
+// UpdateUser implements repositories.Repository.
+func (r *Repository) UpdateUser(ctx context.Context, tx repositories.Transaction, user *domain.User) error {
+	c := r.resolveClient(tx)
+	err := c.User.UpdateOneID(user.ID()).
+		SetFirstName(user.FirstName()).
+		SetLastName(user.LastName()).
+		SetEmail(user.Email()).
+		Exec(ctx)
+	return err
+}
+
+// FindUserByTokens implements repositories.Repository.
+func (r *Repository) FindUserByTokens(ctx context.Context, tx repositories.Transaction, accessToken string, refreshToken string) (*domain.User, error) {
+	if accessToken == "" && refreshToken == "" {
+		return nil, shared.ErrInvalidToken
+	}
+
+	c := r.resolveClient(tx)
+	b := c.User.Query()
+
+	if accessToken != "" {
+		b.Where(user.AccessToken(accessToken))
+	}
+	if refreshToken != "" {
+		b.Where(user.RefreshToken(refreshToken))
+	}
+	u, err := b.Only(ctx)
+	if ent.IsNotFound(err) {
+		return nil, shared.ErrUserNotFound
+	}
+	return userToDomain(u), err
+}
+
 // userToDomain transfer the ent object to the domain object
 func userToDomain(entUser *ent.User) *domain.User {
 	if entUser == nil {
 		return nil
 	}
-	return domain.NewUser(
+	u := domain.NewUser(
 		entUser.ID,
 		entUser.FirstName,
 		entUser.LastName,
@@ -90,4 +139,7 @@ func userToDomain(entUser *ent.User) *domain.User {
 		entUser.CreatedAt,
 		entUser.UpdatedAt,
 	)
+	u.SetHashedPassword(entUser.Password)
+	u.SetTokens(entUser.AccessToken, entUser.RefreshToken)
+	return u
 }

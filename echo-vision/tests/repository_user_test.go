@@ -44,7 +44,7 @@ var _ = Describe("User Repository", func() {
 		It("Returns error when user not found", func() {
 			_, err := repo.FindUserByID(ctx, nil, uuid.Nil)
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(Equal(shared.ErrNotNound))
+			Expect(err).To(Equal(shared.ErrUserNotFound))
 		})
 	})
 })

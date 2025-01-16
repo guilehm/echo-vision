@@ -50,7 +50,7 @@ func (r *Repository) FindEventByID(
 		Only(ctx)
 
 	if ent.IsNotFound(err) {
-		return nil, shared.ErrNotNound
+		return nil, shared.ErrNotFound
 	}
 	return eventToDomain(e), err
 }

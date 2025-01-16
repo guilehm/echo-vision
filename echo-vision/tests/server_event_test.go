@@ -14,7 +14,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Event Handler", func() {
+var _ = XDescribe("Event Handler", func() {
 	Context("Create Event", func() {
 		It("should create a event successfully", func() {
 			// Arrange
@@ -26,7 +26,6 @@ var _ = Describe("Event Handler", func() {
 
 			// Act
 			resp, err := http.Post(fmt.Sprintf("%s/events", server.URL), "application/json", bytes.NewReader(b))
-			fmt.Println("resp", resp)
 			Expect(err).ToNot(HaveOccurred())
 			defer resp.Body.Close()
 

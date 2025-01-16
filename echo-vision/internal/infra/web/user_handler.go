@@ -13,12 +13,13 @@ type UserHandler struct {
 	userPort ports.UserPort
 }
 
-func NewUserHandler(up ports.UserPort) *UserHandler {
+func NewUserHandler(up ports.UserPort) ports.UserWebPort {
 	return &UserHandler{
 		userPort: up,
 	}
 }
 
+// CreateUser implements ports.UserWebPort.
 func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var input ports.UserCreateInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -46,7 +47,6 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 			err.Error(),
 		)))
 		return
-
 	}
 
 	userID, err := h.userPort.SaveUser(r.Context(), user)
@@ -63,10 +63,56 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}, nil))
 }
 
-func (h *UserHandler) FindUserByID(w http.ResponseWriter, r *http.Request) {
-	panic("FindUserByID not implemented")
+// Login implements ports.UserWebPort.
+func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
+	var input ports.UserLoginInput
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		logger.Error("error decoding request body", slog.String("error", err.Error()))
+		handleApiResponse(w, apiResponse[any](nil, newApiError(
+			http.StatusBadRequest,
+			"error decoding request body",
+		)))
+		return
+	}
+	user, err := h.userPort.AuthenticateUser(r.Context(), input.Email, input.Password)
+	if err != nil {
+		logger.Error("error authenticating user", slog.String("error", err.Error()))
+		handleApiResponse(w, apiResponse[any](nil, err))
+		return
+	}
+
+	handleApiResponse(w, apiResponse[ports.UserLoginResponse](&ports.UserLoginResponse{
+		ID:           user.ID(),
+		AccessToken:  user.AccessToken(),
+		RefreshToken: user.RefreshToken(),
+	}, nil))
 }
 
-func (h *UserHandler) FindUserByEmail(w http.ResponseWriter, r *http.Request) {
-	panic("FindUserByEmail not implemented")
+// MeUser implements ports.UserWebPort.
+func (h *UserHandler) MeUser(w http.ResponseWriter, r *http.Request) {
+	u, err := fromContext(r.Context(), contextKeyMeUser, &domain.User{})
+	if err != nil {
+		logger.Error("error getting user from context", slog.String("error", err.Error()))
+		handleApiResponse(w, apiResponse[any](nil, newApiError(
+			http.StatusUnauthorized,
+			"unauthorized",
+		)))
+		return
+	}
+	handleApiResponse(w, apiResponse[ports.UserResponse](&ports.UserResponse{
+		ID:        u.ID(),
+		Email:     u.Email(),
+		FirstName: u.FirstName(),
+		LastName:  u.LastName(),
+	}, nil))
+}
+
+// Logout implements ports.UserWebPort.
+func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	panic("unimplemented")
+}
+
+// RefreshToken implements ports.UserWebPort.
+func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
+	panic("unimplemented")
 }

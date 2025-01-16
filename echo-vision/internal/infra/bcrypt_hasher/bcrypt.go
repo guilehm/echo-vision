@@ -2,6 +2,7 @@ package bcrypthasher
 
 import (
 	"github.com/guilehm/echo-vision/internal/app/ports"
+	"github.com/guilehm/echo-vision/internal/app/shared"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -13,7 +14,11 @@ func (b *BcryptAdapter) HashPassword(password string) (string, error) {
 }
 
 func (b *BcryptAdapter) ValidatePassword(password, hashedPassword string) error {
-	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	if err != nil {
+		return shared.ErrInvalidPassword
+	}
+	return nil
 }
 
 func NewBcryptAdapter() ports.PasswordManager {
