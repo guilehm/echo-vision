@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -27,12 +26,11 @@ var _ = Describe("Event Handler", func() {
 				EventType: domain.EventTypeImageAnalysis.String(),
 				SubType:   domain.EventSubTypeDetectLabels.String(),
 			}
-			b, _ := json.Marshal(input)
 
 			req, err := http.NewRequest(
 				http.MethodPost,
 				fmt.Sprintf("%s/events", server.URL),
-				bytes.NewReader(b),
+				toReader(input),
 			)
 			Expect(err).ToNot(HaveOccurred())
 			token := u.AccessToken()
@@ -70,12 +68,11 @@ var _ = Describe("Event Handler", func() {
 				EventType: domain.EventTypeImageAnalysis.String(),
 				SubType:   domain.EventSubTypeDetectLabels.String(),
 			}
-			b, _ := json.Marshal(input)
 
 			req, err := http.NewRequest(
 				http.MethodPost,
 				fmt.Sprintf("%s/events", server.URL),
-				bytes.NewReader(b),
+				toReader(input),
 			)
 			Expect(err).ToNot(HaveOccurred())
 			req.Header.Set("Authorization", "InvalidToken")
@@ -96,12 +93,11 @@ var _ = Describe("Event Handler", func() {
 				EventType: domain.EventTypeImageAnalysis.String(),
 				SubType:   domain.EventSubTypeDetectLabels.String(),
 			}
-			b, _ := json.Marshal(input)
 
 			req, err := http.NewRequest(
 				http.MethodPost,
 				fmt.Sprintf("%s/events", server.URL),
-				bytes.NewReader(b),
+				toReader(input),
 			)
 			Expect(err).ToNot(HaveOccurred())
 
@@ -121,12 +117,11 @@ var _ = Describe("Event Handler", func() {
 				EventType: "InvalidType",
 				SubType:   domain.EventSubTypeDetectLabels.String(),
 			}
-			b, _ := json.Marshal(input)
 
 			req, err := http.NewRequest(
 				http.MethodPost,
 				fmt.Sprintf("%s/events", server.URL),
-				bytes.NewReader(b),
+				toReader(input),
 			)
 			Expect(err).ToNot(HaveOccurred())
 			token := u.AccessToken()
@@ -153,12 +148,11 @@ var _ = Describe("Event Handler", func() {
 				EventType: domain.EventTypeImageAnalysis.String(),
 				SubType:   "InvalidSubType",
 			}
-			b, _ := json.Marshal(input)
 
 			req, err := http.NewRequest(
 				http.MethodPost,
 				fmt.Sprintf("%s/events", server.URL),
-				bytes.NewReader(b),
+				toReader(input),
 			)
 			Expect(err).ToNot(HaveOccurred())
 			token := u.AccessToken()
@@ -180,7 +174,7 @@ var _ = Describe("Event Handler", func() {
 		})
 	})
 
-	FContext("List Events", func() {
+	Context("List Events", func() {
 		var u2 *domain.User
 		BeforeEach(func() {
 			u2 = saveUser(makeUser("dutch@gmail.com"))

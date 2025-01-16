@@ -29,6 +29,7 @@ func NewRouter(up ports.UserPort, ep ports.EventPort) http.Handler {
 	r.Route("/users", func(r chi.Router) {
 		r.Post("/", uh.CreateUser)
 		r.Post("/login", uh.Login)
+		r.Post("/refresh-token", uh.RefreshToken)
 
 		r.Route("/{userID}", func(r chi.Router) {
 			r.Use(authMiddleware)

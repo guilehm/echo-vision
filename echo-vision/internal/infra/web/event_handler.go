@@ -46,22 +46,8 @@ func (h *EventHandler) ListEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: move this to a mapper
-	apiResponseResults := make([]*ports.EventResponse, 0, len(events))
-	for i := range events {
-		apiResponseResults = append(apiResponseResults, &ports.EventResponse{
-			UserID:    events[i].UserID(),
-			ID:        events[i].ID(),
-			EventType: events[i].EventType().String(),
-			SubType:   events[i].SubType().String(),
-			Status:    events[i].Status().String(),
-			CreatedAt: events[i].CreatedAt(),
-			UpdateAt:  events[i].UpdatedAt(),
-		})
-	}
-
 	handleApiResponse(w, apiResponse[ports.ApiListResponse[ports.EventResponse]](&ports.ApiListResponse[ports.EventResponse]{
-		Results: apiResponseResults,
+		Results: ports.MapEventsToApiResponse(events),
 	}, nil))
 }
 

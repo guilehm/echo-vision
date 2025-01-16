@@ -66,7 +66,7 @@ func newAuthenticationMiddleware(userPort ports.UserPort) func(next http.Handler
 				return
 			}
 
-			slog.Info("user authenticated", slog.String("email", user.Email()))
+			slog.Debug("user authenticated", slog.String("email", user.Email()))
 			ctx = context.WithValue(r.Context(), contextKeyMeUser, user)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})

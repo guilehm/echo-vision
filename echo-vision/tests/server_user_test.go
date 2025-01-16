@@ -1,11 +1,11 @@
 package tests
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/guilehm/echo-vision/internal/app/domain"
 	"github.com/guilehm/echo-vision/internal/app/ports"
@@ -26,10 +26,9 @@ var _ = Describe("User Handler", func() {
 				Email:     strings.ToUpper(validUser.Email()),
 				Password:  "awesomepassword",
 			}
-			b, _ := json.Marshal(input)
 
 			// Act
-			resp, err := http.Post(fmt.Sprintf("%s/users", server.URL), "application/json", bytes.NewReader(b))
+			resp, err := http.Post(fmt.Sprintf("%s/users", server.URL), "application/json", toReader(input))
 			Expect(err).ToNot(HaveOccurred())
 			defer resp.Body.Close()
 
@@ -67,10 +66,9 @@ var _ = Describe("User Handler", func() {
 				Email:     strings.ToUpper(validUser.Email()),
 				Password:  "pass",
 			}
-			b, _ := json.Marshal(input)
 
 			// Act
-			resp, err := http.Post(fmt.Sprintf("%s/users", server.URL), "application/json", bytes.NewReader(b))
+			resp, err := http.Post(fmt.Sprintf("%s/users", server.URL), "application/json", toReader(input))
 			Expect(err).ToNot(HaveOccurred())
 			defer resp.Body.Close()
 
@@ -97,12 +95,11 @@ var _ = Describe("User Handler", func() {
 				LastName:  validUser.LastName(),
 				Email:     validUser.Email(),
 			}
-			b, _ := json.Marshal(input)
 			_, err := repo.SaveUser(ctx, nil, validUser)
 			Expect(err).ToNot(HaveOccurred())
 
 			// Act
-			resp, err := http.Post(fmt.Sprintf("%s/users", server.URL), "application/json", bytes.NewReader(b))
+			resp, err := http.Post(fmt.Sprintf("%s/users", server.URL), "application/json", toReader(input))
 			Expect(err).ToNot(HaveOccurred())
 			defer resp.Body.Close()
 
@@ -122,10 +119,9 @@ var _ = Describe("User Handler", func() {
 				LastName:  validUser.LastName(),
 				Email:     "invalid-email",
 			}
-			b, _ := json.Marshal(input)
 
 			// Act
-			resp, err := http.Post(fmt.Sprintf("%s/users", server.URL), "application/json", bytes.NewReader(b))
+			resp, err := http.Post(fmt.Sprintf("%s/users", server.URL), "application/json", toReader(input))
 			Expect(err).ToNot(HaveOccurred())
 			defer resp.Body.Close()
 
@@ -145,10 +141,9 @@ var _ = Describe("User Handler", func() {
 			}{
 				Error: "invalid payload",
 			}
-			b, _ := json.Marshal(input)
 
 			// Act
-			resp, err := http.Post(fmt.Sprintf("%s/users", server.URL), "application/json", bytes.NewReader(b))
+			resp, err := http.Post(fmt.Sprintf("%s/users", server.URL), "application/json", toReader(input))
 			Expect(err).ToNot(HaveOccurred())
 			defer resp.Body.Close()
 
@@ -179,10 +174,9 @@ var _ = Describe("User Handler", func() {
 				Email:    vu.Email(),
 				Password: "awesomepassword",
 			}
-			b, _ := json.Marshal(input)
 
 			// Act
-			resp, err := http.Post(fmt.Sprintf("%s/users/login", server.URL), "application/json", bytes.NewReader(b))
+			resp, err := http.Post(fmt.Sprintf("%s/users/login", server.URL), "application/json", toReader(input))
 			Expect(err).ToNot(HaveOccurred())
 			defer resp.Body.Close()
 
@@ -211,10 +205,9 @@ var _ = Describe("User Handler", func() {
 				Email:    "no-one@gmail.com",
 				Password: "awesomepassword",
 			}
-			b, _ := json.Marshal(input)
 
 			// Act
-			resp, err := http.Post(fmt.Sprintf("%s/users/login", server.URL), "application/json", bytes.NewReader(b))
+			resp, err := http.Post(fmt.Sprintf("%s/users/login", server.URL), "application/json", toReader(input))
 			Expect(err).ToNot(HaveOccurred())
 			defer resp.Body.Close()
 
@@ -233,10 +226,9 @@ var _ = Describe("User Handler", func() {
 				Email:    vu.Email(),
 				Password: "wrong-password",
 			}
-			b, _ := json.Marshal(input)
 
 			// Act
-			resp, err := http.Post(fmt.Sprintf("%s/users/login", server.URL), "application/json", bytes.NewReader(b))
+			resp, err := http.Post(fmt.Sprintf("%s/users/login", server.URL), "application/json", toReader(input))
 			Expect(err).ToNot(HaveOccurred())
 			defer resp.Body.Close()
 
@@ -334,6 +326,82 @@ var _ = Describe("User Handler", func() {
 			Expect(apiResp.Data).To(BeNil())
 			Expect(apiResp.Error).ToNot(BeNil())
 			Expect(apiResp.Error).To(Equal(shared.ErrInvalidToken.Error()))
+		})
+	})
+	Context("Refresh Token", func() {
+		var u *domain.User
+		BeforeEach(func() {
+			u = saveUser(makeUser("arthur@gmail.com"))
+		})
+
+		It("should refresh token successfully", func() {
+			// Arrange
+			input := ports.UserRefreshTokenInput{
+				RefreshToken: u.RefreshToken(),
+			}
+
+			// Act
+			resp, err := http.Post(fmt.Sprintf("%s/users/refresh-token", server.URL), "application/json", toReader(input))
+			Expect(err).ToNot(HaveOccurred())
+			defer resp.Body.Close()
+
+			// Assert
+			Expect(resp.StatusCode).To(Equal(http.StatusOK))
+			var apiResp web.ApiResponse[ports.RefreshTokenResponse]
+			err = json.NewDecoder(resp.Body).Decode(&apiResp)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(apiResp.Data).ToNot(BeNil())
+			Expect(apiResp.Data.AccessToken).ToNot(BeEmpty())
+			Expect(apiResp.Data.AccessToken).ToNot(Equal(u.AccessToken()))
+
+			updatedUser := entClient.User.Query().OnlyX(ctx)
+			Expect(updatedUser.AccessToken).To(Equal(apiResp.Data.AccessToken))
+			Expect(updatedUser.AccessToken).ToNot(Equal(u.AccessToken()))
+		})
+
+		It("should return 401 error if refresh token is invalid", func() {
+			// Arrange
+			input := ports.UserRefreshTokenInput{
+				RefreshToken: "invalid-token",
+			}
+
+			// Act
+			resp, err := http.Post(fmt.Sprintf("%s/users/refresh-token", server.URL), "application/json", toReader(input))
+			Expect(err).ToNot(HaveOccurred())
+			defer resp.Body.Close()
+
+			// Assert
+			Expect(resp.StatusCode).To(Equal(http.StatusUnauthorized))
+			var apiResp web.ApiResponse[any]
+			err = json.NewDecoder(resp.Body).Decode(&apiResp)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(apiResp.Data).To(BeNil())
+			Expect(apiResp.Error).ToNot(BeEmpty())
+			Expect(apiResp.Error).To(Equal(http.StatusText(http.StatusUnauthorized)))
+		})
+		It("should return 401 if refresh token is expired", func() {
+			// Arrange
+			expiredRefreshToken := generateRefreshTokenMock(u, 25*time.Hour)
+			entClient.User.UpdateOneID(u.ID()).
+				SetRefreshToken(expiredRefreshToken).
+				ExecX(ctx)
+			input := ports.UserRefreshTokenInput{
+				RefreshToken: expiredRefreshToken,
+			}
+
+			// Act
+			resp, err := http.Post(fmt.Sprintf("%s/users/refresh-token", server.URL), "application/json", toReader(input))
+			Expect(err).ToNot(HaveOccurred())
+			defer resp.Body.Close()
+
+			// Assert
+			Expect(resp.StatusCode).To(Equal(http.StatusUnauthorized))
+			var apiResp web.ApiResponse[any]
+			err = json.NewDecoder(resp.Body).Decode(&apiResp)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(apiResp.Data).To(BeNil())
+			Expect(apiResp.Error).ToNot(BeEmpty())
+			Expect(apiResp.Error).To(Equal(http.StatusText(http.StatusUnauthorized)))
 		})
 	})
 })

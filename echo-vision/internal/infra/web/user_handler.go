@@ -50,7 +50,7 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := h.userPort.SaveUser(r.Context(), user)
+	_, err = h.userPort.SaveUser(r.Context(), user)
 	if err != nil {
 		logger.Error("error saving user", slog.String("error", err.Error()))
 		handleApiResponse(w, apiResponse[any](nil, err))
@@ -58,7 +58,7 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	handleApiResponse(w, apiResponse[ports.UserCreateResponse](&ports.UserCreateResponse{
-		ID:           userID,
+		ID:           user.ID(),
 		AccessToken:  user.AccessToken(),
 		RefreshToken: user.RefreshToken(),
 	}, nil))
@@ -100,12 +100,7 @@ func (h *UserHandler) MeUser(w http.ResponseWriter, r *http.Request) {
 		)))
 		return
 	}
-	handleApiResponse(w, apiResponse[ports.UserResponse](&ports.UserResponse{
-		ID:        u.ID(),
-		Email:     u.Email(),
-		FirstName: u.FirstName(),
-		LastName:  u.LastName(),
-	}, nil))
+	handleApiResponse(w, apiResponse[ports.UserResponse](ports.MapUserToApiResponse(u), nil))
 }
 
 // Logout implements ports.UserWebPort.
@@ -115,5 +110,29 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 // RefreshToken implements ports.UserWebPort.
 func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
-	panic("unimplemented")
+	var input ports.UserRefreshTokenInput
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		logger.Error("error decoding request body", slog.String("error", err.Error()))
+		handleApiResponse(w, apiResponse[any](nil, newApiError(
+			http.StatusBadRequest,
+			shared.ErrDecodingRequestBody.Error(),
+		)))
+		return
+	}
+	if input.RefreshToken == "" {
+		handleApiResponse(w, apiResponse[any](nil, newApiError(
+			http.StatusBadRequest,
+			http.StatusText(http.StatusBadRequest),
+		)))
+		return
+	}
+	u, err := h.userPort.RefreshToken(r.Context(), input.RefreshToken)
+	if err != nil {
+		logger.Error("error refreshing token", slog.String("error", err.Error()))
+		handleApiResponse(w, apiResponse[any](nil, err))
+		return
+	}
+	handleApiResponse(w, apiResponse[ports.RefreshTokenResponse](&ports.RefreshTokenResponse{
+		AccessToken: u.AccessToken(),
+	}, nil))
 }

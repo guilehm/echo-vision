@@ -2,8 +2,6 @@ package ports
 
 import (
 	"net/http"
-
-	"github.com/google/uuid"
 )
 
 type UserWebPort interface {
@@ -21,26 +19,11 @@ type UserCreateInput struct {
 	Password  string `json:"password"`
 }
 
-type UserCreateResponse struct {
-	ID           uuid.UUID `json:"id"`
-	AccessToken  string    `json:"accessToken"`
-	RefreshToken string    `json:"refreshToken"`
-}
-
-type UserResponse struct {
-	ID        uuid.UUID `json:"id"`
-	Email     string    `json:"email"`
-	FirstName string    `json:"firstName"`
-	LastName  string    `json:"lastName"`
-}
-
 type UserLoginInput struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-type UserLoginResponse struct {
-	ID           uuid.UUID `json:"id"`
-	AccessToken  string    `json:"accessToken"`
-	RefreshToken string    `json:"refreshToken"`
+type UserRefreshTokenInput struct {
+	RefreshToken string `json:"refreshToken"`
 }

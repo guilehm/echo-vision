@@ -140,6 +140,7 @@ func userToDomain(entUser *ent.User) *domain.User {
 		entUser.UpdatedAt,
 	)
 	u.SetHashedPassword(entUser.Password)
-	u.SetTokens(entUser.AccessToken, entUser.RefreshToken)
+	u.SetAccessToken(entUser.AccessToken)
+	u.SetRefreshToken(entUser.RefreshToken)
 	return u
 }

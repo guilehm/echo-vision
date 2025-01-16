@@ -81,8 +81,11 @@ func (u *User) SetHashedPassword(password string) {
 	u.password = password
 }
 
-func (u *User) SetTokens(accessToken, refreshToken string) {
+func (u *User) SetAccessToken(accessToken string) {
 	u.accessToken = accessToken
+}
+
+func (u *User) SetRefreshToken(refreshToken string) {
 	u.refreshToken = refreshToken
 }
 

@@ -9,7 +9,6 @@ import (
 
 type UserRepository interface {
 	SaveUser(ctx context.Context, tx Transaction, user *domain.User) (uuid.UUID, error)
-	UpdateUser(ctx context.Context, tx Transaction, user *domain.User) error
 	UpdateTokens(ctx context.Context, tx Transaction, accessToken, refreshToken string, userID uuid.UUID) error
 	FindUserByEmail(ctx context.Context, tx Transaction, email string) (*domain.User, error)
 	FindUserByID(ctx context.Context, tx Transaction, id uuid.UUID) (*domain.User, error)

@@ -13,4 +13,5 @@ type UserPort interface {
 	AuthenticateUser(ctx context.Context, email, password string) (*domain.User, error)
 	UserByAccessToken(ctx context.Context, accessToken string) (*domain.User, error)
 	UserByRefreshToken(ctx context.Context, refreshToken string) (*domain.User, error)
+	RefreshToken(ctx context.Context, refreshToken string) (*domain.User, error)
 }

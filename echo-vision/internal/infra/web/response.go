@@ -39,6 +39,10 @@ func apiResponse[T any](data *T, err error) *ApiResponse[T] {
 			status = http.StatusBadRequest
 			errorMessage = http.StatusText(http.StatusBadRequest)
 		}
+		if errors.Is(err, shared.ErrInvalidToken) {
+			status = http.StatusUnauthorized
+			errorMessage = http.StatusText(http.StatusUnauthorized)
+		}
 
 		// handle specific error type for postgres
 		var pgErr *pq.Error

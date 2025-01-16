@@ -32,6 +32,7 @@ var (
 	passwordAdapter ports.PasswordManager
 	userUseCase     ports.UserPort
 	eventUseCase    ports.EventPort
+	jwtSecretKey    = os.Getenv("JWT_SECRET")
 )
 
 func TestEchoVision(t *testing.T) {
@@ -76,7 +77,7 @@ var _ = BeforeSuite(func() {
 
 	// setup token manager
 	jwtAdapter := jwtadapter.NewJWTManager(
-		os.Getenv("JWT_SECRET"),
+		jwtSecretKey,
 		1*time.Hour,
 		24*time.Hour,
 	)

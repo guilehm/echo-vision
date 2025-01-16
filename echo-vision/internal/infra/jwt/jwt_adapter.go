@@ -33,6 +33,7 @@ func (j *JWTManager) GenerateAccessToken(user *domain.User) (string, error) {
 		"firstName": user.FirstName(),
 		"lastName":  user.LastName(),
 		"exp":       time.Now().Add(j.accessDuration).Unix(),
+		"nonce":     uuid.NewString(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(j.secretKey))

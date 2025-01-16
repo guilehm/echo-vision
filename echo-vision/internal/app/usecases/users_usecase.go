@@ -2,12 +2,15 @@ package usecases
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/guilehm/echo-vision/internal/app/domain"
 	"github.com/guilehm/echo-vision/internal/app/ports"
 	"github.com/guilehm/echo-vision/internal/app/repositories"
+	"github.com/guilehm/echo-vision/internal/app/shared"
+	"github.com/rotisserie/eris"
 )
 
 type ManageUsers struct {
@@ -49,7 +52,8 @@ func (uc *ManageUsers) AuthenticateUser(ctx context.Context, email, password str
 			return err
 		}
 
-		user.SetTokens(accessToken, refreshToken)
+		user.SetAccessToken(accessToken)
+		user.SetRefreshToken(refreshToken)
 		err = uc.repository.UpdateTokens(ctx, tx, accessToken, refreshToken, user.ID())
 		if err != nil {
 			return err
@@ -94,7 +98,8 @@ func (uc *ManageUsers) CreateUser(
 	if err != nil {
 		return nil, err
 	}
-	user.SetTokens(accessToken, refreshToken)
+	user.SetAccessToken(accessToken)
+	user.SetRefreshToken(refreshToken)
 
 	return user, nil
 }
@@ -133,4 +138,26 @@ func (uc *ManageUsers) UserByRefreshToken(ctx context.Context, refreshToken stri
 		return nil, err
 	}
 	return u, nil
+}
+
+// RefreshToken implements ports.UserPort.
+func (uc *ManageUsers) RefreshToken(ctx context.Context, refreshToken string) (*domain.User, error) {
+	u, err := uc.repository.FindUserByTokens(ctx, nil, "", refreshToken)
+	if err != nil {
+		if errors.Is(err, shared.ErrUserNotFound) {
+			return nil, shared.ErrInvalidToken
+		}
+		return nil, err
+	}
+	_, err = uc.tokenManager.ValidateToken(u.RefreshToken())
+	if err != nil {
+		return nil, eris.Wrap(err, shared.ErrInvalidToken.Error())
+	}
+	accessToken, err := uc.tokenManager.GenerateAccessToken(u)
+	if err != nil {
+		return nil, err
+	}
+	u.SetAccessToken(accessToken)
+	err = uc.repository.UpdateTokens(ctx, nil, accessToken, u.RefreshToken(), u.ID())
+	return u, err
 }
