@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/repositories"
@@ -12,11 +13,13 @@ import (
 
 type ManageEvents struct {
 	Repository repositories.Repository
+	publisher  messaging.Publisher
 }
 
-func NewManageEventsUseCase(repository repositories.Repository) ports.EventPort {
+func NewManageEventsUseCase(repository repositories.Repository, publisher messaging.Publisher) ports.EventPort {
 	return &ManageEvents{
 		Repository: repository,
+		publisher:  publisher,
 	}
 }
 

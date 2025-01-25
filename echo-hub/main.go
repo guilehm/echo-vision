@@ -1,12 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"time"
 
+	"github.com/guilehm/echo-vision/echo-common/logging"
+	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
 	"github.com/guilehm/echo-vision/echo-common/rabbitmq"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/usecases"
 	bcrypthasher "github.com/guilehm/echo-vision/echo-hub/internal/infra/bcrypt_hasher"
@@ -15,23 +18,112 @@ import (
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/web"
 )
 
+var logger = logging.NewLogger()
+
+type rabbitMQHandler struct{}
+
+func (r *rabbitMQHandler) Topics() []string {
+	return []string{
+		// "whatever",
+		// "event.image_analysis.status_updated.created",
+		"event.image_analysis.status_updated.*",
+	}
+}
+
+func (r *rabbitMQHandler) Handle(ctx context.Context, msg messaging.Message) messaging.HandlerResponse {
+	switch msg.Topic {
+	case "event.image_analysis.status_updated.created":
+		return messaging.Success
+	default:
+		return messaging.DeadLetter
+	}
+}
+
 func main() {
 	fmt.Println("hello world")
 
-	conn, err := rabbitmq.NewRabbitMQClient()
+	client, err := rabbitmq.NewRabbitMQClient(
+		os.Getenv("RABBITMQ_URL"),
+		logger,
+		rabbitmq.ConfigConsumerName("echo-hub"),
+		rabbitmq.ConfigWithExchangeName("events"),
+		rabbitmq.ConfigWithQueueName("image_analysis"),
+		rabbitmq.ConfigConcurrentConsumers(5),
+	)
 	if err != nil {
-		log.Fatalln("could not create rabbitmq adapter: ", err)
+		log.Fatalln("could not create rabbitmq consumer client: ", err)
 	}
-	defer conn.Close()
 
-	ch, err := conn.CreateChannel()
+	consumer, err := client.CreateConsumer()
 	if err != nil {
-		log.Fatalln("could not create channel: ", err)
+		log.Fatalln("could not create consumer: ", err)
+	}
+	defer consumer.Close()
+	go func() {
+		err = consumer.Subscribe(context.Background(), &rabbitMQHandler{})
+		if err != nil {
+			log.Fatalln("could not subscribe to queue: ", err)
+		}
+	}()
+
+	publishConn, err := rabbitmq.NewRabbitMQClient(
+		os.Getenv("RABBITMQ_URL"),
+		logger,
+		rabbitmq.ConfigWithExchangeName("events"),
+		rabbitmq.ConfigWithConfirmMode(),
+	)
+	if err != nil {
+		log.Fatalln("could not create rabbitmq publisher client: ", err)
 	}
 
-	fmt.Println("channel", ch)
+	publisher, err := publishConn.CreatePublisher()
+	if err != nil {
+		log.Fatalln("could not create publisher: ", err)
+	}
+	defer publisher.Close()
 
-	// TODO: use environment variables
+	if err := publisher.StartPublisher(context.Background()); err != nil {
+		log.Fatalln("could not start publisher", err)
+	}
+
+	go func() {
+		for i := 0; i < 500000; i++ {
+			go func() {
+				o := i
+				topic := "event.image_analysis.status_updated.created"
+				if o%2 == 0 {
+					topic = "whatever"
+				}
+
+				err = publisher.Publish(context.Background(), messaging.Message{
+					Topic:   topic,
+					Payload: []byte("OMG"),
+					Headers: map[string]string{},
+				})
+				if err != nil {
+					log.Fatalln("could not publish message OPA: ", err)
+				}
+			}()
+		}
+	}()
+
+	// for i := 0; i < 100000; i++ {
+	// 	time.Sleep(1 * time.Second)
+	// 	topic := "event.image_analysis.status_updated.*"
+	// 	if i%2 == 0 {
+	// 		topic = "whatever"
+	// 	}
+	// 	err = publisher.Publish(context.Background(), rabbitmq.Message{
+	// 		Topic:   topic,
+	// 		Payload: []byte("OMG"),
+	// 		Headers: map[string]string{},
+	// 	})
+	// 	if err != nil {
+	// 		log.Fatalln("could not publish message OPA: ", err)
+	// 	}
+	// 	fmt.Println("published messages")
+	// }
+
 	jwtAdapter := jwtadapter.NewJWTManager(
 		os.Getenv("JWT_SECRET"),
 		1*time.Hour,
@@ -43,13 +135,14 @@ func main() {
 	repo := postgres.NewRepository(e)
 
 	userUseCase := usecases.NewManageUsersUseCase(repo, jwtAdapter, passwordAdapter)
-	eventUseCase := usecases.NewManageEventsUseCase(repo)
+	eventUseCase := usecases.NewManageEventsUseCase(repo, publisher)
 
-	router := web.NewRouter(userUseCase, eventUseCase)
-	err = http.ListenAndServe(":8080", router)
+	router := web.NewRouter(userUseCase, eventUseCase, publisher)
+	err = http.ListenAndServe(":8000", router)
 	if err != nil {
 		log.Fatalln("could not start server: ", err)
 	}
+
 	// sess, err := session.NewSession(&aws.Config{
 	// 	Region: aws.String("us-east-2"),
 	// })
@@ -83,5 +176,6 @@ func main() {
 	// 	log.Fatalln("could not detect labels: ", err)
 	// }
 	// fmt.Println("LABELS", detectLabelsResult)
+
 	select {}
 }

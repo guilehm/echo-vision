@@ -38,7 +38,7 @@ test_hub:
 	@echo "running tests for echo-hub"
 	TZ=UTC ginkgo -v echo-hub/tests
 
-test_all: test_hub
+test: test_hub
 	@echo "all tests completed"
 
 migrate:

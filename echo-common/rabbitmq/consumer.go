@@ -3,7 +3,10 @@ package rabbitmq
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"sync"
 
+	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/rotisserie/eris"
 )
@@ -21,34 +24,58 @@ func (t Topic) String() string {
 }
 
 type RabbitMQConsumer struct {
-	config Config
+	config *Config
 
-	ch          *amqp091.Channel
-	consumeFunc func(Message)
-}
+	controller *ChannelController
 
-// Publish implements Publisher.
-func (r *RabbitMQConsumer) Publish(ctx context.Context, topic string, message Message) error {
-	panic("unimplemented")
+	wg *sync.WaitGroup
 }
 
 // Close implements Consumer.
 func (r *RabbitMQConsumer) Close() error {
-	panic("unimplemented")
+	logger := r.config.Logger
+	logger.Info("closing consumer")
+
+	err := r.controller.ch.Cancel(r.config.ConsumerName.String(), true)
+	if err != nil {
+		return err
+	}
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), r.config.GracefulTimeout)
+	defer cancel()
+
+	r.waitForShutdown(shutdownCtx)
+
+	err = r.controller.ch.Close()
+	if err != nil {
+		return err
+	}
+	logger.Info("consumer closed")
+	return nil
 }
 
 // Subscribe implements Consumer.
-func (r *RabbitMQConsumer) Subscribe(ctx context.Context, topic string, handler func(msg Message) error) error {
-	panic("unimplemented")
+func (r *RabbitMQConsumer) Subscribe(ctx context.Context, handler messaging.Handler) error {
+	go r.controller.reconnectLoop()
+
+	for {
+		err := r.startConsumers(handler)
+		if err != nil {
+			return eris.Wrap(err, "calling startConsumers")
+		}
+		<-r.controller.reconnectCh
+		r.controller.logger.Info("restarting consumers after reconnection")
+	}
 }
 
-func (r *RabbitMQConsumer) startConsumers(handler Handler) error {
+func (r *RabbitMQConsumer) startConsumers(handler messaging.Handler) error {
+	logger := r.config.Logger
 	err := r.declare(handler.Topics())
 	if err != nil {
 		return err
 	}
 
-	msgs, err := r.ch.Consume(
+	msgs, err := r.controller.ch.Consume(
 		r.config.QueueName.String(),
 		r.config.ConsumerName.String(),
 		false,
@@ -61,45 +88,51 @@ func (r *RabbitMQConsumer) startConsumers(handler Handler) error {
 		return err
 	}
 
+	r.wg.Add(r.config.ConcurrentConsumers)
 	for i := 0; i < r.config.ConcurrentConsumers; i++ {
 		go func() {
 			r.handler(msgs, handler)
+			r.wg.Done()
 		}()
 	}
-	// TODO: add a logger
-	fmt.Printf("proessing messages in %s go routines\n", r.config.ConcurrentConsumers)
+	logger.Info("started consumers", slog.Int("concurrency", r.config.ConcurrentConsumers))
+	return nil
 }
 
 func (r *RabbitMQConsumer) declare(routingKeys []string) error {
+	logger := r.config.Logger
 	dlxName := r.config.QueueName + "_dlx"
 	err := r.deadLetterDeclare(dlxName)
 	if err != nil {
-		return err
+		return eris.Wrap(err, "calling deadLetterDeclare")
 	}
 
 	err = r.queueDeclare(dlxName)
 	if err != nil {
-		return err
+		return eris.Wrap(err, "calling queueDeclare")
 	}
 
 	err = r.queueBindDeclare(routingKeys)
 	if err != nil {
-		return err
+		return eris.Wrap(err, "calling queueBindDeclare")
 	}
 
-	// TODO: log qos settings
-	err = r.ch.Qos(
+	err = r.controller.ch.Qos(
 		r.config.PrefetchCount, 0, false,
 	)
 	if err != nil {
-		return err
+		return eris.Wrap(err, "calling ch.Qos")
 	}
-
+	logger.Info("declared queue",
+		slog.String("queue", r.config.QueueName.String()),
+		slog.String("exchange", r.config.ExchangeName.String()),
+		slog.Int("prefetch_count", r.config.PrefetchCount),
+	)
 	return nil
 }
 
 func (r *RabbitMQConsumer) queueDeclare(dlxName QueueName) error {
-	err := r.ch.ExchangeDeclare(
+	err := r.controller.ch.ExchangeDeclare(
 		r.config.ExchangeName.String(),
 		"topic",
 		true,
@@ -112,7 +145,7 @@ func (r *RabbitMQConsumer) queueDeclare(dlxName QueueName) error {
 		return err
 	}
 
-	_, err = r.ch.QueueDeclare(
+	_, err = r.controller.ch.QueueDeclare(
 		r.config.QueueName.String(),
 		true,
 		false,
@@ -120,7 +153,7 @@ func (r *RabbitMQConsumer) queueDeclare(dlxName QueueName) error {
 		false,
 		amqp091.Table{
 			"x-queue-type":           "quorum",
-			"x-dead-letter-exchange": dlxName,
+			"x-dead-letter-exchange": dlxName.String(),
 		},
 	)
 	if err != nil {
@@ -131,7 +164,7 @@ func (r *RabbitMQConsumer) queueDeclare(dlxName QueueName) error {
 }
 
 func (r *RabbitMQConsumer) deadLetterDeclare(dlxName QueueName) error {
-	err := r.ch.ExchangeDeclare(
+	err := r.controller.ch.ExchangeDeclare(
 		dlxName.String(),
 		"fanout",
 		true,
@@ -144,7 +177,7 @@ func (r *RabbitMQConsumer) deadLetterDeclare(dlxName QueueName) error {
 		return err
 	}
 
-	_, err = r.ch.QueueDeclare(
+	_, err = r.controller.ch.QueueDeclare(
 		dlxName.String(),
 		true,
 		false,
@@ -158,7 +191,7 @@ func (r *RabbitMQConsumer) deadLetterDeclare(dlxName QueueName) error {
 		return err
 	}
 
-	err = r.ch.QueueBind(
+	err = r.controller.ch.QueueBind(
 		dlxName.String(),
 		"",
 		dlxName.String(),
@@ -173,7 +206,7 @@ func (r *RabbitMQConsumer) deadLetterDeclare(dlxName QueueName) error {
 
 func (r *RabbitMQConsumer) queueBindDeclare(routingKeys []string) error {
 	for _, routingKey := range routingKeys {
-		err := r.ch.QueueBind(
+		err := r.controller.ch.QueueBind(
 			r.config.QueueName.String(),
 			routingKey,
 			r.config.ExchangeName.String(),
@@ -188,23 +221,44 @@ func (r *RabbitMQConsumer) queueBindDeclare(routingKeys []string) error {
 	return nil
 }
 
-// func (r *RabbitMQConsumer) handler(msgs <-chan amqp091.Delivery, handler Handler) {
-// 	for d := range msgs {
-// 		message := Message{
-// 			Body: d.Body,
-// 		}
-//
-// 		err := handler.Handle(message)
-// 		if err != nil {
-// }
+func (r *RabbitMQConsumer) handler(msgs <-chan amqp091.Delivery, handler messaging.Handler) {
+	logger := r.config.Logger
+	for msg := range msgs {
+		message := messaging.Message{
+			Payload: msg.Body,
+			Topic:   msg.RoutingKey,
+			Headers: nil,
+		}
+
+		ctx := context.Background()
+		res := r.handleWithRecoverer(ctx, handler, message)
+
+		switch res {
+		case messaging.Success:
+			err := msg.Ack(false)
+			if err != nil {
+				logger.Error("failed to ack message", slog.String("error", err.Error()))
+			}
+		case messaging.DeadLetter:
+			err := msg.Nack(false, false)
+			if err != nil {
+				logger.Error("failed to nack message", slog.String("error", err.Error()))
+			}
+		default:
+			err := msg.Nack(false, true)
+			if err != nil {
+				logger.Error("failed to nack message", slog.String("failed to discard messsage", err.Error()))
+			}
+		}
+	}
+}
 
 func (r *RabbitMQConsumer) handleWithRecoverer(
 	ctx context.Context,
-	handler Handler,
-	topic Topic,
-	msg Message,
-) (res HandlerResponse) {
-	// TODO: log messages
+	handler messaging.Handler,
+	msg messaging.Message,
+) (res messaging.HandlerResponse) {
+	logger := r.config.Logger
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -214,11 +268,27 @@ func (r *RabbitMQConsumer) handleWithRecoverer(
 			}
 
 			err = eris.Wrap(err, "panic")
-			// TODO: log error
-
-			res = DeadLetter
+			logger.Error("panic in handler", slog.String("error", err.Error()))
+			res = messaging.DeadLetter
 		}
 	}()
 
-	return handler.Handle(ctx, topic, msg)
+	return handler.Handle(ctx, msg)
+}
+
+func (r *RabbitMQConsumer) waitForShutdown(ctx context.Context) {
+	logger := r.config.Logger
+
+	done := make(chan struct{})
+	go func() {
+		r.wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-ctx.Done():
+		logger.Warn("context cancelled, shutting down consumer")
+	case <-done:
+		logger.Info("all message processing completed, shutting down consumer")
+	}
 }

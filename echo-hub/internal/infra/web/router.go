@@ -4,13 +4,14 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/guilehm/echo-vision/echo-common/logging"
+	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
-	"github.com/guilehm/echo-vision/echo-hub/internal/infra/logging"
 )
 
 var logger = logging.NewLogger()
 
-func NewRouter(up ports.UserPort, ep ports.EventPort) http.Handler {
+func NewRouter(up ports.UserPort, ep ports.EventPort, publisher messaging.Publisher) http.Handler {
 	// handlers
 	uh := NewUserHandler(up)
 	eh := NewEventHandler(ep)

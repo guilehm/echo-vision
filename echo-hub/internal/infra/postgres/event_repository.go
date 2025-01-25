@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/guilehm/echo-vision/echo-common/logging"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/repositories"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/shared"
-	"github.com/guilehm/echo-vision/echo-hub/internal/infra/logging"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/event"
 )

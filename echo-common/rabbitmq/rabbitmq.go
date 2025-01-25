@@ -1,9 +1,12 @@
 package rabbitmq
 
 import (
-	"errors"
+	"log/slog"
+	"sync"
 
+	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/rotisserie/eris"
 )
 
 type ExchangeType string
@@ -19,74 +22,87 @@ const (
 	ExchangeTypeHeaders ExchangeType = "headers"
 )
 
-type Config struct {
-	ExchangeName        ExchangeName
-	QueueName           QueueName
-	ConsumerName        ConsumerName
-	URL                 string
-	ConcurrentConsumers int
-	PrefetchCount       int // PrefetchCount is the number of messages to fetch from the queue at a time.
-}
-
 type RabbitMQClient struct {
-	connection *amqp.Connection
-	config     Config
+	config *Config
 }
 
-func (r *RabbitMQClient) NewPublisher() (Publisher, error) {
-	ch, err := r.connection.Channel()
-	if err != nil {
-		return nil, err
+func NewRabbitMQClient(url string, logger *slog.Logger, opts ...ConfigOpt) (AsyncMessagingPort, error) {
+	config := newRabbitMQConfig(url, logger, opts...)
+	if config.URL == "" {
+		return nil, ErrRabbitMQURLIsRequired
 	}
-	return &RabbitMQPublisher{
-		ch: ch,
+
+	if config.Logger == nil {
+		return nil, ErrorLoggerIsRequired
+	}
+	return &RabbitMQClient{
+		config: config,
 	}, nil
 }
 
-func (r *RabbitMQClient) NewConsumer() (Publisher, error) {
-	ch, err := r.connection.Channel()
+func createConnection(config *Config) (*amqp.Connection, error) {
+	conn, err := amqp.Dial(config.URL)
 	if err != nil {
-		return nil, err
+		return nil, eris.Wrap(err, "could not dial rabbitmq")
 	}
-	return &RabbitMQConsumer{
-		ch:     ch,
-		config: r.config,
-	}, nil
+	return conn, nil
 }
 
 // CreateConsumer implements AsyncMessagingPort.
 func (r *RabbitMQClient) CreateConsumer() (Consumer, error) {
-	panic("unimplemented")
+	if r.config.ConsumerName == "" {
+		return nil, ErrConsumerNameIsRequired
+	}
+	if r.config.QueueName == "" {
+		return nil, ErrQueueNameIsRequired
+	}
+	if r.config.ExchangeName == "" {
+		return nil, ErrExchangeNameIsRequired
+	}
+
+	conn, err := createConnection(r.config)
+	if err != nil {
+		return nil, eris.Wrap(err, "could not create connection for consumer")
+	}
+
+	ch, err := conn.Channel()
+	if err != nil {
+		return nil, eris.Wrap(err, "could not create channel for consumer")
+	}
+
+	return &RabbitMQConsumer{
+		config:     r.config,
+		controller: NewChannelController(r.config.Logger, conn, ch, r.config),
+		wg:         &sync.WaitGroup{},
+	}, nil
 }
 
 // CreatePublisher implements AsyncMessagingPort.
 func (r *RabbitMQClient) CreatePublisher() (Publisher, error) {
-	panic("unimplemented")
-}
-
-func NewRabbitMQClient(config Config) (AsyncMessagingPort, error) {
-	if config.URL == "" {
-		return nil, errors.New("RabbitMQ URL is required")
+	if r.config.ExchangeName == "" {
+		return nil, ErrExchangeNameIsRequired
 	}
 
-	conn, err := amqp.Dial(config.URL)
+	conn, err := createConnection(r.config)
 	if err != nil {
-		return nil, err
+		return nil, eris.Wrap(err, "could not create connection for publisher")
 	}
-	return &RabbitMQClient{
-		connection: conn,
-		config:     config,
+
+	ch, err := conn.Channel()
+	if err != nil {
+		return nil, eris.Wrap(err, "could not create channel for publisher")
+	}
+
+	if r.config.IsConfirmMode {
+		err = ch.Confirm(false)
+		if err != nil {
+			return nil, eris.Wrap(err, "could not set channel to confirm mode")
+		}
+	}
+
+	return &RabbitMQPublisher{
+		config:              r.config,
+		controller:          NewChannelController(r.config.Logger, conn, ch, r.config),
+		unpublishedMessages: make(chan messaging.Message),
 	}, nil
-}
-
-// func (r *RabbitMQClient) CreateChannel() (MessagingChannel, error) {
-// 	ch, err := r.connection.Channel()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return &RabbitMQChannel{channel: ch}, nil
-// }
-
-func (r *RabbitMQClient) Close() error {
-	return r.connection.Close()
 }

@@ -47,7 +47,7 @@ func main() {
 	defer postgres.Stop()
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Println("Panic occurred:", r)
+			fmt.Println("panic occurred:", r)
 			postgres.Stop()
 		}
 	}()

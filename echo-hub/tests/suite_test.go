@@ -11,6 +11,7 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	rabbitmqmocks "github.com/guilehm/echo-vision/echo-common/rabbitmq/mocks"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/repositories"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/usecases"
@@ -93,12 +94,15 @@ var _ = BeforeSuite(func() {
 	// setup bcrypt password manager
 	passwordAdapter = bcrypthasher.NewBcryptAdapter()
 
+	// setup rabbitmq mocks
+	publisher := rabbitmqmocks.NewPublisher()
+
 	// setup usecases
 	userUseCase = usecases.NewManageUsersUseCase(repo, jwtAdapter, passwordAdapter)
-	eventUseCase = usecases.NewManageEventsUseCase(repo)
+	eventUseCase = usecases.NewManageEventsUseCase(repo, publisher)
 
 	// setup http server
-	router := web.NewRouter(userUseCase, eventUseCase)
+	router := web.NewRouter(userUseCase, eventUseCase, publisher)
 	server = httptest.NewServer(router)
 })
 
