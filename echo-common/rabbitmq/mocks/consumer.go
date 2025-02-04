@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
-	"github.com/guilehm/echo-vision/echo-common/rabbitmq"
 )
 
 // mockConsumer is a mock implementation of messaging.Consumer.
@@ -25,10 +24,9 @@ func (m *mockConsumer) Subscribe(ctx context.Context, handler messaging.Handler)
 	return nil
 }
 
-// TODO: use interface from pkg to implement this mock
 // NewConsumer creates a new mock consumer.
-func NewConsumer() rabbitmq.Consumer {
+func NewConsumer(messageChan chan messaging.Message) messaging.Consumer {
 	return &mockConsumer{
-		mockedChan: make(chan messaging.Message),
+		mockedChan: messageChan,
 	}
 }

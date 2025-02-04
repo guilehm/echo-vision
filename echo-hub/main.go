@@ -9,45 +9,42 @@ import (
 	"time"
 
 	"github.com/guilehm/echo-vision/echo-common/logging"
-	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
+	"github.com/guilehm/echo-vision/echo-common/pkg/filestorage"
 	"github.com/guilehm/echo-vision/echo-common/rabbitmq"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/usecases"
 	bcrypthasher "github.com/guilehm/echo-vision/echo-hub/internal/infra/bcrypt_hasher"
 	jwtadapter "github.com/guilehm/echo-vision/echo-hub/internal/infra/jwt"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres"
+	rabbitmqadapter "github.com/guilehm/echo-vision/echo-hub/internal/infra/rabbitmq"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/web"
 )
 
 var logger = logging.NewLogger()
 
-type rabbitMQHandler struct{}
-
-func (r *rabbitMQHandler) Topics() []string {
-	return []string{
-		// "whatever",
-		// "event.image_analysis.status_updated.created",
-		"event.image_analysis.status_updated.*",
-	}
-}
-
-func (r *rabbitMQHandler) Handle(ctx context.Context, msg messaging.Message) messaging.HandlerResponse {
-	switch msg.Topic {
-	case "event.image_analysis.status_updated.created":
-		return messaging.Success
-	default:
-		return messaging.DeadLetter
-	}
-}
-
 func main() {
 	fmt.Println("hello world")
+
+	a, err := filestorage.NewS3Adapter(
+		os.Getenv("AWS_BUCKET_NAME"),
+		os.Getenv("AWS_REGION"),
+	)
+	if err != nil {
+		log.Fatalln("could not create s3 adapter: ", err)
+	}
+
+	url, err := a.GeneratePreSignedURL("test.jpeg")
+	if err != nil {
+		log.Fatalln("could not generate pre-signed URL: ", err)
+	}
+
+	fmt.Println("URL", url)
 
 	client, err := rabbitmq.NewRabbitMQClient(
 		os.Getenv("RABBITMQ_URL"),
 		logger,
 		rabbitmq.ConfigConsumerName("echo-hub"),
 		rabbitmq.ConfigWithExchangeName("events"),
-		rabbitmq.ConfigWithQueueName("image_analysis"),
+		rabbitmq.ConfigWithQueueName("echo-hub"),
 		rabbitmq.ConfigConcurrentConsumers(5),
 	)
 	if err != nil {
@@ -60,7 +57,7 @@ func main() {
 	}
 	defer consumer.Close()
 	go func() {
-		err = consumer.Subscribe(context.Background(), &rabbitMQHandler{})
+		err = consumer.Subscribe(context.Background(), rabbitmqadapter.NewRabbitMQAdapter())
 		if err != nil {
 			log.Fatalln("could not subscribe to queue: ", err)
 		}
@@ -86,26 +83,26 @@ func main() {
 		log.Fatalln("could not start publisher", err)
 	}
 
-	go func() {
-		for i := 0; i < 500000; i++ {
-			go func() {
-				o := i
-				topic := "event.image_analysis.status_updated.created"
-				if o%2 == 0 {
-					topic = "whatever"
-				}
-
-				err = publisher.Publish(context.Background(), messaging.Message{
-					Topic:   topic,
-					Payload: []byte("OMG"),
-					Headers: map[string]string{},
-				})
-				if err != nil {
-					log.Fatalln("could not publish message OPA: ", err)
-				}
-			}()
-		}
-	}()
+	// go func() {
+	// 	for i := 0; i < 500000; i++ {
+	// 		go func() {
+	// 			o := i
+	// 			topic := "event.image_analysis.status_updated.created"
+	// 			if o%2 == 0 {
+	// 				topic = "whatever"
+	// 			}
+	//
+	// 			err = publisher.Publish(context.Background(), messaging.Message{
+	// 				Topic:   topic,
+	// 				Payload: []byte("OMG"),
+	// 				Headers: map[string]string{},
+	// 			})
+	// 			if err != nil {
+	// 				log.Fatalln("could not publish message OPA: ", err)
+	// 			}
+	// 		}()
+	// 	}
+	// }()
 
 	// for i := 0; i < 100000; i++ {
 	// 	time.Sleep(1 * time.Second)

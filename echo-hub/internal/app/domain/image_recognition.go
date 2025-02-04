@@ -9,9 +9,9 @@ type VisionAnalysisResult struct {
 type Label struct {
 	Aliases    []string   `json:"aliases"`
 	Categories []string   `json:"categories"`
-	Confidence float64    `json:"confidence"`
+	Confidence *float32   `json:"confidence"`
 	Instances  []Instance `json:"instances"`
-	Name       string     `json:"name"`
+	Name       *string    `json:"name"`
 	Parents    []string   `json:"parents"`
 }
 
@@ -24,13 +24,13 @@ type Instance struct {
 // FaceDetail represents details about a detected face.
 type FaceDetail struct {
 	BoundingBox BoundingBox `json:"bounding_box"`
-	Confidence  float64     `json:"confidence"`
+	Confidence  *float32    `json:"confidence"`
 }
 
 // BoundingBox represents the dimensions and position of an object in the image.
 type BoundingBox struct {
-	Height float64 `json:"height"`
-	Width  float64 `json:"width"`
-	Top    float64 `json:"top"`
-	Left   float64 `json:"left"`
+	Height *float32 `json:"height"`
+	Width  *float32 `json:"width"`
+	Top    *float32 `json:"top"`
+	Left   *float32 `json:"left"`
 }

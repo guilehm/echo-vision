@@ -9,6 +9,7 @@ import (
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/repositories"
+	hubevents "github.com/guilehm/echo-vision/echo-hub/pkg/events"
 )
 
 type ManageEvents struct {
@@ -59,7 +60,20 @@ func (uc *ManageEvents) SaveEvent(
 	ctx context.Context,
 	event *domain.Event,
 ) (uuid.UUID, error) {
-	return uc.Repository.SaveEvent(ctx, nil, event)
+	id, err := uc.Repository.SaveEvent(ctx, nil, event)
+	if err != nil {
+		return id, err
+	}
+
+	// TODO: only publish this message on commit
+	err = uc.publisher.Publish(ctx, messaging.Message{
+		Topic:   hubevents.BuildEventCreatedTopic(event.EventType()),
+		Payload: event.Payload(),
+	})
+	if err != nil {
+		return id, err
+	}
+	return id, nil
 }
 
 // EventsByUser implements ports.EventPort.

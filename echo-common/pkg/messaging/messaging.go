@@ -14,6 +14,11 @@ type Publisher interface {
 	Publish(ctx context.Context, msg Message) error
 }
 
+// Consumer defines the interface for a message consumer.
+type Consumer interface {
+	Subscribe(ctx context.Context, handler Handler) error
+}
+
 // Handler defines the interface for a message handler.
 type Handler interface {
 	Topics() []string

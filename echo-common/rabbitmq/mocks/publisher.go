@@ -28,8 +28,8 @@ func (m *mockPublisher) StartPublisher(ctx context.Context) error {
 }
 
 // NewPublisher creates a new mock publisher.
-func NewPublisher() messaging.Publisher {
+func NewPublisher(messageChan chan messaging.Message) messaging.Publisher {
 	return &mockPublisher{
-		mockedChan: make(chan messaging.Message),
+		mockedChan: messageChan,
 	}
 }

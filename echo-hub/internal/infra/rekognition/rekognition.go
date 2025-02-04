@@ -1,78 +1,91 @@
 package awsrekognition
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/rekognition"
+	"context"
+	"os"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/rekognition"
+	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
+	"github.com/rotisserie/eris"
 )
 
 type AWSRekognitionAdapter struct {
-	client *rekognition.Rekognition
+	client *rekognition.Client
 }
 
-// NewAWSRekognitionAdapter creates a new AWSRekognitionAdapter.
+// NewAWSRekognitionAdapter initializes a new AWSRekognitionAdapter.
 func NewAWSRekognitionAdapter(region string) (ports.ImageRecognitionServicePort, error) {
-	sess, err := session.NewSession(&aws.Config{Region: aws.String(region)})
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithRegion(region),
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
+			os.Getenv("AWS_ACCESS_KEY_ID"),
+			os.Getenv("AWS_SECRET_KEY"),
+			"",
+		)),
+	)
 	if err != nil {
-		return nil, err
+		return nil, eris.Wrap(err, "error loading AWS config")
 	}
+
 	return &AWSRekognitionAdapter{
-		client: rekognition.New(sess),
+		client: rekognition.NewFromConfig(cfg),
 	}, nil
 }
 
-// DetectLabels detects labels in the provided image bytes.
+// DetectLabels detects labels in an image using AWS Rekognition.
 func (a *AWSRekognitionAdapter) DetectLabels(imageBytes []byte) ([]domain.Label, error) {
 	input := &rekognition.DetectLabelsInput{
-		Image: &rekognition.Image{
+		Image: &types.Image{
 			Bytes: imageBytes,
 		},
-		// TODO: make these configurable
-		MaxLabels:     aws.Int64(10),
-		MinConfidence: aws.Float64(70.0),
+		MaxLabels:     aws.Int32(10),
+		MinConfidence: aws.Float32(70.0),
 	}
 
-	result, err := a.client.DetectLabels(input)
+	result, err := a.client.DetectLabels(context.TODO(), input)
 	if err != nil {
-		return nil, err
+		return nil, eris.Wrap(err, "error detecting labels")
 	}
 
 	labels := make([]domain.Label, len(result.Labels))
 	for i, lbl := range result.Labels {
 		labels[i] = domain.Label{
-			Name:       aws.StringValue(lbl.Name),
-			Confidence: aws.Float64Value(lbl.Confidence),
+			Name:       lbl.Name,
+			Confidence: lbl.Confidence,
 		}
 	}
 	return labels, nil
 }
 
-// DetectFaces detects faces in the provided image bytes.
+// DetectFaces detects faces in an image using AWS Rekognition.
 func (a *AWSRekognitionAdapter) DetectFaces(imageBytes []byte) ([]domain.FaceDetail, error) {
 	input := &rekognition.DetectFacesInput{
-		Image: &rekognition.Image{
+		Image: &types.Image{
 			Bytes: imageBytes,
 		},
-		Attributes: aws.StringSlice([]string{"ALL"}),
+		Attributes: []types.Attribute{types.AttributeAll},
 	}
 
-	result, err := a.client.DetectFaces(input)
+	result, err := a.client.DetectFaces(context.TODO(), input)
 	if err != nil {
-		return nil, err
+		return nil, eris.Wrap(err, "error detecting faces")
 	}
 
 	faces := make([]domain.FaceDetail, len(result.FaceDetails))
 	for i, face := range result.FaceDetails {
 		faces[i] = domain.FaceDetail{
 			BoundingBox: domain.BoundingBox{
-				Top:    aws.Float64Value(face.BoundingBox.Top),
-				Left:   aws.Float64Value(face.BoundingBox.Left),
-				Width:  aws.Float64Value(face.BoundingBox.Width),
-				Height: aws.Float64Value(face.BoundingBox.Height),
+				Top:    face.BoundingBox.Top,
+				Left:   face.BoundingBox.Left,
+				Width:  face.BoundingBox.Width,
+				Height: face.BoundingBox.Height,
 			},
-			Confidence: aws.Float64Value(face.Confidence),
+			Confidence: face.Confidence,
 		}
 	}
 	return faces, nil

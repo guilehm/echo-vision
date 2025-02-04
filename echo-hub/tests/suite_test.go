@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	"fmt"
 	"net/http/httptest"
 	"os"
@@ -11,6 +12,10 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/guilehm/echo-vision/echo-common/pkg/filestorage"
+
+	filestoragemocks "github.com/guilehm/echo-vision/echo-common/pkg/filestorage/mocks"
+	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
 	rabbitmqmocks "github.com/guilehm/echo-vision/echo-common/rabbitmq/mocks"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/repositories"
@@ -19,6 +24,7 @@ import (
 	jwtadapter "github.com/guilehm/echo-vision/echo-hub/internal/infra/jwt"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent"
+	rabbitmqadapter "github.com/guilehm/echo-vision/echo-hub/internal/infra/rabbitmq"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/web"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -33,12 +39,13 @@ var (
 	passwordAdapter ports.PasswordManager
 	userUseCase     ports.UserPort
 	eventUseCase    ports.EventPort
+	s3Mock          filestorage.FileStoragePort
 	jwtSecretKey    = os.Getenv("JWT_SECRET")
 )
 
-func TestEchoVision(t *testing.T) {
+func TestEchoHub(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "EchoVision Suite")
+	RunSpecs(t, "EchoHub Suite")
 }
 
 var _ = BeforeEach(func() {
@@ -95,7 +102,11 @@ var _ = BeforeSuite(func() {
 	passwordAdapter = bcrypthasher.NewBcryptAdapter()
 
 	// setup rabbitmq mocks
-	publisher := rabbitmqmocks.NewPublisher()
+	mockChan := make(chan messaging.Message)
+	handler := rabbitmqadapter.NewRabbitMQAdapter()
+	publisher := rabbitmqmocks.NewPublisher(mockChan)
+	consumer := rabbitmqmocks.NewConsumer(mockChan)
+	go consumer.Subscribe(context.Background(), handler)
 
 	// setup usecases
 	userUseCase = usecases.NewManageUsersUseCase(repo, jwtAdapter, passwordAdapter)
@@ -104,6 +115,9 @@ var _ = BeforeSuite(func() {
 	// setup http server
 	router := web.NewRouter(userUseCase, eventUseCase, publisher)
 	server = httptest.NewServer(router)
+
+	// setup s3 mock
+	s3Mock = filestoragemocks.NewFileStorageMock("echo-hub")
 })
 
 var _ = AfterSuite(func() {

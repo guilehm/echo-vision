@@ -19,6 +19,29 @@ services:
       DATABASE_SCHEMA: echo_hub
       RABBITMQ_URL: amqp://guest:guest@vision-rabbitmq/
       JWT_SECRET: whatever
+      AWS_REGION: us-east-2
+      AWS_BUCKET_NAME: echo-vision-local
+    env_file:
+     - .env
+
+  echo-analyzer:
+    build:
+      context: ./
+      dockerfile: ./echo-analyzer/Dockerfile
+    container_name: echo-analyzer
+    command: go run .
+    ports:
+      - 8001:8000
+    volumes:
+      - .:/go/src/
+    working_dir: /go/src/echo-analyzer
+    depends_on:
+      - postgres
+      - rabbitmq
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/echo-vision?sslmode=disable
+      DATABASE_SCHEMA: echo_analyzer
+      RABBITMQ_URL: amqp://guest:guest@vision-rabbitmq/
 
   postgres:
     image: postgres:12.0-alpine
