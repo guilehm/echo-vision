@@ -11,6 +11,7 @@ import (
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/repositories"
 	hubevents "github.com/guilehm/echo-vision/echo-hub/pkg/events"
+	"github.com/rotisserie/eris"
 )
 
 type ManageEvents struct {
@@ -67,10 +68,15 @@ func (uc *ManageEvents) SaveEvent(
 		return id, err
 	}
 
+	payload, err := ports.MapEventToMessage(event)
+	if err != nil {
+		return id, eris.Wrap(err, "failed to map event to json message")
+	}
+
 	// TODO: only publish this message on commit
 	err = uc.publisher.Publish(ctx, messaging.Message{
 		Topic:   hubevents.BuildEventCreatedTopic(event.EventType()),
-		Payload: event.Payload(),
+		Payload: payload,
 	})
 	if err != nil {
 		return id, err

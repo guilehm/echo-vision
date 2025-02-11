@@ -42,8 +42,6 @@ type EventMutation struct {
 	_type         *event.Type
 	sub_type      *event.SubType
 	status        *event.Status
-	payload       *json.RawMessage
-	appendpayload json.RawMessage
 	result        *json.RawMessage
 	appendresult  json.RawMessage
 	created_at    *time.Time
@@ -306,57 +304,6 @@ func (m *EventMutation) ResetStatus() {
 	m.status = nil
 }
 
-// SetPayload sets the "payload" field.
-func (m *EventMutation) SetPayload(jm json.RawMessage) {
-	m.payload = &jm
-	m.appendpayload = nil
-}
-
-// Payload returns the value of the "payload" field in the mutation.
-func (m *EventMutation) Payload() (r json.RawMessage, exists bool) {
-	v := m.payload
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldPayload returns the old "payload" field's value of the Event entity.
-// If the Event object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *EventMutation) OldPayload(ctx context.Context) (v json.RawMessage, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldPayload is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldPayload requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldPayload: %w", err)
-	}
-	return oldValue.Payload, nil
-}
-
-// AppendPayload adds jm to the "payload" field.
-func (m *EventMutation) AppendPayload(jm json.RawMessage) {
-	m.appendpayload = append(m.appendpayload, jm...)
-}
-
-// AppendedPayload returns the list of values that were appended to the "payload" field in this mutation.
-func (m *EventMutation) AppendedPayload() (json.RawMessage, bool) {
-	if len(m.appendpayload) == 0 {
-		return nil, false
-	}
-	return m.appendpayload, true
-}
-
-// ResetPayload resets all changes to the "payload" field.
-func (m *EventMutation) ResetPayload() {
-	m.payload = nil
-	m.appendpayload = nil
-}
-
 // SetResult sets the "result" field.
 func (m *EventMutation) SetResult(jm json.RawMessage) {
 	m.result = &jm
@@ -594,7 +541,7 @@ func (m *EventMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *EventMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 7)
 	if m.user != nil {
 		fields = append(fields, event.FieldUserID)
 	}
@@ -606,9 +553,6 @@ func (m *EventMutation) Fields() []string {
 	}
 	if m.status != nil {
 		fields = append(fields, event.FieldStatus)
-	}
-	if m.payload != nil {
-		fields = append(fields, event.FieldPayload)
 	}
 	if m.result != nil {
 		fields = append(fields, event.FieldResult)
@@ -635,8 +579,6 @@ func (m *EventMutation) Field(name string) (ent.Value, bool) {
 		return m.SubType()
 	case event.FieldStatus:
 		return m.Status()
-	case event.FieldPayload:
-		return m.Payload()
 	case event.FieldResult:
 		return m.Result()
 	case event.FieldCreatedAt:
@@ -660,8 +602,6 @@ func (m *EventMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldSubType(ctx)
 	case event.FieldStatus:
 		return m.OldStatus(ctx)
-	case event.FieldPayload:
-		return m.OldPayload(ctx)
 	case event.FieldResult:
 		return m.OldResult(ctx)
 	case event.FieldCreatedAt:
@@ -704,13 +644,6 @@ func (m *EventMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStatus(v)
-		return nil
-	case event.FieldPayload:
-		v, ok := value.(json.RawMessage)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetPayload(v)
 		return nil
 	case event.FieldResult:
 		v, ok := value.(json.RawMessage)
@@ -802,9 +735,6 @@ func (m *EventMutation) ResetField(name string) error {
 		return nil
 	case event.FieldStatus:
 		m.ResetStatus()
-		return nil
-	case event.FieldPayload:
-		m.ResetPayload()
 		return nil
 	case event.FieldResult:
 		m.ResetResult()

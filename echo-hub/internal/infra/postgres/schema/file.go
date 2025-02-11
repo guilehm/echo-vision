@@ -39,6 +39,7 @@ func (File) Fields() []ent.Field {
 // Edges of the File.
 func (File) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("events", Event.Type),
+		edge.To("events", Event.Type).
+			StorageKey(edge.Column("file_id")),
 	}
 }

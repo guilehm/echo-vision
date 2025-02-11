@@ -159,11 +159,6 @@ func (e *Event) Status() EventStatus {
 	return e.status
 }
 
-func (e *Event) Payload() json.RawMessage {
-	return nil
-	// return e.payload
-}
-
 func (e *Event) Result() json.RawMessage {
 	return e.result
 }

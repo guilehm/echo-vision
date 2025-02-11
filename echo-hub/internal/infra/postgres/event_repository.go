@@ -29,10 +29,10 @@ func (r *Repository) SaveEvent(
 	if e.File() != nil {
 		file, err = c.File.Create().
 			SetID(uuid.New()).
-			SetFilename(e.File().Filename()).
-			SetFilepath(e.File().Filepath()).
-			SetFilesize(e.File().Filesize()).
-			SetContentType(e.File().ContentType()).
+			SetFilename(e.File().Filename).
+			SetFilepath(e.File().Filepath).
+			SetFilesize(e.File().Filesize).
+			SetContentType(e.File().ContentType).
 			Save(ctx)
 		if err != nil {
 			return uuid.Nil, err
@@ -45,7 +45,6 @@ func (r *Repository) SaveEvent(
 		SetType(event.Type(e.EventType())).
 		SetSubType(event.SubType(e.SubType())).
 		SetStatus(event.Status(e.Status())).
-		SetPayload(e.Payload()).
 		SetResult(e.Result()).
 		SetCreatedAt(e.CreatedAt()).
 		SetUpdatedAt(e.UpdatedAt())

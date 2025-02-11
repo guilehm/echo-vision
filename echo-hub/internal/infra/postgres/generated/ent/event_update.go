@@ -89,18 +89,6 @@ func (eu *EventUpdate) SetNillableStatus(e *event.Status) *EventUpdate {
 	return eu
 }
 
-// SetPayload sets the "payload" field.
-func (eu *EventUpdate) SetPayload(jm json.RawMessage) *EventUpdate {
-	eu.mutation.SetPayload(jm)
-	return eu
-}
-
-// AppendPayload appends jm to the "payload" field.
-func (eu *EventUpdate) AppendPayload(jm json.RawMessage) *EventUpdate {
-	eu.mutation.AppendPayload(jm)
-	return eu
-}
-
 // SetResult sets the "result" field.
 func (eu *EventUpdate) SetResult(jm json.RawMessage) *EventUpdate {
 	eu.mutation.SetResult(jm)
@@ -260,14 +248,6 @@ func (eu *EventUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := eu.mutation.Status(); ok {
 		_spec.SetField(event.FieldStatus, field.TypeEnum, value)
 	}
-	if value, ok := eu.mutation.Payload(); ok {
-		_spec.SetField(event.FieldPayload, field.TypeJSON, value)
-	}
-	if value, ok := eu.mutation.AppendedPayload(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, event.FieldPayload, value)
-		})
-	}
 	if value, ok := eu.mutation.Result(); ok {
 		_spec.SetField(event.FieldResult, field.TypeJSON, value)
 	}
@@ -416,18 +396,6 @@ func (euo *EventUpdateOne) SetNillableStatus(e *event.Status) *EventUpdateOne {
 	if e != nil {
 		euo.SetStatus(*e)
 	}
-	return euo
-}
-
-// SetPayload sets the "payload" field.
-func (euo *EventUpdateOne) SetPayload(jm json.RawMessage) *EventUpdateOne {
-	euo.mutation.SetPayload(jm)
-	return euo
-}
-
-// AppendPayload appends jm to the "payload" field.
-func (euo *EventUpdateOne) AppendPayload(jm json.RawMessage) *EventUpdateOne {
-	euo.mutation.AppendPayload(jm)
 	return euo
 }
 
@@ -619,14 +587,6 @@ func (euo *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error
 	}
 	if value, ok := euo.mutation.Status(); ok {
 		_spec.SetField(event.FieldStatus, field.TypeEnum, value)
-	}
-	if value, ok := euo.mutation.Payload(); ok {
-		_spec.SetField(event.FieldPayload, field.TypeJSON, value)
-	}
-	if value, ok := euo.mutation.AppendedPayload(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, event.FieldPayload, value)
-		})
 	}
 	if value, ok := euo.mutation.Result(); ok {
 		_spec.SetField(event.FieldResult, field.TypeJSON, value)

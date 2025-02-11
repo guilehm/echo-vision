@@ -6,7 +6,9 @@ import (
 	"log"
 	"os"
 
+	"github.com/guilehm/echo-vision/echo-analyzer/internal/infra/consumers"
 	rabbitmqadapter "github.com/guilehm/echo-vision/echo-analyzer/internal/infra/rabbitmq"
+	awsrekognition "github.com/guilehm/echo-vision/echo-analyzer/internal/infra/rekognition"
 	"github.com/guilehm/echo-vision/echo-common/logging"
 	"github.com/guilehm/echo-vision/echo-common/rabbitmq"
 )
@@ -34,7 +36,16 @@ func main() {
 	}
 	defer consumer.Close()
 
-	err = consumer.Subscribe(context.Background(), rabbitmqadapter.NewRabbitMQAdapter())
+	irs, err := awsrekognition.NewAWSRekognitionAdapter(os.Getenv("AWS_REGION"), os.Getenv("AWS_BUCKET_NAME"))
+	if err != nil {
+		log.Fatalln("could not create AWS Rekognition adapter: ", err)
+	}
+
+	consumerGroup := consumers.NewConsumerGroup(irs)
+	err = consumer.Subscribe(
+		context.Background(),
+		rabbitmqadapter.NewRabbitMQAdapter(consumerGroup),
+	)
 	if err != nil {
 		log.Fatalln("could not subscribe to queue: ", err)
 	}

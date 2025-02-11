@@ -28,7 +28,6 @@ func (Event) Fields() []ent.Field {
 			Values(domain.EventSubType("").StringValues()...),
 		field.Enum("status").
 			Values(domain.EventStatus("").StringValues()...),
-		field.JSON("payload", json.RawMessage{}),
 		field.JSON("result", json.RawMessage{}).
 			Optional(),
 		field.Time("created_at").

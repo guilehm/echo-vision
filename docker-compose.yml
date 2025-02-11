@@ -42,6 +42,10 @@ services:
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/echo-vision?sslmode=disable
       DATABASE_SCHEMA: echo_analyzer
       RABBITMQ_URL: amqp://guest:guest@vision-rabbitmq/
+      AWS_REGION: us-east-2
+      AWS_BUCKET_NAME: echo-vision-local
+    env_file:
+     - .env
 
   postgres:
     image: postgres:12.0-alpine

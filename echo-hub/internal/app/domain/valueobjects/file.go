@@ -1,37 +1,21 @@
 package valueobjects
 
 type File struct {
-	filepath    string
-	filename    string
-	filesize    int64
-	contentType string
+	Filepath    string `json:"filepath"`
+	Filename    string `json:"filename"`
+	Filesize    int64  `json:"filesize"`
+	ContentType string `json:"contentType"`
 }
 
 func NewFile(filepath, filename, contentType string, filesize int64) *File {
 	return &File{
-		filepath:    filepath,
-		filename:    filename,
-		filesize:    filesize,
-		contentType: contentType,
+		Filepath:    filepath,
+		Filename:    filename,
+		Filesize:    filesize,
+		ContentType: contentType,
 	}
 }
 
-func (f *File) Filepath() string {
-	return f.filepath
-}
-
-func (f *File) Filename() string {
-	return f.filename
-}
-
-func (f *File) Filesize() int64 {
-	return f.filesize
-}
-
-func (f *File) ContentType() string {
-	return f.contentType
-}
-
 func (f *File) IsValid() bool {
-	return f.filepath != "" && f.filename != "" && f.filesize > 0 && f.contentType != ""
+	return f.Filepath != "" && f.Filename != "" && f.Filesize > 0 && f.ContentType != ""
 }

@@ -48,12 +48,6 @@ func (ec *EventCreate) SetStatus(e event.Status) *EventCreate {
 	return ec
 }
 
-// SetPayload sets the "payload" field.
-func (ec *EventCreate) SetPayload(jm json.RawMessage) *EventCreate {
-	ec.mutation.SetPayload(jm)
-	return ec
-}
-
 // SetResult sets the "result" field.
 func (ec *EventCreate) SetResult(jm json.RawMessage) *EventCreate {
 	ec.mutation.SetResult(jm)
@@ -192,9 +186,6 @@ func (ec *EventCreate) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Event.status": %w`, err)}
 		}
 	}
-	if _, ok := ec.mutation.Payload(); !ok {
-		return &ValidationError{Name: "payload", err: errors.New(`ent: missing required field "Event.payload"`)}
-	}
 	if _, ok := ec.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Event.created_at"`)}
 	}
@@ -251,10 +242,6 @@ func (ec *EventCreate) createSpec() (*Event, *sqlgraph.CreateSpec) {
 		_spec.SetField(event.FieldStatus, field.TypeEnum, value)
 		_node.Status = value
 	}
-	if value, ok := ec.mutation.Payload(); ok {
-		_spec.SetField(event.FieldPayload, field.TypeJSON, value)
-		_node.Payload = value
-	}
 	if value, ok := ec.mutation.Result(); ok {
 		_spec.SetField(event.FieldResult, field.TypeJSON, value)
 		_node.Result = value
@@ -298,7 +285,7 @@ func (ec *EventCreate) createSpec() (*Event, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.file_events = &nodes[0]
+		_node.file_id = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

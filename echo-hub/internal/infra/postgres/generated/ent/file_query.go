@@ -428,13 +428,13 @@ func (fq *FileQuery) loadEvents(ctx context.Context, query *EventQuery, nodes []
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.file_events
+		fk := n.file_id
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "file_events" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "file_id" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "file_events" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "file_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

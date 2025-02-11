@@ -29,8 +29,6 @@ type Event struct {
 	SubType event.SubType `json:"sub_type,omitempty"`
 	// Status holds the value of the "status" field.
 	Status event.Status `json:"status,omitempty"`
-	// Payload holds the value of the "payload" field.
-	Payload json.RawMessage `json:"payload,omitempty"`
 	// Result holds the value of the "result" field.
 	Result json.RawMessage `json:"result,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -40,7 +38,7 @@ type Event struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EventQuery when eager-loading is set.
 	Edges        EventEdges `json:"edges"`
-	file_events  *uuid.UUID
+	file_id      *uuid.UUID
 	selectValues sql.SelectValues
 }
 
@@ -82,7 +80,7 @@ func (*Event) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case event.FieldPayload, event.FieldResult:
+		case event.FieldResult:
 			values[i] = new([]byte)
 		case event.FieldType, event.FieldSubType, event.FieldStatus:
 			values[i] = new(sql.NullString)
@@ -90,7 +88,7 @@ func (*Event) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case event.FieldID, event.FieldUserID:
 			values[i] = new(uuid.UUID)
-		case event.ForeignKeys[0]: // file_events
+		case event.ForeignKeys[0]: // file_id
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
@@ -137,14 +135,6 @@ func (e *Event) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				e.Status = event.Status(value.String)
 			}
-		case event.FieldPayload:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field payload", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &e.Payload); err != nil {
-					return fmt.Errorf("unmarshal field payload: %w", err)
-				}
-			}
 		case event.FieldResult:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field result", values[i])
@@ -167,10 +157,10 @@ func (e *Event) assignValues(columns []string, values []any) error {
 			}
 		case event.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field file_events", values[i])
+				return fmt.Errorf("unexpected type %T for field file_id", values[i])
 			} else if value.Valid {
-				e.file_events = new(uuid.UUID)
-				*e.file_events = *value.S.(*uuid.UUID)
+				e.file_id = new(uuid.UUID)
+				*e.file_id = *value.S.(*uuid.UUID)
 			}
 		default:
 			e.selectValues.Set(columns[i], values[i])
@@ -229,9 +219,6 @@ func (e *Event) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", e.Status))
-	builder.WriteString(", ")
-	builder.WriteString("payload=")
-	builder.WriteString(fmt.Sprintf("%v", e.Payload))
 	builder.WriteString(", ")
 	builder.WriteString("result=")
 	builder.WriteString(fmt.Sprintf("%v", e.Result))

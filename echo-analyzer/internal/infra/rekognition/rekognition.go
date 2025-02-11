@@ -9,21 +9,22 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
-	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
-	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
+	"github.com/guilehm/echo-vision/echo-analyzer/internal/app/domain"
+	"github.com/guilehm/echo-vision/echo-analyzer/internal/app/ports"
 	"github.com/rotisserie/eris"
 )
 
 type AWSRekognitionAdapter struct {
 	client *rekognition.Client
+	bucket string
 }
 
 // NewAWSRekognitionAdapter initializes a new AWSRekognitionAdapter.
-func NewAWSRekognitionAdapter(region string) (ports.ImageRecognitionServicePort, error) {
+func NewAWSRekognitionAdapter(region, bucketName string) (ports.ImageRecognitionServicePort, error) {
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithRegion(region),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
-			os.Getenv("AWS_ACCESS_KEY_ID"),
+			os.Getenv("AWS_ACCESS_KEY"),
 			os.Getenv("AWS_SECRET_KEY"),
 			"",
 		)),
@@ -34,19 +35,22 @@ func NewAWSRekognitionAdapter(region string) (ports.ImageRecognitionServicePort,
 
 	return &AWSRekognitionAdapter{
 		client: rekognition.NewFromConfig(cfg),
+		bucket: bucketName,
 	}, nil
 }
 
 // DetectLabels detects labels in an image using AWS Rekognition.
-func (a *AWSRekognitionAdapter) DetectLabels(imageBytes []byte) ([]domain.Label, error) {
+func (a *AWSRekognitionAdapter) DetectLabels(filepath string) ([]domain.Label, error) {
 	input := &rekognition.DetectLabelsInput{
 		Image: &types.Image{
-			Bytes: imageBytes,
+			S3Object: &types.S3Object{
+				Bucket: aws.String(a.BucketName()),
+				Name:   aws.String(filepath),
+			},
 		},
 		MaxLabels:     aws.Int32(10),
 		MinConfidence: aws.Float32(70.0),
 	}
-
 	result, err := a.client.DetectLabels(context.TODO(), input)
 	if err != nil {
 		return nil, eris.Wrap(err, "error detecting labels")
@@ -63,11 +67,11 @@ func (a *AWSRekognitionAdapter) DetectLabels(imageBytes []byte) ([]domain.Label,
 }
 
 // DetectFaces detects faces in an image using AWS Rekognition.
-func (a *AWSRekognitionAdapter) DetectFaces(imageBytes []byte) ([]domain.FaceDetail, error) {
+func (a *AWSRekognitionAdapter) DetectFaces(imageInput any) ([]domain.FaceDetail, error) {
 	input := &rekognition.DetectFacesInput{
-		Image: &types.Image{
-			Bytes: imageBytes,
-		},
+		// Image: &types.Image{
+		// 	Bytes: imageInput,
+		// },
 		Attributes: []types.Attribute{types.AttributeAll},
 	}
 
@@ -89,4 +93,9 @@ func (a *AWSRekognitionAdapter) DetectFaces(imageBytes []byte) ([]domain.FaceDet
 		}
 	}
 	return faces, nil
+}
+
+// BucketName implements ports.ImageRecognitionServicePort.
+func (a *AWSRekognitionAdapter) BucketName() string {
+	return a.bucket
 }

@@ -491,10 +491,10 @@ func (eq *EventQuery) loadFile(ctx context.Context, query *FileQuery, nodes []*E
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Event)
 	for i := range nodes {
-		if nodes[i].file_events == nil {
+		if nodes[i].file_id == nil {
 			continue
 		}
-		fk := *nodes[i].file_events
+		fk := *nodes[i].file_id
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -511,7 +511,7 @@ func (eq *EventQuery) loadFile(ctx context.Context, query *FileQuery, nodes []*E
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "file_events" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "file_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

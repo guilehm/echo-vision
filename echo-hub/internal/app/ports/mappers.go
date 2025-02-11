@@ -3,6 +3,7 @@ package ports
 import (
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports/dtos"
+	hubevents "github.com/guilehm/echo-vision/echo-hub/pkg/events"
 )
 
 func MapEventToApiResponse(e *domain.Event) *dtos.EventResponse {
@@ -32,4 +33,14 @@ func MapUserToApiResponse(u *domain.User) *dtos.UserResponse {
 		LastName:  u.LastName(),
 		Email:     u.Email(),
 	}
+}
+
+func MapEventToMessage(e *domain.Event) ([]byte, error) {
+	message := &hubevents.EventMessage{
+		ID:      e.ID(),
+		Type:    e.EventType(),
+		SubType: e.SubType(),
+		File:    e.File(),
+	}
+	return message.ToJSON()
 }

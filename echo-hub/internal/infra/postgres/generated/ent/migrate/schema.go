@@ -14,11 +14,10 @@ var (
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"image_analysis"}},
 		{Name: "sub_type", Type: field.TypeEnum, Enums: []string{"detect_labels"}},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "processing", "completed", "failed"}},
-		{Name: "payload", Type: field.TypeJSON},
 		{Name: "result", Type: field.TypeJSON, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "file_events", Type: field.TypeUUID, Nullable: true},
+		{Name: "file_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// EventsTable holds the schema information for the "events" table.
@@ -29,13 +28,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "events_files_events",
-				Columns:    []*schema.Column{EventsColumns[8]},
+				Columns:    []*schema.Column{EventsColumns[7]},
 				RefColumns: []*schema.Column{FilesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "events_users_events",
-				Columns:    []*schema.Column{EventsColumns[9]},
+				Columns:    []*schema.Column{EventsColumns[8]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

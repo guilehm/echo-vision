@@ -2,14 +2,19 @@ package rabbitmqadapter
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
+	"log/slog"
 
+	"github.com/guilehm/echo-vision/echo-analyzer/internal/app/ports"
+	"github.com/guilehm/echo-vision/echo-common/logging"
 	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
 
 	hubevents "github.com/guilehm/echo-vision/echo-hub/pkg/events"
 )
 
-type RabbitMQAdapter struct{}
+type RabbitMQAdapter struct {
+	consumer ports.ConsumerPort
+}
 
 func (r *RabbitMQAdapter) Topics() []string {
 	return []string{
@@ -19,17 +24,26 @@ func (r *RabbitMQAdapter) Topics() []string {
 }
 
 func (r *RabbitMQAdapter) Handle(ctx context.Context, msg messaging.Message) messaging.HandlerResponse {
+	logger := logging.NewLogger().With(slog.String("topic", msg.Topic))
+
 	switch msg.Topic {
 	case hubevents.EventImageAnalysCreated:
-		fmt.Println("image analysis from ECHO-ANALYZER", msg)
-		return messaging.Success // case hubevents.EventImageAnalysisStatusUpdated:
-	// 	fmt.Println("Image analysis status updated")
-	// 	return messaging.Success
+		var message hubevents.EventMessage
+		if err := json.Unmarshal(msg.Payload, &message); err != nil {
+			logger.Error(
+				"could not unmarshal event",
+				slog.String("error", err.Error()),
+			)
+			return messaging.DeadLetter
+		}
+		return r.consumer.ProcessImageAnalysis(msg.Topic, message)
 	default:
 		return messaging.DeadLetter
 	}
 }
 
-func NewRabbitMQAdapter() *RabbitMQAdapter {
-	return &RabbitMQAdapter{}
+func NewRabbitMQAdapter(consumer ports.ConsumerPort) *RabbitMQAdapter {
+	return &RabbitMQAdapter{
+		consumer: consumer,
+	}
 }

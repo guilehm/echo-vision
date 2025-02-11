@@ -23,8 +23,6 @@ const (
 	FieldSubType = "sub_type"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
-	// FieldPayload holds the string denoting the payload field in the database.
-	FieldPayload = "payload"
 	// FieldResult holds the string denoting the result field in the database.
 	FieldResult = "result"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -50,7 +48,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "file" package.
 	FileInverseTable = "files"
 	// FileColumn is the table column denoting the file relation/edge.
-	FileColumn = "file_events"
+	FileColumn = "file_id"
 )
 
 // Columns holds all SQL columns for event fields.
@@ -60,7 +58,6 @@ var Columns = []string{
 	FieldType,
 	FieldSubType,
 	FieldStatus,
-	FieldPayload,
 	FieldResult,
 	FieldCreatedAt,
 	FieldUpdatedAt,
@@ -69,7 +66,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "events"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"file_events",
+	"file_id",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
