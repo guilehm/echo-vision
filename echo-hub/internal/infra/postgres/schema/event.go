@@ -47,5 +47,8 @@ func (Event) Edges() []ent.Edge {
 			Unique().
 			Required().
 			Field("user_id"),
+		edge.From("file", File.Type).
+			Ref("events").
+			Unique(),
 	}
 }

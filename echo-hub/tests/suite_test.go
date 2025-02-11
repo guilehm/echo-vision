@@ -112,12 +112,12 @@ var _ = BeforeSuite(func() {
 	userUseCase = usecases.NewManageUsersUseCase(repo, jwtAdapter, passwordAdapter)
 	eventUseCase = usecases.NewManageEventsUseCase(repo, publisher)
 
-	// setup http server
-	router := web.NewRouter(userUseCase, eventUseCase, publisher)
-	server = httptest.NewServer(router)
-
 	// setup s3 mock
 	s3Mock = filestoragemocks.NewFileStorageMock("echo-hub")
+
+	// setup http server
+	router := web.NewRouter(userUseCase, eventUseCase, s3Mock, publisher)
+	server = httptest.NewServer(router)
 })
 
 var _ = AfterSuite(func() {

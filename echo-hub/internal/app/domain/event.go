@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain/valueobjects"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/shared"
 )
 
@@ -80,10 +81,10 @@ type Event struct {
 	eventType EventType
 	subType   EventSubType
 	status    EventStatus
-	payload   json.RawMessage
 	result    json.RawMessage
 	createdAt time.Time
 	updatedAt time.Time
+	file      *valueobjects.File
 }
 
 func NewEvent(
@@ -91,9 +92,9 @@ func NewEvent(
 	id uuid.UUID,
 	eventType EventType,
 	subType EventSubType,
-	payload json.RawMessage,
 	result json.RawMessage,
 	status EventStatus,
+	file *valueobjects.File,
 	createdAt, updatedAt time.Time,
 ) *Event {
 	return &Event{
@@ -102,8 +103,8 @@ func NewEvent(
 		eventType: eventType,
 		subType:   subType,
 		status:    status,
-		payload:   payload,
 		result:    result,
+		file:      file,
 		createdAt: createdAt,
 		updatedAt: updatedAt,
 	}
@@ -119,10 +120,6 @@ func (e *Event) Validate() error {
 	if e.eventType == "" {
 		return shared.ErrInvalidEventType
 	}
-	// TODO: enable payload validation
-	// if e.payload == nil {
-	// 	return shared.ErrInvalidPayload
-	// }
 	if err := e.validateTypes(); err != nil {
 		return err
 	}
@@ -163,7 +160,8 @@ func (e *Event) Status() EventStatus {
 }
 
 func (e *Event) Payload() json.RawMessage {
-	return e.payload
+	return nil
+	// return e.payload
 }
 
 func (e *Event) Result() json.RawMessage {
@@ -176,4 +174,8 @@ func (e *Event) CreatedAt() time.Time {
 
 func (e *Event) UpdatedAt() time.Time {
 	return e.updatedAt
+}
+
+func (e *Event) File() *valueobjects.File {
+	return e.file
 }

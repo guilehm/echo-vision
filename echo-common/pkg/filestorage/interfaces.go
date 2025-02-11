@@ -13,19 +13,5 @@ func NewFileKey(path, filename string) FileKey {
 }
 
 type FileStoragePort interface {
-	GeneratePreSignedURL(fileKey FileKey) (string, error)
-}
-
-type FileStorageMock struct {
-	bucket string
-}
-
-func NewFileStorageMock(bucketName string) *FileStorageMock {
-	return &FileStorageMock{
-		bucket: bucketName,
-	}
-}
-
-func (m *FileStorageMock) GeneratePreSignedURL(fileKey FileKey) (string, error) {
-	return fmt.Sprintf("https://mock/%s/%s", m.bucket, fileKey.String()), nil
+	GeneratePreSignedURL(fileKey FileKey, contentType string) (string, error)
 }

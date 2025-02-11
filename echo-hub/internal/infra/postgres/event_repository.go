@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/guilehm/echo-vision/echo-common/logging"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
+	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain/valueobjects"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/repositories"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/shared"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent"
@@ -21,7 +22,24 @@ func (r *Repository) SaveEvent(
 	e *domain.Event,
 ) (uuid.UUID, error) {
 	c := r.resolveClient(tx)
-	entEvent, err := c.Event.Create().
+
+	var err error
+	var file *ent.File
+
+	if e.File() != nil {
+		file, err = c.File.Create().
+			SetID(uuid.New()).
+			SetFilename(e.File().Filename()).
+			SetFilepath(e.File().Filepath()).
+			SetFilesize(e.File().Filesize()).
+			SetContentType(e.File().ContentType()).
+			Save(ctx)
+		if err != nil {
+			return uuid.Nil, err
+		}
+	}
+
+	builder := c.Event.Create().
 		SetUserID(e.UserID()).
 		SetID(e.ID()).
 		SetType(event.Type(e.EventType())).
@@ -30,8 +48,13 @@ func (r *Repository) SaveEvent(
 		SetPayload(e.Payload()).
 		SetResult(e.Result()).
 		SetCreatedAt(e.CreatedAt()).
-		SetUpdatedAt(e.UpdatedAt()).
-		Save(ctx)
+		SetUpdatedAt(e.UpdatedAt())
+
+	if file != nil {
+		builder.SetFile(file)
+	}
+
+	entEvent, err := builder.Save(ctx)
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -47,6 +70,7 @@ func (r *Repository) FindEventByID(
 	c := r.resolveClient(tx)
 	e, err := c.Event.Query().
 		Where(event.ID(id)).
+		WithFile().
 		Only(ctx)
 
 	if ent.IsNotFound(err) {
@@ -65,6 +89,7 @@ func (r *Repository) FindEventsByUserID(
 	c := r.resolveClient(tx)
 	events, err := c.Event.Query().
 		Where(event.UserID(userID)).
+		WithFile().
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -81,14 +106,23 @@ func eventToDomain(e *ent.Event) *domain.Event {
 	if e == nil {
 		return nil
 	}
+	var file *valueobjects.File
+	if e.Edges.File != nil {
+		file = valueobjects.NewFile(
+			e.Edges.File.Filepath,
+			e.Edges.File.Filename,
+			e.Edges.File.ContentType,
+			e.Edges.File.Filesize,
+		)
+	}
 	return domain.NewEvent(
 		e.UserID,
 		e.ID,
 		domain.EventType(e.Type.String()),
 		domain.EventSubType(e.SubType.String()),
-		e.Payload,
 		e.Result,
 		domain.EventStatus(e.Status.String()),
+		file,
 		e.CreatedAt,
 		e.UpdatedAt,
 	)

@@ -15,6 +15,7 @@ var (
 	ErrInvalidPassword  = errors.New("invalid password")
 	ErrInvalidType      = errors.New("invalid type")
 	ErrInvalidSubType   = errors.New("invalid sub type")
+	ErrInvalidFile      = errors.New("invalid file")
 
 	ErrInvalidToken         = errors.New("invalid token")
 	ErrInvalidRefreshToken  = errors.New("invalid refresh token")

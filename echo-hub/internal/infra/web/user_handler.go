@@ -7,6 +7,7 @@ import (
 
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
+	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports/dtos"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/shared"
 )
 
@@ -57,7 +58,7 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handleApiResponse(w, apiResponse[ports.UserCreateResponse](&ports.UserCreateResponse{
+	handleApiResponse(w, apiResponse(&dtos.UserCreateResponse{
 		ID:           user.ID(),
 		AccessToken:  user.AccessToken(),
 		RefreshToken: user.RefreshToken(),
@@ -82,7 +83,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handleApiResponse(w, apiResponse[ports.UserLoginResponse](&ports.UserLoginResponse{
+	handleApiResponse(w, apiResponse[dtos.UserLoginResponse](&dtos.UserLoginResponse{
 		ID:           user.ID(),
 		AccessToken:  user.AccessToken(),
 		RefreshToken: user.RefreshToken(),
@@ -100,7 +101,7 @@ func (h *UserHandler) MeUser(w http.ResponseWriter, r *http.Request) {
 		)))
 		return
 	}
-	handleApiResponse(w, apiResponse[ports.UserResponse](ports.MapUserToApiResponse(u), nil))
+	handleApiResponse(w, apiResponse[dtos.UserResponse](ports.MapUserToApiResponse(u), nil))
 }
 
 // Logout implements ports.UserWebPort.
@@ -132,7 +133,7 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		handleApiResponse(w, apiResponse[any](nil, err))
 		return
 	}
-	handleApiResponse(w, apiResponse[ports.RefreshTokenResponse](&ports.RefreshTokenResponse{
+	handleApiResponse(w, apiResponse[dtos.RefreshTokenResponse](&dtos.RefreshTokenResponse{
 		AccessToken: u.AccessToken(),
 	}, nil))
 }

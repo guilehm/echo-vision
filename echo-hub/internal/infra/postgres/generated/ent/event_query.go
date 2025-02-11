@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/event"
+	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/file"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/predicate"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/user"
 )
@@ -26,6 +27,8 @@ type EventQuery struct {
 	inters     []Interceptor
 	predicates []predicate.Event
 	withUser   *UserQuery
+	withFile   *FileQuery
+	withFKs    bool
 	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -78,6 +81,28 @@ func (eq *EventQuery) QueryUser() *UserQuery {
 			sqlgraph.From(event.Table, event.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, event.UserTable, event.UserColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryFile chains the current query on the "file" edge.
+func (eq *EventQuery) QueryFile() *FileQuery {
+	query := (&FileClient{config: eq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := eq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := eq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(event.Table, event.FieldID, selector),
+			sqlgraph.To(file.Table, file.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, event.FileTable, event.FileColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(eq.driver.Dialect(), step)
 		return fromU, nil
@@ -278,6 +303,7 @@ func (eq *EventQuery) Clone() *EventQuery {
 		inters:     append([]Interceptor{}, eq.inters...),
 		predicates: append([]predicate.Event{}, eq.predicates...),
 		withUser:   eq.withUser.Clone(),
+		withFile:   eq.withFile.Clone(),
 		// clone intermediate query.
 		sql:  eq.sql.Clone(),
 		path: eq.path,
@@ -292,6 +318,17 @@ func (eq *EventQuery) WithUser(opts ...func(*UserQuery)) *EventQuery {
 		opt(query)
 	}
 	eq.withUser = query
+	return eq
+}
+
+// WithFile tells the query-builder to eager-load the nodes that are connected to
+// the "file" edge. The optional arguments are used to configure the query builder of the edge.
+func (eq *EventQuery) WithFile(opts ...func(*FileQuery)) *EventQuery {
+	query := (&FileClient{config: eq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	eq.withFile = query
 	return eq
 }
 
@@ -372,11 +409,19 @@ func (eq *EventQuery) prepareQuery(ctx context.Context) error {
 func (eq *EventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Event, error) {
 	var (
 		nodes       = []*Event{}
+		withFKs     = eq.withFKs
 		_spec       = eq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			eq.withUser != nil,
+			eq.withFile != nil,
 		}
 	)
+	if eq.withFile != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, event.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Event).scanValues(nil, columns)
 	}
@@ -401,6 +446,12 @@ func (eq *EventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Event,
 	if query := eq.withUser; query != nil {
 		if err := eq.loadUser(ctx, query, nodes, nil,
 			func(n *Event, e *User) { n.Edges.User = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := eq.withFile; query != nil {
+		if err := eq.loadFile(ctx, query, nodes, nil,
+			func(n *Event, e *File) { n.Edges.File = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -429,6 +480,38 @@ func (eq *EventQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*E
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (eq *EventQuery) loadFile(ctx context.Context, query *FileQuery, nodes []*Event, init func(*Event), assign func(*Event, *File)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Event)
+	for i := range nodes {
+		if nodes[i].file_events == nil {
+			continue
+		}
+		fk := *nodes[i].file_events
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(file.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "file_events" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

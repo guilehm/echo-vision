@@ -7,7 +7,9 @@ import (
 
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
+	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports/dtos"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/event"
+	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/file"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/web"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -45,7 +47,7 @@ var _ = Describe("Event Handler", func() {
 			// Assert
 			Expect(resp.StatusCode).To(Equal(http.StatusOK))
 
-			var apiResp web.ApiResponse[ports.EventCreateResponse]
+			var apiResp web.ApiResponse[dtos.EventCreateResponse]
 			err = json.NewDecoder(resp.Body).Decode(&apiResp)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(apiResp.Data).ToNot(BeNil())
@@ -172,6 +174,83 @@ var _ = Describe("Event Handler", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(apiResp.Error).ToNot(BeEmpty())
 		})
+
+		Context("Create Event with File", func() {
+			It("should create a event with a file successfully", func() {
+				// Arrange
+				input := ports.EventCreateInput{
+					EventType:   domain.EventTypeImageAnalysis.String(),
+					SubType:     domain.EventSubTypeDetectLabels.String(),
+					Filepath:    "path/to/file.jpg",
+					Filename:    "file.jpg",
+					ContentType: "image/jpeg",
+					Filesize:    1024,
+				}
+
+				req, err := http.NewRequest(
+					http.MethodPost,
+					fmt.Sprintf("%s/events", server.URL),
+					toReader(input),
+				)
+				Expect(err).ToNot(HaveOccurred())
+				token := u.AccessToken()
+				req.Header.Set("Authorization", token)
+
+				// Act
+				client := http.Client{}
+				resp, err := client.Do(req)
+				Expect(err).ToNot(HaveOccurred())
+				defer resp.Body.Close()
+
+				// Assert
+				Expect(resp.StatusCode).To(Equal(http.StatusOK))
+
+				createdFile := entClient.File.Query().
+					Where(
+						file.FilenameEQ(input.Filename),
+						file.Filepath(input.Filepath),
+						file.ContentType(input.ContentType),
+						file.FilesizeEQ(input.Filesize),
+					).
+					OnlyX(ctx)
+
+				Expect(createdFile).ToNot(BeNil())
+				Expect(createdFile.Filename).To(BeEquivalentTo(input.Filename))
+				Expect(createdFile.Filepath).To(BeEquivalentTo(input.Filepath))
+				Expect(createdFile.ContentType).To(BeEquivalentTo(input.ContentType))
+				Expect(createdFile.Filesize).To(BeEquivalentTo(input.Filesize))
+			})
+
+			It("should return 400 for an invalid file", func() {
+				// Arrange
+				input := ports.EventCreateInput{
+					EventType:   domain.EventTypeImageAnalysis.String(),
+					SubType:     domain.EventSubTypeDetectLabels.String(),
+					Filepath:    "path/to/file",
+					Filename:    "file.jpg",
+					ContentType: "",
+					Filesize:    1024,
+				}
+
+				req, err := http.NewRequest(
+					http.MethodPost,
+					fmt.Sprintf("%s/events", server.URL),
+					toReader(input),
+				)
+				Expect(err).ToNot(HaveOccurred())
+				token := u.AccessToken()
+				req.Header.Set("Authorization", token)
+
+				// Act
+				client := http.Client{}
+				resp, err := client.Do(req)
+				Expect(err).ToNot(HaveOccurred())
+				defer resp.Body.Close()
+
+				// Assert
+				Expect(resp.StatusCode).To(Equal(http.StatusBadRequest))
+			})
+		})
 	})
 
 	Context("List Events", func() {
@@ -203,7 +282,7 @@ var _ = Describe("Event Handler", func() {
 			// Assert
 			Expect(resp.StatusCode).To(Equal(http.StatusOK))
 
-			var apiResp web.ApiResponse[ports.ApiListResponse[ports.EventResponse]]
+			var apiResp web.ApiResponse[ports.ApiListResponse[dtos.EventResponse]]
 			err = json.NewDecoder(resp.Body).Decode(&apiResp)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(apiResp.Data).ToNot(BeNil())
@@ -240,7 +319,7 @@ var _ = Describe("Event Handler", func() {
 			// Assert
 			Expect(resp.StatusCode).To(Equal(http.StatusUnauthorized))
 
-			var apiResp web.ApiResponse[ports.ApiListResponse[ports.EventResponse]]
+			var apiResp web.ApiResponse[ports.ApiListResponse[dtos.EventResponse]]
 			err = json.NewDecoder(resp.Body).Decode(&apiResp)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(apiResp.Data).To(BeNil())

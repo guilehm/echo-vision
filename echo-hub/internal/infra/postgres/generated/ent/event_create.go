@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/event"
+	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/file"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/user"
 )
 
@@ -96,6 +97,25 @@ func (ec *EventCreate) SetID(u uuid.UUID) *EventCreate {
 // SetUser sets the "user" edge to the User entity.
 func (ec *EventCreate) SetUser(u *User) *EventCreate {
 	return ec.SetUserID(u.ID)
+}
+
+// SetFileID sets the "file" edge to the File entity by ID.
+func (ec *EventCreate) SetFileID(id uuid.UUID) *EventCreate {
+	ec.mutation.SetFileID(id)
+	return ec
+}
+
+// SetNillableFileID sets the "file" edge to the File entity by ID if the given value is not nil.
+func (ec *EventCreate) SetNillableFileID(id *uuid.UUID) *EventCreate {
+	if id != nil {
+		ec = ec.SetFileID(*id)
+	}
+	return ec
+}
+
+// SetFile sets the "file" edge to the File entity.
+func (ec *EventCreate) SetFile(f *File) *EventCreate {
+	return ec.SetFileID(f.ID)
 }
 
 // Mutation returns the EventMutation object of the builder.
@@ -262,6 +282,23 @@ func (ec *EventCreate) createSpec() (*Event, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.UserID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ec.mutation.FileIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   event.FileTable,
+			Columns: []string{event.FileColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(file.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.file_events = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

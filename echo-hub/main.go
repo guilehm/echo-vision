@@ -32,7 +32,7 @@ func main() {
 		log.Fatalln("could not create s3 adapter: ", err)
 	}
 
-	url, err := a.GeneratePreSignedURL("test.jpeg")
+	url, err := a.GeneratePreSignedURL("test.jpeg", "image/jpeg")
 	if err != nil {
 		log.Fatalln("could not generate pre-signed URL: ", err)
 	}
@@ -134,7 +134,15 @@ func main() {
 	userUseCase := usecases.NewManageUsersUseCase(repo, jwtAdapter, passwordAdapter)
 	eventUseCase := usecases.NewManageEventsUseCase(repo, publisher)
 
-	router := web.NewRouter(userUseCase, eventUseCase, publisher)
+	uploadPort, err := filestorage.NewS3Adapter(
+		os.Getenv("AWS_BUCKET_NAME"),
+		os.Getenv("AWS_REGION"),
+	)
+	if err != nil {
+		log.Fatalln("could not create s3 adapter: ", err)
+	}
+
+	router := web.NewRouter(userUseCase, eventUseCase, uploadPort, publisher)
 	err = http.ListenAndServe(":8000", router)
 	if err != nil {
 		log.Fatalln("could not start server: ", err)

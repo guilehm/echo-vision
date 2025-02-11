@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Event is the client for interacting with the Event builders.
 	Event *EventClient
+	// File is the client for interacting with the File builders.
+	File *FileClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -148,6 +150,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Event = NewEventClient(tx.config)
+	tx.File = NewFileClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 

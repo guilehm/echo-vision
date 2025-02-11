@@ -9,6 +9,7 @@ import (
 
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
+	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports/dtos"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/shared"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/user"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/web"
@@ -35,7 +36,7 @@ var _ = Describe("User Handler", func() {
 			// Assert
 			Expect(resp.StatusCode).To(Equal(http.StatusOK))
 
-			var apiResp web.ApiResponse[ports.UserCreateResponse]
+			var apiResp web.ApiResponse[dtos.UserCreateResponse]
 			err = json.NewDecoder(resp.Body).Decode(&apiResp)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(apiResp.Data).ToNot(BeNil())
@@ -75,7 +76,7 @@ var _ = Describe("User Handler", func() {
 			// Assert
 			Expect(resp.StatusCode).To(Equal(http.StatusBadRequest))
 
-			var apiResp web.ApiResponse[ports.UserCreateResponse]
+			var apiResp web.ApiResponse[dtos.UserCreateResponse]
 			err = json.NewDecoder(resp.Body).Decode(&apiResp)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(apiResp.Data).To(BeNil())
@@ -183,7 +184,7 @@ var _ = Describe("User Handler", func() {
 			// Assert
 			Expect(resp.StatusCode).To(Equal(http.StatusOK))
 
-			var apiResp web.ApiResponse[ports.UserLoginResponse]
+			var apiResp web.ApiResponse[dtos.UserLoginResponse]
 			err = json.NewDecoder(resp.Body).Decode(&apiResp)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(apiResp.Data).ToNot(BeNil())
@@ -235,7 +236,7 @@ var _ = Describe("User Handler", func() {
 			// Assert
 			Expect(resp.StatusCode).To(Equal(http.StatusBadRequest))
 
-			var apiResp web.ApiResponse[ports.UserLoginResponse]
+			var apiResp web.ApiResponse[dtos.UserLoginResponse]
 			err = json.NewDecoder(resp.Body).Decode(&apiResp)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(apiResp.Data).To(BeNil())
@@ -277,7 +278,7 @@ var _ = Describe("User Handler", func() {
 			// Assert
 			Expect(resp.StatusCode).To(Equal(http.StatusOK))
 
-			var apiResp web.ApiResponse[ports.UserResponse]
+			var apiResp web.ApiResponse[dtos.UserResponse]
 			err = json.NewDecoder(resp.Body).Decode(&apiResp)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(apiResp.Data).ToNot(BeNil())
@@ -298,7 +299,7 @@ var _ = Describe("User Handler", func() {
 			// Assert
 			Expect(resp.StatusCode).To(Equal(http.StatusForbidden))
 
-			var apiResp web.ApiResponse[ports.UserResponse]
+			var apiResp web.ApiResponse[dtos.UserResponse]
 			err = json.NewDecoder(resp.Body).Decode(&apiResp)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(apiResp.Data).To(BeNil())
@@ -320,7 +321,7 @@ var _ = Describe("User Handler", func() {
 			// Assert
 			Expect(resp.StatusCode).To(Equal(http.StatusUnauthorized))
 
-			var apiResp web.ApiResponse[ports.UserResponse]
+			var apiResp web.ApiResponse[dtos.UserResponse]
 			err = json.NewDecoder(resp.Body).Decode(&apiResp)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(apiResp.Data).To(BeNil())
@@ -347,7 +348,7 @@ var _ = Describe("User Handler", func() {
 
 			// Assert
 			Expect(resp.StatusCode).To(Equal(http.StatusOK))
-			var apiResp web.ApiResponse[ports.RefreshTokenResponse]
+			var apiResp web.ApiResponse[dtos.RefreshTokenResponse]
 			err = json.NewDecoder(resp.Body).Decode(&apiResp)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(apiResp.Data).ToNot(BeNil())

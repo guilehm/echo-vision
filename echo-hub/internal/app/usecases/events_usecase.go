@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
+	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain/valueobjects"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/repositories"
 	hubevents "github.com/guilehm/echo-vision/echo-hub/pkg/events"
@@ -30,6 +31,7 @@ func (uc *ManageEvents) CreateEvent(
 	userID uuid.UUID,
 	eventType string,
 	subType string,
+	file *valueobjects.File,
 ) (*domain.Event, error) {
 	now := time.Now()
 	event := domain.NewEvent(
@@ -38,8 +40,8 @@ func (uc *ManageEvents) CreateEvent(
 		domain.EventType(eventType),
 		domain.EventSubType(subType),
 		nil,
-		nil,
 		domain.EventStatusPending,
+		file,
 		now,
 		now,
 	)

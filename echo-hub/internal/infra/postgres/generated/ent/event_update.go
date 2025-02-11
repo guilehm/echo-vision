@@ -15,6 +15,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/event"
+	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/file"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/predicate"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/user"
 )
@@ -143,6 +144,25 @@ func (eu *EventUpdate) SetUser(u *User) *EventUpdate {
 	return eu.SetUserID(u.ID)
 }
 
+// SetFileID sets the "file" edge to the File entity by ID.
+func (eu *EventUpdate) SetFileID(id uuid.UUID) *EventUpdate {
+	eu.mutation.SetFileID(id)
+	return eu
+}
+
+// SetNillableFileID sets the "file" edge to the File entity by ID if the given value is not nil.
+func (eu *EventUpdate) SetNillableFileID(id *uuid.UUID) *EventUpdate {
+	if id != nil {
+		eu = eu.SetFileID(*id)
+	}
+	return eu
+}
+
+// SetFile sets the "file" edge to the File entity.
+func (eu *EventUpdate) SetFile(f *File) *EventUpdate {
+	return eu.SetFileID(f.ID)
+}
+
 // Mutation returns the EventMutation object of the builder.
 func (eu *EventUpdate) Mutation() *EventMutation {
 	return eu.mutation
@@ -151,6 +171,12 @@ func (eu *EventUpdate) Mutation() *EventMutation {
 // ClearUser clears the "user" edge to the User entity.
 func (eu *EventUpdate) ClearUser() *EventUpdate {
 	eu.mutation.ClearUser()
+	return eu
+}
+
+// ClearFile clears the "file" edge to the File entity.
+func (eu *EventUpdate) ClearFile() *EventUpdate {
+	eu.mutation.ClearFile()
 	return eu
 }
 
@@ -281,6 +307,35 @@ func (eu *EventUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if eu.mutation.FileCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   event.FileTable,
+			Columns: []string{event.FileColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(file.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.FileIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   event.FileTable,
+			Columns: []string{event.FileColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(file.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -419,6 +474,25 @@ func (euo *EventUpdateOne) SetUser(u *User) *EventUpdateOne {
 	return euo.SetUserID(u.ID)
 }
 
+// SetFileID sets the "file" edge to the File entity by ID.
+func (euo *EventUpdateOne) SetFileID(id uuid.UUID) *EventUpdateOne {
+	euo.mutation.SetFileID(id)
+	return euo
+}
+
+// SetNillableFileID sets the "file" edge to the File entity by ID if the given value is not nil.
+func (euo *EventUpdateOne) SetNillableFileID(id *uuid.UUID) *EventUpdateOne {
+	if id != nil {
+		euo = euo.SetFileID(*id)
+	}
+	return euo
+}
+
+// SetFile sets the "file" edge to the File entity.
+func (euo *EventUpdateOne) SetFile(f *File) *EventUpdateOne {
+	return euo.SetFileID(f.ID)
+}
+
 // Mutation returns the EventMutation object of the builder.
 func (euo *EventUpdateOne) Mutation() *EventMutation {
 	return euo.mutation
@@ -427,6 +501,12 @@ func (euo *EventUpdateOne) Mutation() *EventMutation {
 // ClearUser clears the "user" edge to the User entity.
 func (euo *EventUpdateOne) ClearUser() *EventUpdateOne {
 	euo.mutation.ClearUser()
+	return euo
+}
+
+// ClearFile clears the "file" edge to the File entity.
+func (euo *EventUpdateOne) ClearFile() *EventUpdateOne {
+	euo.mutation.ClearFile()
 	return euo
 }
 
@@ -587,6 +667,35 @@ func (euo *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if euo.mutation.FileCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   event.FileTable,
+			Columns: []string{event.FileColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(file.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.FileIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   event.FileTable,
+			Columns: []string{event.FileColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(file.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

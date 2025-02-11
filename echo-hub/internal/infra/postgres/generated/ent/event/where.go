@@ -264,6 +264,29 @@ func HasUserWith(preds ...predicate.User) predicate.Event {
 	})
 }
 
+// HasFile applies the HasEdge predicate on the "file" edge.
+func HasFile() predicate.Event {
+	return predicate.Event(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, FileTable, FileColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasFileWith applies the HasEdge predicate on the "file" edge with a given conditions (other predicates).
+func HasFileWith(preds ...predicate.File) predicate.Event {
+	return predicate.Event(func(s *sql.Selector) {
+		step := newFileStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Event) predicate.Event {
 	return predicate.Event(sql.AndPredicates(predicates...))

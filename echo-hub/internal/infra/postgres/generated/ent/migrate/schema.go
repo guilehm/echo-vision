@@ -18,6 +18,7 @@ var (
 		{Name: "result", Type: field.TypeJSON, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "file_events", Type: field.TypeUUID, Nullable: true},
 		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// EventsTable holds the schema information for the "events" table.
@@ -27,12 +28,34 @@ var (
 		PrimaryKey: []*schema.Column{EventsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "events_users_events",
+				Symbol:     "events_files_events",
 				Columns:    []*schema.Column{EventsColumns[8]},
+				RefColumns: []*schema.Column{FilesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "events_users_events",
+				Columns:    []*schema.Column{EventsColumns[9]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
+	}
+	// FilesColumns holds the columns for the "files" table.
+	FilesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "filename", Type: field.TypeString},
+		{Name: "filepath", Type: field.TypeString, Unique: true},
+		{Name: "filesize", Type: field.TypeInt64},
+		{Name: "content_type", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// FilesTable holds the schema information for the "files" table.
+	FilesTable = &schema.Table{
+		Name:       "files",
+		Columns:    FilesColumns,
+		PrimaryKey: []*schema.Column{FilesColumns[0]},
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
@@ -77,10 +100,12 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		EventsTable,
+		FilesTable,
 		UsersTable,
 	}
 )
 
 func init() {
-	EventsTable.ForeignKeys[0].RefTable = UsersTable
+	EventsTable.ForeignKeys[0].RefTable = FilesTable
+	EventsTable.ForeignKeys[1].RefTable = UsersTable
 }

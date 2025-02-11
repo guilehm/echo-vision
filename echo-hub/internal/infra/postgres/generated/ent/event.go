@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/event"
+	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/file"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/user"
 )
 
@@ -39,6 +40,7 @@ type Event struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EventQuery when eager-loading is set.
 	Edges        EventEdges `json:"edges"`
+	file_events  *uuid.UUID
 	selectValues sql.SelectValues
 }
 
@@ -46,9 +48,11 @@ type Event struct {
 type EventEdges struct {
 	// User holds the value of the user edge.
 	User *User `json:"user,omitempty"`
+	// File holds the value of the file edge.
+	File *File `json:"file,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -60,6 +64,17 @@ func (e EventEdges) UserOrErr() (*User, error) {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "user"}
+}
+
+// FileOrErr returns the File value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e EventEdges) FileOrErr() (*File, error) {
+	if e.File != nil {
+		return e.File, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: file.Label}
+	}
+	return nil, &NotLoadedError{edge: "file"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -75,6 +90,8 @@ func (*Event) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case event.FieldID, event.FieldUserID:
 			values[i] = new(uuid.UUID)
+		case event.ForeignKeys[0]: // file_events
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -148,6 +165,13 @@ func (e *Event) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				e.UpdatedAt = value.Time
 			}
+		case event.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field file_events", values[i])
+			} else if value.Valid {
+				e.file_events = new(uuid.UUID)
+				*e.file_events = *value.S.(*uuid.UUID)
+			}
 		default:
 			e.selectValues.Set(columns[i], values[i])
 		}
@@ -164,6 +188,11 @@ func (e *Event) Value(name string) (ent.Value, error) {
 // QueryUser queries the "user" edge of the Event entity.
 func (e *Event) QueryUser() *UserQuery {
 	return NewEventClient(e.config).QueryUser(e)
+}
+
+// QueryFile queries the "file" edge of the Event entity.
+func (e *Event) QueryFile() *FileQuery {
+	return NewEventClient(e.config).QueryFile(e)
 }
 
 // Update returns a builder for updating this Event.

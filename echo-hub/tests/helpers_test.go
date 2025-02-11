@@ -33,6 +33,7 @@ func saveEvent(e *domain.Event) *domain.Event {
 		e.UserID(),
 		e.EventType().String(),
 		e.SubType().String(),
+		nil,
 	)
 	Expect(err).ToNot(HaveOccurred())
 	_, err = eventUseCase.SaveEvent(ctx, ve)
@@ -46,20 +47,6 @@ func toReader[T any](t T) io.Reader {
 	return bytes.NewReader(b)
 }
 
-//	func generateAccessTokenMock(user *domain.User, delay time.Duration) string {
-//		claims := jwt.MapClaims{
-//			"userID":    user.ID(),
-//			"email":     user.Email(),
-//			"firstName": user.FirstName(),
-//			"lastName":  user.LastName(),
-//			"exp":       time.Now().Add(1 * time.Hour).Add(-delay).Unix(),
-//			"nonce":     uuid.NewString(),
-//		}
-//		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-//		tokenStr, err := token.SignedString([]byte(jwtSecretKey))
-//		Expect(err).ToNot(HaveOccurred())
-//		return tokenStr
-//	}
 func generateRefreshTokenMock(user *domain.User, delay time.Duration) string {
 	claims := jwt.MapClaims{
 		"userID": user.ID(),

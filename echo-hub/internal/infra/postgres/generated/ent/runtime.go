@@ -5,7 +5,9 @@ package ent
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/event"
+	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/file"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/user"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/schema"
 )
@@ -26,6 +28,38 @@ func init() {
 	event.DefaultUpdatedAt = eventDescUpdatedAt.Default.(func() time.Time)
 	// event.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	event.UpdateDefaultUpdatedAt = eventDescUpdatedAt.UpdateDefault.(func() time.Time)
+	fileFields := schema.File{}.Fields()
+	_ = fileFields
+	// fileDescFilename is the schema descriptor for filename field.
+	fileDescFilename := fileFields[1].Descriptor()
+	// file.FilenameValidator is a validator for the "filename" field. It is called by the builders before save.
+	file.FilenameValidator = fileDescFilename.Validators[0].(func(string) error)
+	// fileDescFilepath is the schema descriptor for filepath field.
+	fileDescFilepath := fileFields[2].Descriptor()
+	// file.FilepathValidator is a validator for the "filepath" field. It is called by the builders before save.
+	file.FilepathValidator = fileDescFilepath.Validators[0].(func(string) error)
+	// fileDescFilesize is the schema descriptor for filesize field.
+	fileDescFilesize := fileFields[3].Descriptor()
+	// file.FilesizeValidator is a validator for the "filesize" field. It is called by the builders before save.
+	file.FilesizeValidator = fileDescFilesize.Validators[0].(func(int64) error)
+	// fileDescContentType is the schema descriptor for content_type field.
+	fileDescContentType := fileFields[4].Descriptor()
+	// file.ContentTypeValidator is a validator for the "content_type" field. It is called by the builders before save.
+	file.ContentTypeValidator = fileDescContentType.Validators[0].(func(string) error)
+	// fileDescCreatedAt is the schema descriptor for created_at field.
+	fileDescCreatedAt := fileFields[5].Descriptor()
+	// file.DefaultCreatedAt holds the default value on creation for the created_at field.
+	file.DefaultCreatedAt = fileDescCreatedAt.Default.(func() time.Time)
+	// fileDescUpdatedAt is the schema descriptor for updated_at field.
+	fileDescUpdatedAt := fileFields[6].Descriptor()
+	// file.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	file.DefaultUpdatedAt = fileDescUpdatedAt.Default.(func() time.Time)
+	// file.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	file.UpdateDefaultUpdatedAt = fileDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// fileDescID is the schema descriptor for id field.
+	fileDescID := fileFields[0].Descriptor()
+	// file.DefaultID holds the default value on creation for the id field.
+	file.DefaultID = fileDescID.Default.(func() uuid.UUID)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescFirstName is the schema descriptor for first_name field.

@@ -23,7 +23,6 @@ var _ = Describe("Event Domain Validation", func() {
 		eventType   domain.EventType
 		subType     domain.EventSubType
 		status      domain.EventStatus
-		payload     json.RawMessage
 		result      json.RawMessage
 		wantErr     bool
 		expectedErr error
@@ -36,7 +35,6 @@ var _ = Describe("Event Domain Validation", func() {
 			eventType:   domain.EventTypeImageAnalysis,
 			subType:     domain.EventSubTypeDetectLabels,
 			status:      domain.EventStatusPending,
-			payload:     json.RawMessage(`{"key": "value"}`),
 			result:      json.RawMessage(`{"result": "success"}`),
 			createdAt:   validTime,
 			updatedAt:   validTime,
@@ -49,7 +47,6 @@ var _ = Describe("Event Domain Validation", func() {
 			eventType:   domain.EventTypeImageAnalysis,
 			subType:     domain.EventSubTypeDetectLabels,
 			status:      domain.EventStatusPending,
-			payload:     json.RawMessage(`{"key": "value"}`),
 			result:      json.RawMessage(`{"result": "success"}`),
 			wantErr:     true,
 			expectedErr: shared.ErrInvalidID,
@@ -60,7 +57,6 @@ var _ = Describe("Event Domain Validation", func() {
 			eventType:   "",
 			subType:     domain.EventSubTypeDetectLabels,
 			status:      domain.EventStatusPending,
-			payload:     json.RawMessage(`{"key": "value"}`),
 			result:      json.RawMessage(`{"result": "success"}`),
 			createdAt:   validTime,
 			updatedAt:   validTime,
@@ -87,7 +83,6 @@ var _ = Describe("Event Domain Validation", func() {
 			eventType:   domain.EventTypeImageAnalysis,
 			subType:     domain.EventSubTypeDetectLabels,
 			status:      "",
-			payload:     json.RawMessage(`{"key": "value"}`),
 			result:      json.RawMessage(`{"result": "deleted"}`),
 			createdAt:   validTime,
 			updatedAt:   validTime,
@@ -104,9 +99,9 @@ var _ = Describe("Event Domain Validation", func() {
 					t.id,
 					t.eventType,
 					t.subType,
-					t.payload,
 					t.result,
 					t.status,
+					nil,
 					t.createdAt,
 					t.updatedAt,
 				)

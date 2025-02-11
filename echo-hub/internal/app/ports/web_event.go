@@ -12,4 +12,9 @@ type EventWebPort interface {
 type EventCreateInput struct {
 	EventType string `json:"eventType"`
 	SubType   string `json:"subType"`
+
+	Filename    string `json:"filename"`
+	Filepath    string `json:"filepath"`
+	ContentType string `json:"contentType"`
+	Filesize    int64  `json:"filesize"`
 }

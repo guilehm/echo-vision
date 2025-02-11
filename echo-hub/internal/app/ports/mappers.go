@@ -1,9 +1,12 @@
 package ports
 
-import "github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
+import (
+	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
+	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports/dtos"
+)
 
-func MapEventToApiResponse(e *domain.Event) *EventResponse {
-	return &EventResponse{
+func MapEventToApiResponse(e *domain.Event) *dtos.EventResponse {
+	return &dtos.EventResponse{
 		UserID:    e.UserID(),
 		ID:        e.ID(),
 		EventType: e.EventType().String(),
@@ -14,16 +17,16 @@ func MapEventToApiResponse(e *domain.Event) *EventResponse {
 	}
 }
 
-func MapEventsToApiResponse(events []*domain.Event) []*EventResponse {
-	apiResponseResults := make([]*EventResponse, 0, len(events))
+func MapEventsToApiResponse(events []*domain.Event) []*dtos.EventResponse {
+	apiResponseResults := make([]*dtos.EventResponse, 0, len(events))
 	for i := range events {
 		apiResponseResults = append(apiResponseResults, MapEventToApiResponse(events[i]))
 	}
 	return apiResponseResults
 }
 
-func MapUserToApiResponse(u *domain.User) *UserResponse {
-	return &UserResponse{
+func MapUserToApiResponse(u *domain.User) *dtos.UserResponse {
+	return &dtos.UserResponse{
 		ID:        u.ID(),
 		FirstName: u.FirstName(),
 		LastName:  u.LastName(),

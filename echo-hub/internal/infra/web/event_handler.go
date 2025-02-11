@@ -7,12 +7,22 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
+	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain/valueobjects"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
+	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports/dtos"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/shared"
 )
 
+// EventHandler is a handler for events.
 type EventHandler struct {
 	eventPort ports.EventPort
+}
+
+// NewEventHandler creates a new EventHandler.
+func NewEventHandler(up ports.EventPort) ports.EventWebPort {
+	return &EventHandler{
+		eventPort: up,
+	}
 }
 
 // ListEvents implements ports.EventWebPort.
@@ -46,15 +56,9 @@ func (h *EventHandler) ListEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handleApiResponse(w, apiResponse[ports.ApiListResponse[ports.EventResponse]](&ports.ApiListResponse[ports.EventResponse]{
+	handleApiResponse(w, apiResponse(&ports.ApiListResponse[dtos.EventResponse]{
 		Results: ports.MapEventsToApiResponse(events),
 	}, nil))
-}
-
-func NewEventHandler(up ports.EventPort) ports.EventWebPort {
-	return &EventHandler{
-		eventPort: up,
-	}
 }
 
 func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
@@ -80,7 +84,31 @@ func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	event, err := h.eventPort.CreateEvent(ctx, user.ID(), input.EventType, input.SubType)
+	var file *valueobjects.File
+	if input.Filepath != "" {
+		file = valueobjects.NewFile(
+			input.Filepath,
+			input.Filename,
+			input.ContentType,
+			input.Filesize,
+		)
+		if !file.IsValid() {
+			logger.Error("error creating file", slog.String("error", shared.ErrInvalidFile.Error()))
+			handleApiResponse(w, apiResponse[any](nil, newApiError(
+				http.StatusBadRequest,
+				shared.ErrInvalidFile.Error(),
+			)))
+			return
+		}
+	}
+
+	event, err := h.eventPort.CreateEvent(
+		ctx,
+		user.ID(),
+		input.EventType,
+		input.SubType,
+		file,
+	)
 	if err != nil {
 		logger.Error("error creating event", slog.String("error", err.Error()))
 		handleApiResponse(w, apiResponse[any](nil, newApiError(
@@ -97,7 +125,7 @@ func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handleApiResponse(w, apiResponse[ports.EventCreateResponse](&ports.EventCreateResponse{
+	handleApiResponse(w, apiResponse(&dtos.EventCreateResponse{
 		ID: eventID,
 	}, nil))
 }

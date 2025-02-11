@@ -38,7 +38,7 @@ test: test_hub test_analyzer
 
 migrate:
 	@$(MAKE) migrate_template SERVICE_NAME=echo-hub SCHEMA_NAME=echo_hub
-	@$(MAKE) migrate_template SERVICE_NAME=echo-analyzer SCHEMA_NAME=echo_analyzer
+	# @$(MAKE) migrate_template SERVICE_NAME=echo-analyzer SCHEMA_NAME=echo_analyzer
 
 generate:
 	@$(MAKE) generate_template SERVICE_NAME=echo-hub

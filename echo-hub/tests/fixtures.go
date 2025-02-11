@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
+	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain/valueobjects"
 )
 
 // TODO: remove validUser and validEvent
@@ -24,9 +25,26 @@ var validEvent = domain.NewEvent(
 	uuid.New(),
 	domain.EventTypeImageAnalysis,
 	domain.EventSubTypeDetectLabels,
-	json.RawMessage(`{"key": "value"}`),
 	json.RawMessage(`{"result": "success"}`),
 	domain.EventStatusPending,
+	nil,
+	time.Now(),
+	time.Now(),
+)
+
+var validEventWithFile = domain.NewEvent(
+	validUser.ID(),
+	uuid.New(),
+	domain.EventTypeImageAnalysis,
+	domain.EventSubTypeDetectLabels,
+	json.RawMessage(`{"result": "success"}`),
+	domain.EventStatusPending,
+	valueobjects.NewFile(
+		"path/to/file.jpg",
+		"image.jpg",
+		"image/jpeg",
+		1024,
+	),
 	time.Now(),
 	time.Now(),
 )
@@ -50,9 +68,9 @@ func makeEvent(u *domain.User) *domain.Event {
 		uuid.New(),
 		domain.EventTypeImageAnalysis,
 		domain.EventSubTypeDetectLabels,
-		json.RawMessage(`{"key": "value"}`),
 		json.RawMessage(`{"result": "success"}`),
 		domain.EventStatusPending,
+		nil,
 		time.Now(),
 		time.Now(),
 	)
