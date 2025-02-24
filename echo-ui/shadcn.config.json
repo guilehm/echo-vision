@@ -1,0 +1,6 @@
+{
+  "components": "src/components",
+  "theme": {
+    "extend": "src/lib/utils.ts"
+  }
+}
