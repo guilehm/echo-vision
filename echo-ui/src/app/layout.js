@@ -1,6 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import BaseLayout from "@/pages/base-layout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,7 +13,7 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "Echo UI",
-  description: "The frontend interface for the Echo-Vision platform.",
+  description: "The frontend interface for the Echo Vision platform.",
 };
 
 export default function RootLayout({ children }) {
@@ -23,7 +22,8 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <BaseLayout>{children}</BaseLayout>
+        {/* <BaseLayout>{children}</BaseLayout> */}
+        {children}
       </body>
     </html>
   );
