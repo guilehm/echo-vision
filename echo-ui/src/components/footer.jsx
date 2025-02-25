@@ -1,3 +1,6 @@
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+
 export default function Footer() {
   return (
     <footer className="bg-white">
@@ -41,10 +44,12 @@ export default function Footer() {
                     placeholder=""
                     className="w-full border-none focus:border-transparent focus:ring-transparent sm:text-sm"
                   />
-
-                  <button className="mt-1 w-full bg-teal-500 px-6 py-3 text-sm font-bold tracking-wide text-white uppercase transition-none hover:bg-teal-600 sm:mt-0 sm:w-auto sm:shrink-0">
-                    Sign up
-                  </button>
+                  <Button className="bg-teal-500 hover:bg-teal-600">
+                    <Link href="/dashboard">Sign up</Link>
+                  </Button>
+                  {/* <button className="mt-1 w-full bg-teal-500 px-6 py-3 text-sm font-bold tracking-wide text-white uppercase transition-none hover:bg-teal-600 sm:mt-0 sm:w-auto sm:shrink-0"> */}
+                  {/*   Sign up */}
+                  {/* </button> */}
                 </div>
               </form>
             </div>

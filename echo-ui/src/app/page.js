@@ -20,6 +20,7 @@ import Footer from "@/components/footer";
 import FeatureCard from "@/components/cards/feature-card";
 
 import { Rocket } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 export default function Home() {
   return (
@@ -64,7 +65,7 @@ export default function Home() {
                   <Link href="/dashboard">Get Started for Free</Link>
                 </Button>
                 <Button variant="outline" asChild>
-                  <Link href="#">Learn More</Link>
+                  <Link href="#">How It Works</Link>
                 </Button>
               </div>
             </div>
@@ -72,7 +73,7 @@ export default function Home() {
         </section>
 
         {/* Call to Action */}
-        <section className="text-center space-y-4">
+        <section className="text-center space-y-4 bg-gray-100 py-10 md:py-20">
           <div className="container mx-auto px-4 md:px-6 max-w-6xl">
             <div className="flex flex-col items-center space-y-4 text-center">
               <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-semibold">

@@ -8,6 +8,8 @@ import { useActionState } from "react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+import { toast } from "sonner";
+
 async function loginAction(prevState, formData) {
   const email = formData.get("email");
   const password = formData.get("password");
@@ -29,14 +31,14 @@ async function loginAction(prevState, formData) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      return { error: errorData.message || "Login failed" };
+      return { error: errorData.error || "Login failed" };
     }
 
     const responseData = await response.json();
     const { data } = responseData;
     const { accessToken, refreshToken } = data;
   } catch (err) {
-    return { success: false, error: "Login failed" };
+    return { success: false, error: "An error occurred while trying to login" };
   }
 
   return { success: true };
@@ -51,9 +53,11 @@ export function SignInForm({ className, ...props }) {
 
   useEffect(() => {
     if (state.success) {
+      toast.success("Successfully authenticated");
       router.push("/dashboard");
-    } else {
-      // TODO: notify user
+    } else if (state.error !== "") {
+      console.log("CAIU AQUI SIM");
+      toast.error("Could not authenticate");
     }
   }, [state.success]);
 
@@ -91,7 +95,7 @@ export function SignInForm({ className, ...props }) {
                 </div>
                 <Input id="password" name="password" type="password" required />
               </div>
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full hover:cursor-pointer">
                 Login
               </Button>
               <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">

@@ -41,12 +41,18 @@ dependencies:
   next:
     specifier: 15.2.0-canary.71
     version: 15.2.0-canary.71(react-dom@19.0.0)(react@19.0.0)
+  next-themes:
+    specifier: ^0.4.4
+    version: 0.4.4(react-dom@19.0.0)(react@19.0.0)
   react:
     specifier: ^19.0.0
     version: 19.0.0
   react-dom:
     specifier: ^19.0.0
     version: 19.0.0(react@19.0.0)
+  sonner:
+    specifier: ^2.0.1
+    version: 2.0.1(react-dom@19.0.0)(react@19.0.0)
   tailwind-merge:
     specifier: ^3.0.2
     version: 3.0.2
@@ -2938,6 +2944,16 @@ packages:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
     dev: true
 
+  /next-themes@0.4.4(react-dom@19.0.0)(react@19.0.0):
+    resolution: {integrity: sha512-LDQ2qIOJF0VnuVrrMSMLrWGjRMkq+0mpgl6e0juCLqdJ+oo8Q84JRWT6Wh11VDQKkMMe+dVzDKLWs5n87T+PkQ==}
+    peerDependencies:
+      react: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
+      react-dom: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
+    dependencies:
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+    dev: false
+
   /next@15.2.0-canary.71(react-dom@19.0.0)(react@19.0.0):
     resolution: {integrity: sha512-Gozbnr0EEKZTfsOmrGnnFZAiu2BYlzvimnF0QczWA+GyNWtMD0zSmLN6k1N3AIEAQIdiSfGtjjX2xWK2p0kptQ==}
     engines: {node: ^18.18.0 || ^19.8.0 || >= 20.0.0}
@@ -3458,6 +3474,16 @@ packages:
       is-arrayish: 0.3.2
     dev: false
     optional: true
+
+  /sonner@2.0.1(react-dom@19.0.0)(react@19.0.0):
+    resolution: {integrity: sha512-FRBphaehZ5tLdLcQ8g2WOIRE+Y7BCfWi5Zyd8bCvBjiW8TxxAyoWZIxS661Yz6TGPqFQ4VLzOF89WEYhfynSFQ==}
+    peerDependencies:
+      react: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+      react-dom: ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+    dependencies:
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+    dev: false
 
   /source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
