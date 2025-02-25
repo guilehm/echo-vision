@@ -58,6 +58,8 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO: set cookies
+
 	handleApiResponse(w, apiResponse(&dtos.UserCreateResponse{
 		ID:           user.ID(),
 		AccessToken:  user.AccessToken(),
@@ -83,7 +85,28 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handleApiResponse(w, apiResponse[dtos.UserLoginResponse](&dtos.UserLoginResponse{
+	// TODO: setup cookie expiration
+	http.SetCookie(w, &http.Cookie{
+		Name:     "accessToken",
+		Value:    user.AccessToken(),
+		Path:     "/",
+		HttpOnly: true,
+		// TODO: control based on env
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refreshToken",
+		Value:    user.RefreshToken(),
+		Path:     "/",
+		HttpOnly: true,
+		// TODO: control based on env
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	handleApiResponse(w, apiResponse(&dtos.UserLoginResponse{
 		ID:           user.ID(),
 		AccessToken:  user.AccessToken(),
 		RefreshToken: user.RefreshToken(),

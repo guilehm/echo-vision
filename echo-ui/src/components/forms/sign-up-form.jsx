@@ -19,12 +19,7 @@ export function SignUpForm({ className, ...props }) {
               </div>
               <div className="grid gap-3">
                 <Label htmlFor="first-name">First Name</Label>
-                <Input
-                  id="first-name"
-                  type="text"
-                  placeholder=""
-                  required
-                />
+                <Input id="first-name" type="text" placeholder="" required />
               </div>
               <div className="grid gap-3">
                 <Label htmlFor="last-name">Last Name</Label>
@@ -32,12 +27,7 @@ export function SignUpForm({ className, ...props }) {
               </div>
               <div className="grid gap-3">
                 <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder=""
-                  required
-                />
+                <Input id="email" type="email" placeholder="" required />
               </div>
               <div className="grid gap-3">
                 <Label htmlFor="password">Password</Label>
@@ -51,7 +41,8 @@ export function SignUpForm({ className, ...props }) {
                   Or continue with
                 </span>
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              {/* <div className="grid grid-cols-3 gap-4"> */}
+              <div>
                 <Button variant="outline" type="button" className="w-full">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path

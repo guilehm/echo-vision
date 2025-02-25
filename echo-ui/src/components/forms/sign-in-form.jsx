@@ -1,15 +1,67 @@
+"use client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useActionState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
+async function loginAction(prevState, formData) {
+  const email = formData.get("email");
+  const password = formData.get("password");
+
+  if (!email || !password) {
+    return { success: false, error: "Email and password are required" };
+  }
+
+  try {
+    // TODO: do not hardcode the URL
+    const response = await fetch("http://localhost:8000/users/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return { error: errorData.message || "Login failed" };
+    }
+
+    const responseData = await response.json();
+    const { data } = responseData;
+    const { accessToken, refreshToken } = data;
+  } catch (err) {
+    return { success: false, error: "Login failed" };
+  }
+
+  return { success: true };
+}
 
 export function SignInForm({ className, ...props }) {
+  const router = useRouter();
+  const [state, dispatch] = useActionState(loginAction, {
+    success: false,
+    error: "",
+  });
+
+  useEffect(() => {
+    if (state.success) {
+      router.push("/dashboard");
+    } else {
+      // TODO: notify user
+    }
+  }, [state.success]);
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-1">
-          <form className="p-6 md:p-8">
+          <form action={dispatch} className="p-6 md:p-8">
             <div className="flex flex-col gap-6">
               <div className="flex flex-col items-center text-center">
                 <h1 className="text-2xl font-bold">Welcome back</h1>
@@ -19,7 +71,13 @@ export function SignInForm({ className, ...props }) {
               </div>
               <div className="grid gap-3">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="" required />
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder=""
+                  required
+                />
               </div>
               <div className="grid gap-3">
                 <div className="flex items-center">
@@ -31,7 +89,7 @@ export function SignInForm({ className, ...props }) {
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Input id="password" name="password" type="password" required />
               </div>
               <Button type="submit" className="w-full">
                 Login

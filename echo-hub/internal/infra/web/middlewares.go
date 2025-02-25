@@ -13,7 +13,7 @@ import (
 
 func corsMiddleware(next http.Handler) http.Handler {
 	return cors.New(cors.Options{
-		AllowedOrigins:   []string{"*"}, // TODO: do not allow all origins
+		AllowedOrigins:   []string{"http://localhost:3000"}, // TODO: do not allow all origins
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
