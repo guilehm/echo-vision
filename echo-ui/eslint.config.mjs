@@ -10,8 +10,9 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
-  ...compat.extends("next"),
+  ...compat.extends("next/core-web-vitals", "next"),
   {
+    files: ["**/*.js", "**/*.jsx"],
     rules: {
       "newline-per-chained-call": ["error", { ignoreChainWithDepth: 4 }],
       indent: ["error", 2, { SwitchCase: 1 }],

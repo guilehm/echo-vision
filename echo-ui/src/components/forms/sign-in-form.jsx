@@ -1,12 +1,11 @@
-"use client";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useActionState } from "react";
+import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useActionState } from "react";
+// import { useEffect } from "react";
 
 import { toast } from "sonner";
 
@@ -18,8 +17,11 @@ async function loginAction(prevState, formData) {
     return { success: false, error: "Email and password are required" };
   }
 
+  console.log("21")
+
   try {
     // TODO: do not hardcode the URL
+    console.log(25)
     const response = await fetch("http://localhost:8000/users/login", {
       method: "POST",
       headers: {
@@ -28,20 +30,22 @@ async function loginAction(prevState, formData) {
       body: JSON.stringify({ email, password }),
       credentials: "include",
     });
+    console.log(33)
 
     if (!response.ok) {
       const errorData = await response.json();
-      return { error: errorData.error || "Login failed" };
+      return { success: false, error: errorData.error || "Login failed" };
     }
 
     const responseData = await response.json();
     const { data } = responseData;
     const { accessToken, refreshToken } = data;
   } catch (err) {
+    console.log(45)
     return { success: false, error: "An error occurred while trying to login" };
   }
 
-  return { success: true };
+  return { success: true, error: "" };
 }
 
 export function SignInForm({ className, ...props }) {
@@ -51,15 +55,16 @@ export function SignInForm({ className, ...props }) {
     error: "",
   });
 
-  useEffect(() => {
-    if (state.success) {
-      toast.success("Successfully authenticated");
-      router.push("/dashboard");
-    } else if (state.error !== "") {
-      console.log("CAIU AQUI SIM");
-      toast.error("Could not authenticate");
-    }
-  }, [state.success]);
+  // useEffect(() => {
+  //   console.log("use effect", "success", state.success, "error:", state.error)
+  //   if (state.success) {
+  //     toast.success("Successfully authenticated");
+  //     router.push("/dashboard");
+  //   } else if (state.error !== "") {
+  //     console.log("CAIU AQUI SIM");
+  //     toast.error("Could not authenticate");
+  //   }
+  // }, [state.success, state.error]);
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>

@@ -77,8 +77,8 @@ devDependencies:
     specifier: ^9
     version: 9.0.0
   eslint-config-next:
-    specifier: 15.2.0-canary.71
-    version: 15.2.0-canary.71(eslint@9.0.0)(typescript@5.7.3)
+    specifier: 15.2.0-canary.76
+    version: 15.2.0-canary.76(eslint@9.0.0)(typescript@5.7.3)
   tailwindcss:
     specifier: ^4
     version: 4.0.0
@@ -386,8 +386,8 @@ packages:
     resolution: {integrity: sha512-I2N8+B2eqxmNoppNvRUqueBEmjwhsBVD1QvnmOT6c0EeYULvXRkGwfW+wnxT2KLS/fSdfMgmrH8g9WC8D8uPYw==}
     dev: false
 
-  /@next/eslint-plugin-next@15.2.0-canary.71:
-    resolution: {integrity: sha512-HvZbXjdWVUq10J9V966WbjwOidT4vEGSpuoriqc+pR+3OLf4iPG8vr0EU+VDKTyQtgVhP9orTZ38jPdH/zl1jA==}
+  /@next/eslint-plugin-next@15.2.0-canary.76:
+    resolution: {integrity: sha512-6W3pJm3XUVkwcoVyIHDKsyYnej3APuJ8vzgiVDMLdV55W0Jw8p/ejs4C8rhoMeOTFMzsHLs42Or415RHZ9hlfQ==}
     dependencies:
       fast-glob: 3.3.1
     dev: true
@@ -1914,8 +1914,8 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /eslint-config-next@15.2.0-canary.71(eslint@9.0.0)(typescript@5.7.3):
-    resolution: {integrity: sha512-o6VA6lK0qS17rCXV6Si6JSO6zRATx9yjAMFCBx050Zzvj0EsAiIGg+4GuIqaIItVsoD/BkJLnYekv+ftGN5Bdw==}
+  /eslint-config-next@15.2.0-canary.76(eslint@9.0.0)(typescript@5.7.3):
+    resolution: {integrity: sha512-2mJosDYtlUWuVVOsmUUJrhZw8JUzkwqeg1DbIKl/MJy26IR9EiKasDM/y0MVIsT4YYYwYIEPuo/ry8Rkkv0Lqw==}
     peerDependencies:
       eslint: ^7.23.0 || ^8.0.0 || ^9.0.0
       typescript: '>=3.3.1'
@@ -1923,7 +1923,7 @@ packages:
       typescript:
         optional: true
     dependencies:
-      '@next/eslint-plugin-next': 15.2.0-canary.71
+      '@next/eslint-plugin-next': 15.2.0-canary.76
       '@rushstack/eslint-patch': 1.10.5
       '@typescript-eslint/eslint-plugin': 8.24.1(@typescript-eslint/parser@8.24.1)(eslint@9.0.0)(typescript@5.7.3)
       '@typescript-eslint/parser': 8.24.1(eslint@9.0.0)(typescript@5.7.3)
