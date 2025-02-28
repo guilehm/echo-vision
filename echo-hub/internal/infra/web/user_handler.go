@@ -97,8 +97,9 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	})
 
 	http.SetCookie(w, &http.Cookie{
-		Name:     "refreshToken",
-		Value:    user.RefreshToken(),
+		Name:  "refreshToken",
+		Value: user.RefreshToken(),
+		// TODO: do not use / as path for refresh token
 		Path:     "/",
 		HttpOnly: true,
 		// TODO: control based on env

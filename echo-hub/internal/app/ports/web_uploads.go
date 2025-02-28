@@ -2,6 +2,8 @@ package ports
 
 import (
 	"net/http"
+
+	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
 )
 
 type UploadWebPort interface {
@@ -9,8 +11,9 @@ type UploadWebPort interface {
 }
 
 type UploadPresignedURLInput struct {
-	Filename    string `json:"filename"`
-	Filepath    string `json:"filepath"`
+	Filename string `json:"filename"`
+	// Filepath    string `json:"filepath"`
+	EventType   string `json:"eventType"`
 	ContentType string `json:"contentType"`
 }
 
@@ -19,5 +22,11 @@ type UploadPresignedURLResponse struct {
 }
 
 func (i UploadPresignedURLInput) IsValid() bool {
-	return i.Filename != "" && i.Filepath != "" && i.ContentType != ""
+	if i.Filename == "" || i.EventType == "" || i.ContentType == "" {
+		return false
+	}
+	if !domain.EventType(i.EventType).IsValid() {
+		return false
+	}
+	return true
 }

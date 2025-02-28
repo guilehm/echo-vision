@@ -1,6 +1,10 @@
 package filestorage
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+	"time"
+)
 
 type FileKey string
 
@@ -9,7 +13,7 @@ func (f FileKey) String() string {
 }
 
 func NewFileKey(path, filename string) FileKey {
-	return FileKey(fmt.Sprintf("%s/%s", path, filename))
+	return FileKey(fmt.Sprintf("%s/%s-%s", path, strconv.Itoa(int(time.Now().Unix())), filename))
 }
 
 type FileStoragePort interface {

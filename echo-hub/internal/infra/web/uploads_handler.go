@@ -2,6 +2,7 @@ package web
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -39,7 +40,7 @@ func (h *UploadHandler) PresignedURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: validate file data
+	// TODO: validate content type
 
 	ctx := r.Context()
 
@@ -52,10 +53,19 @@ func (h *UploadHandler) PresignedURL(w http.ResponseWriter, r *http.Request) {
 		)))
 		return
 	}
+
+	filepath := fmt.Sprintf("users/%s", user.ID().String())
+
+	// TODO: move to a function
+	switch input.EventType {
+	case domain.EventTypeImageAnalysis.String():
+		filepath = fmt.Sprintf("%s/%s", filepath, "image-analysis")
+	}
+
 	url, err := h.filestoragePort.GeneratePreSignedURL(
 		filestorage.NewFileKey(
-			"users/"+user.ID().String(),
-			input.Filepath,
+			filepath,
+			input.Filename,
 		),
 		input.ContentType,
 	)

@@ -29,6 +29,10 @@ func (et EventType) String() string {
 	return string(et)
 }
 
+func (et EventType) IsValid() bool {
+	return isIn(et, et.Values())
+}
+
 type EventSubType string
 
 func (est EventSubType) Values() []EventSubType {
