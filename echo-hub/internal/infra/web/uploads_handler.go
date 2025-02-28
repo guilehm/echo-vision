@@ -54,19 +54,21 @@ func (h *UploadHandler) PresignedURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filepath := fmt.Sprintf("users/%s", user.ID().String())
+	path := fmt.Sprintf("users/%s", user.ID().String())
 
 	// TODO: move to a function
 	switch input.EventType {
 	case domain.EventTypeImageAnalysis.String():
-		filepath = fmt.Sprintf("%s/%s", filepath, "image-analysis")
+		path = fmt.Sprintf("%s/%s", path, "image-analysis")
 	}
 
+	fk := filestorage.NewFileKey(
+		path,
+		input.Filename,
+	)
+
 	url, err := h.filestoragePort.GeneratePreSignedURL(
-		filestorage.NewFileKey(
-			filepath,
-			input.Filename,
-		),
+		fk,
 		input.ContentType,
 	)
 	if err != nil {
@@ -76,6 +78,8 @@ func (h *UploadHandler) PresignedURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	handleApiResponse(w, apiResponse(&ports.UploadPresignedURLResponse{
-		URL: url,
+		URL:      url,
+		Filepath: fk.Filepath,
+		Filename: fk.Filename,
 	}, nil))
 }

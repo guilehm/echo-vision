@@ -6,14 +6,23 @@ import (
 	"time"
 )
 
-type FileKey string
-
-func (f FileKey) String() string {
-	return string(f)
+type FileKey struct {
+	// URL      string `json:"url"`
+	Filename string `json:"filename"`
+	Filepath string `json:"filepath"`
 }
 
+// func (f FileKey) String() string {
+// 	return f.URL
+// }
+
 func NewFileKey(path, filename string) FileKey {
-	return FileKey(fmt.Sprintf("%s/%s-%s", path, strconv.Itoa(int(time.Now().Unix())), filename))
+	timestamp := strconv.Itoa(int(time.Now().Unix()))
+	return FileKey{
+		// URL:      fmt.Sprintf("%s/%s-%s", path, timestamp, filename),
+		Filename: filename,
+		Filepath: fmt.Sprintf("%s/%s-%s", path, timestamp, filename),
+	}
 }
 
 type FileStoragePort interface {

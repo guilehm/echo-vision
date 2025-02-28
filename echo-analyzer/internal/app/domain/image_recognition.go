@@ -18,7 +18,7 @@ type Label struct {
 // Instance represents an instance of a label detected in the image.
 type Instance struct {
 	BoundingBox BoundingBox `json:"boundingBox"`
-	Confidence  float64     `json:"confidence"`
+	Confidence  *float32    `json:"confidence"`
 }
 
 // FaceDetail represents details about a detected face.

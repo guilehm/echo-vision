@@ -32,7 +32,8 @@ func main() {
 		log.Fatalln("could not create s3 adapter: ", err)
 	}
 
-	url, err := a.GeneratePreSignedURL("test.jpeg", "image/jpeg")
+	fk := filestorage.NewFileKey("users/123/", "test.jpeg")
+	url, err := a.GeneratePreSignedURL(fk, "image/jpeg")
 	if err != nil {
 		log.Fatalln("could not generate pre-signed URL: ", err)
 	}

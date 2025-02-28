@@ -2,7 +2,6 @@ package rabbitmqadapter
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
 	hubevents "github.com/guilehm/echo-vision/echo-hub/pkg/events"
@@ -20,7 +19,6 @@ func (r *RabbitMQAdapter) Topics() []string {
 func (r *RabbitMQAdapter) Handle(ctx context.Context, msg messaging.Message) messaging.HandlerResponse {
 	switch msg.Topic {
 	case hubevents.EventImageAnalysCreated:
-		fmt.Println("image analysis from ECHO-HUB", msg)
 		return messaging.Success
 	// case hubevents.EventImageAnalysisStatusUpdated:
 	// 	fmt.Println("Image analysis status updated")

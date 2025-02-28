@@ -41,7 +41,7 @@ var validEventWithFile = domain.NewEvent(
 	domain.EventStatusPending,
 	valueobjects.NewFile(
 		"path/to/file.jpg",
-		"image.jpg",
+		"file.jpg",
 		"image/jpeg",
 		1024,
 	),

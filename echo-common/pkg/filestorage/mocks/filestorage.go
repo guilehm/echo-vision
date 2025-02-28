@@ -17,5 +17,5 @@ func NewFileStorageMock(bucketName string) *FileStorageMock {
 }
 
 func (m *FileStorageMock) GeneratePreSignedURL(fileKey filestorage.FileKey, contentType string) (string, error) {
-	return fmt.Sprintf("https://s3-mock/%s/%s", m.bucket, fileKey.String()), nil
+	return fmt.Sprintf("https://s3-mock/%s/%s", m.bucket, fileKey.Filepath), nil
 }

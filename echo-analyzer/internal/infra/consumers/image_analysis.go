@@ -11,6 +11,11 @@ import (
 
 // ProcessImageAnalysis implements ports.ConsumerPort.
 func (c *ConsumerGroup) ProcessImageAnalysis(topic string, message hubevents.EventMessage) messaging.HandlerResponse {
+	if message.File == nil {
+		logger.Error("message does not contain a file")
+		return messaging.DeadLetter
+	}
+
 	labels, err := c.irs.DetectLabels(message.File.Filepath)
 	if err != nil {
 		logger.Error("could not detect labels: ", slog.String("error", err.Error()))

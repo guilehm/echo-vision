@@ -58,10 +58,7 @@ func (a *AWSRekognitionAdapter) DetectLabels(filepath string) ([]domain.Label, e
 
 	labels := make([]domain.Label, len(result.Labels))
 	for i, lbl := range result.Labels {
-		labels[i] = domain.Label{
-			Name:       lbl.Name,
-			Confidence: lbl.Confidence,
-		}
+		labels[i] = labelToDomain(lbl)
 	}
 	return labels, nil
 }

@@ -11,14 +11,15 @@ type UploadWebPort interface {
 }
 
 type UploadPresignedURLInput struct {
-	Filename string `json:"filename"`
-	// Filepath    string `json:"filepath"`
+	Filename    string `json:"filename"`
 	EventType   string `json:"eventType"`
 	ContentType string `json:"contentType"`
 }
 
 type UploadPresignedURLResponse struct {
-	URL string `json:"url"`
+	URL      string `json:"url"`
+	Filepath string `json:"filepath"`
+	Filename string `json:"filename"`
 }
 
 func (i UploadPresignedURLInput) IsValid() bool {

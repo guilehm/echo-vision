@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
 import { toast } from "sonner";
-import { getPresignedUrl } from "@/services/server-requester";
+import { createEvent, getPresignedUrl } from "@/services/server-requester";
 import { Button } from "@/components/ui/button";
 import { uploadS3File } from "@/services/client-requester";
 
@@ -41,14 +41,14 @@ export default function ImageUpload() {
       contentType: file.type,
     };
     getPresignedUrl(data)
-      .then((response) => {
-        console.log("success", response);
-        if (response.status !== 200) {
-          console.log(response.data);
+      .then((presignedResponse) => {
+        console.log("success", presignedResponse);
+        if (presignedResponse.status !== 200) {
+          console.log(presignedResponse.data);
           toast.error("An error occurred. Please try again later.");
           return;
         }
-        const presignedURL = response.data?.url;
+        const presignedURL = presignedResponse.data?.url;
         if (!presignedURL || !presignedURL.length) {
           toast.error("An error occurred. Please try again later.");
           return;
@@ -57,6 +57,39 @@ export default function ImageUpload() {
         uploadS3File({ file, presignedURL })
           .then((response) => {
             console.log("uploadResponse", response);
+            if (response.status !== 200) {
+              console.log(response.data);
+              toast.error("Could not upload the file. Please try again later.");
+              return;
+            }
+
+            console.log("O QUE TEM AQUI", response.data);
+
+            // TODO: do not hardcode values
+            const eventData = {
+              filename: presignedResponse.data?.filename,
+              filepath: presignedResponse.data?.filepath,
+              eventType: "image_analysis",
+              subType: "detect_labels",
+              contentType: file.type,
+              filesize: file.size,
+            };
+
+            console.log("eventData", eventData);
+
+            createEvent(eventData)
+              .then((response) => {
+                console.log("eventResponse", response);
+                if (response.status !== 200) {
+                  console.log(response.data);
+                  toast.error(
+                    "Could not create the event. Please try again later.",
+                  );
+                  return;
+                }
+                toast.success("Event successfully created");
+              })
+              .catch(handleErrors);
           })
           .catch(handleErrors);
       })

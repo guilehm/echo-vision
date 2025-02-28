@@ -51,7 +51,7 @@ func NewS3Adapter(bucketName, region string) (FileStoragePort, error) {
 func (s *S3Adapter) GeneratePreSignedURL(fileKey FileKey, contentType string) (string, error) {
 	req, err := s.presigner.PresignPutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket:      aws.String(s.bucket),
-		Key:         aws.String(fileKey.String()),
+		Key:         aws.String(fileKey.Filepath),
 		ContentType: aws.String(contentType),
 	}, s3.WithPresignExpires(15*time.Minute))
 	if err != nil {
