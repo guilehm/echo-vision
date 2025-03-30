@@ -87,7 +87,7 @@ Each component plays a specific role within the architecture:
 
 - **Run all tests**:
   ```bash
-  make test_all
+  make test
   ```
   Runs all test suites across the project.
 
