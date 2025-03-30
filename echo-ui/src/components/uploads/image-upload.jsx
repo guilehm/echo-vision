@@ -37,6 +37,23 @@ export default function ImageUpload() {
       contentType: file.type,
     };
 
+    const handlePresignedSuccess = (presignedResponse) => {
+      if (presignedResponse.status !== 200) {
+        console.log(presignedResponse.data);
+        toast.error("An error occurred. Please try again later.");
+        return;
+      }
+      const presignedURL = presignedResponse.data?.url;
+      if (!presignedURL || !presignedURL.length) {
+        toast.error("An error occurred. Please try again later.");
+        return;
+      }
+
+      uploadS3File({ file, presignedURL })
+        .then((res) => handleUploadSuccess(res, presignedResponse))
+        .catch(handleErrors);
+    };
+
     const handleUploadSuccess = (response, presignedResponse) => {
       if (response.status !== 200) {
         console.log(response.data);
@@ -64,23 +81,6 @@ export default function ImageUpload() {
         return;
       }
       toast.success("Event successfully created");
-    };
-
-    const handlePresignedSuccess = (presignedResponse) => {
-      if (presignedResponse.status !== 200) {
-        console.log(presignedResponse.data);
-        toast.error("An error occurred. Please try again later.");
-        return;
-      }
-      const presignedURL = presignedResponse.data?.url;
-      if (!presignedURL || !presignedURL.length) {
-        toast.error("An error occurred. Please try again later.");
-        return;
-      }
-
-      uploadS3File({ file, presignedURL })
-        .then((res) => handleUploadSuccess(res, presignedResponse))
-        .catch(handleErrors);
     };
 
     getPresignedUrl(data).then(handlePresignedSuccess).catch(handleErrors);
