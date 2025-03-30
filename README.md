@@ -9,10 +9,12 @@ Echo-Vision is a distributed system composed of microservices designed to analyz
 - **PostgreSQL** for relational data persistence.
 - **Go** with Clean Architecture + DDD for service implementation.
 
-Each service has a specific role:
+Each component plays a specific role within the architecture:
 
-- `echo-hub`: Manages user authentication, session handling, and provides endpoints for the frontend to create and manage events.
-- `echo-analyzer`: Processes image and video files using AWS Rekognition, extracting metadata such as labels, faces, and objects, and returns analysis results through RabbitMQ.
+- **echo-hub**: Manages user authentication, session handling, and provides endpoints for the frontend to create and manage events.
+- **echo-analyzer**: Processes image and video files using AWS Rekognition, extracting metadata such as labels, faces, and objects, and returns structured analysis results through RabbitMQ.
+- **echo-common**: A shared Go module (not a standalone service) containing reusable packages such as DTOs, message definitions, constants, and utility functions. It ensures consistency and reduces duplication across all microservices.
+- **echo-ui**: The frontend application built with Next.js and React, providing an intuitive dashboard for users to upload media, manage their sessions, view analysis results, and interact with the system in real time.
 
 ## Prerequisites
 
