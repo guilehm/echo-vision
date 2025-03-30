@@ -29,10 +29,6 @@ export default function ImageUpload() {
       toast.warning("Please upload an image");
       return;
     }
-    console.log("Uploading:", file);
-    console.log("file.name", file.name);
-    console.log("file.type", file.type);
-    console.log("file.size", file.size);
 
     const data = {
       filename: file.name,
@@ -42,7 +38,6 @@ export default function ImageUpload() {
     };
     getPresignedUrl(data)
       .then((presignedResponse) => {
-        console.log("success", presignedResponse);
         if (presignedResponse.status !== 200) {
           console.log(presignedResponse.data);
           toast.error("An error occurred. Please try again later.");
@@ -62,8 +57,6 @@ export default function ImageUpload() {
               toast.error("Could not upload the file. Please try again later.");
               return;
             }
-
-            console.log("O QUE TEM AQUI", response.data);
 
             // TODO: do not hardcode values
             const eventData = {
