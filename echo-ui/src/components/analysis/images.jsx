@@ -1,7 +1,6 @@
 "use server";
 
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ImageUpload from "@/components/uploads/image-upload";
