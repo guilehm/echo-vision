@@ -36,57 +36,54 @@ export default function ImageUpload() {
       eventType: "image_analysis",
       contentType: file.type,
     };
-    getPresignedUrl(data)
-      .then((presignedResponse) => {
-        if (presignedResponse.status !== 200) {
-          console.log(presignedResponse.data);
-          toast.error("An error occurred. Please try again later.");
-          return;
-        }
-        const presignedURL = presignedResponse.data?.url;
-        if (!presignedURL || !presignedURL.length) {
-          toast.error("An error occurred. Please try again later.");
-          return;
-        }
 
-        uploadS3File({ file, presignedURL })
-          .then((response) => {
-            console.log("uploadResponse", response);
-            if (response.status !== 200) {
-              console.log(response.data);
-              toast.error("Could not upload the file. Please try again later.");
-              return;
-            }
+    const handleUploadSuccess = (response, presignedResponse) => {
+      if (response.status !== 200) {
+        console.log(response.data);
+        toast.error("Could not upload the file. Please try again later.");
+        return;
+      }
 
-            // TODO: do not hardcode values
-            const eventData = {
-              filename: presignedResponse.data?.filename,
-              filepath: presignedResponse.data?.filepath,
-              eventType: "image_analysis",
-              subType: "detect_labels",
-              contentType: file.type,
-              filesize: file.size,
-            };
+      // TODO: do not hardcode values
+      const eventData = {
+        filename: presignedResponse.data?.filename,
+        filepath: presignedResponse.data?.filepath,
+        eventType: "image_analysis",
+        subType: "detect_labels",
+        contentType: file.type,
+        filesize: file.size,
+      };
 
-            console.log("eventData", eventData);
+      createEvent(eventData).then(handleCreateEventSuccess).catch(handleErrors);
+    };
 
-            createEvent(eventData)
-              .then((response) => {
-                console.log("eventResponse", response);
-                if (response.status !== 200) {
-                  console.log(response.data);
-                  toast.error(
-                    "Could not create the event. Please try again later.",
-                  );
-                  return;
-                }
-                toast.success("Event successfully created");
-              })
-              .catch(handleErrors);
-          })
-          .catch(handleErrors);
-      })
-      .catch(handleErrors);
+    const handleCreateEventSuccess = (response) => {
+      if (response.status !== 200) {
+        console.log(response.data);
+        toast.error("Could not create the event. Please try again later.");
+        return;
+      }
+      toast.success("Event successfully created");
+    };
+
+    const handlePresignedSuccess = (presignedResponse) => {
+      if (presignedResponse.status !== 200) {
+        console.log(presignedResponse.data);
+        toast.error("An error occurred. Please try again later.");
+        return;
+      }
+      const presignedURL = presignedResponse.data?.url;
+      if (!presignedURL || !presignedURL.length) {
+        toast.error("An error occurred. Please try again later.");
+        return;
+      }
+
+      uploadS3File({ file, presignedURL })
+        .then((res) => handleUploadSuccess(res, presignedResponse))
+        .catch(handleErrors);
+    };
+
+    getPresignedUrl(data).then(handlePresignedSuccess).catch(handleErrors);
 
     // Implement API upload logic here
   };
