@@ -1,6 +1,6 @@
 # MIT License (Modified)
 
-Copyright (c) 2025 Guilherme
+Copyright (c) 2025 guilehm
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the “Software”), to deal
@@ -11,7 +11,7 @@ copies of the Software, subject to the following conditions:
 **The above copyright notice and this permission notice shall be included in all  
 copies or substantial portions of the Software.**
 
-**Proper credit must be given to the original author ("Guilherme") in any  
+**Proper credit must be given to the original author ("guilehm") in any  
 project, product, or publication that uses this code, in whole or in part.  
 This includes placing an explicit attribution in the documentation, user interface,  
 or wherever appropriate.**
