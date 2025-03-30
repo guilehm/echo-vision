@@ -2,9 +2,17 @@
 
 ## Overview
 
-The `echo-vision` project provides services for user authentication and interaction endpoints, managed via microservices. This project uses Docker for containerization, RabbitMQ for messaging, and PostgreSQL for database operations. Below are the available commands in the `Makefile` to streamline development tasks.
+Echo-Vision is a distributed system composed of microservices designed to analyze images and videos using AI, manage user authentication, and expose interaction endpoints through a modern dashboard. The platform uses:
 
----
+- **Docker** for containerized environments.
+- **RabbitMQ** for asynchronous communication between services.
+- **PostgreSQL** for relational data persistence.
+- **Go** with Clean Architecture + DDD for service implementation.
+
+Each service has a specific role:
+
+- `echo-hub`: Manages user authentication, session handling, and provides endpoints for the frontend to create and manage events.
+- `echo-analyzer`: Processes image and video files using AWS Rekognition, extracting metadata such as labels, faces, and objects, and returns analysis results through RabbitMQ.
 
 ## Prerequisites
 
