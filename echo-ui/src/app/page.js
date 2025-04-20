@@ -1,26 +1,6 @@
-import Link from "next/link";
-import {
-  ArrowRight,
-  Eye,
-  Video,
-  Zap,
-  BarChart2,
-  Shield,
-  Smartphone,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import Footer from "@/components/footer";
-import FeatureCard from "@/components/cards/feature-card";
-
-import { Rocket } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function Home() {
   return (
