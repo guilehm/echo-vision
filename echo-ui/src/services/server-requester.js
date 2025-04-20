@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 
 // TODO: move to an environment variable
-const BASE_URL = "http://echo-hub";
+const BASE_URL = "http://localhost:8000";
 
 export async function getPresignedUrl({ filename, eventType, contentType }) {
   const c = await cookies();
