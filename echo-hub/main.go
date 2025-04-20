@@ -144,7 +144,7 @@ func main() {
 	}
 
 	router := web.NewRouter(userUseCase, eventUseCase, uploadPort, publisher)
-	err = http.ListenAndServe(":8000", router)
+	err = http.ListenAndServe("0.0.0.0:80", router)
 	if err != nil {
 		log.Fatalln("could not start server: ", err)
 	}
