@@ -1,4 +1,15 @@
 services:
+  echo-ui:
+    build: ./echo-ui
+    container_name: echo-ui
+    volumes:
+      - ./echo-ui:/app
+      - ./echo-ui/node_modules:/app/node_modules
+    ports:
+      - 3000:3000
+    environment:
+      NODE_ENV: development
+    command: sh -c "npm install && npm run dev"
 
   echo-hub:
     build:
@@ -22,7 +33,7 @@ services:
       AWS_REGION: us-east-2
       AWS_BUCKET_NAME: echo-vision-local
     env_file:
-     - .env
+      - .env
 
   echo-analyzer:
     build:
@@ -45,7 +56,7 @@ services:
       AWS_REGION: us-east-2
       AWS_BUCKET_NAME: echo-vision-local
     env_file:
-     - .env
+      - .env
 
   postgres:
     image: postgres:12.0-alpine
