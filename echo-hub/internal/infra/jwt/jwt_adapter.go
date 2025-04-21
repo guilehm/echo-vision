@@ -11,6 +11,7 @@ import (
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/shared"
 )
 
+// JWTManager is a struct that implements the TokenManager interface
 type JWTManager struct {
 	secretKey       string
 	accessDuration  time.Duration
@@ -54,7 +55,7 @@ func (j *JWTManager) GenerateRefreshToken(user *domain.User) (string, error) {
 func (j *JWTManager) ValidateToken(tokenString string) (ports.TokenClaims, error) {
 	secret := j.secretKey
 
-	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (any, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, shared.ErrInvalidSigningMethod
 		}
