@@ -1,6 +1,7 @@
 package jwtadapter
 
 import (
+	"maps"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -65,9 +66,7 @@ func (j *JWTManager) ValidateToken(tokenString string) (ports.TokenClaims, error
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		tokenClaims := make(ports.TokenClaims)
-		for key, value := range claims {
-			tokenClaims[key] = value
-		}
+		maps.Copy(tokenClaims, claims)
 		return tokenClaims, nil
 	}
 	return nil, shared.ErrInvalidToken
