@@ -2,7 +2,7 @@ package ports
 
 import "github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
 
-type TokenClaims map[string]interface{}
+type TokenClaims map[string]any
 
 type TokenManager interface {
 	GenerateAccessToken(user *domain.User) (string, error)
