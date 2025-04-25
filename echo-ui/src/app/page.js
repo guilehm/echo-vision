@@ -45,7 +45,7 @@ export default function Home() {
                   <Link href="/dashboard">Get Started for Free</Link>
                 </Button>
                 <Button variant="outline" asChild>
-                  <Link href="#">How It Works</Link>
+                  <Link href="#">Learn More</Link>
                 </Button>
               </div>
             </div>
