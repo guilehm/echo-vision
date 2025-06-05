@@ -4,6 +4,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import * as apiService from "@/services/client-requester";
+
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -41,7 +44,24 @@ export function SignUpForm({ className, ...props }) {
   });
 
   async function onSubmit(values) {
-    console.log("Sign-up values:", values);
+    try {
+      const response = await apiService.signUp(values);
+      if (response.status === 200) {
+        toast.success("TODO: fix the toast message");
+        router.push("/dashboard");
+        return;
+      }
+      if (response.status === 400) {
+        toast.warning(
+          "Could not create your account, please review your details",
+        );
+        return;
+      }
+      toast.error("An error occurred while trying to create your account");
+    } catch (err) {
+      console.log("could not authenticate", err);
+      toast.error("Could not authenticate, check again later");
+    }
   }
 
   return (
