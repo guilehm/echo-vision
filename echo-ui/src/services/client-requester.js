@@ -14,6 +14,16 @@ export async function signIn({ email, password }) {
   return await response.json();
 }
 
+export async function signUp({ firstName, lastName, email, password }) {
+  const response = await fetch(`${BASE_URL}/users/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ firstName, lastName, email, password }),
+    credentials: "include",
+  });
+  return await response.json();
+}
+
 export async function uploadS3File({ file, presignedURL }) {
   const response = await fetch(presignedURL, {
     method: "PUT",
