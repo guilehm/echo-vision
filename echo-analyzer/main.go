@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/guilehm/echo-vision/echo-analyzer/internal/infra/consumers"
+	"github.com/guilehm/echo-vision/echo-analyzer/internal/infra/publishers"
 	rabbitmqadapter "github.com/guilehm/echo-vision/echo-analyzer/internal/infra/rabbitmq"
 	awsrekognition "github.com/guilehm/echo-vision/echo-analyzer/internal/infra/rekognition"
 	"github.com/guilehm/echo-vision/echo-common/logging"
@@ -36,15 +37,24 @@ func main() {
 	}
 	defer consumer.Close()
 
+	publisher, err := client.CreatePublisher()
+	if err != nil {
+		log.Fatalln("could not create publisher: ", err)
+	}
+
 	irs, err := awsrekognition.NewAWSRekognitionAdapter(os.Getenv("AWS_REGION"), os.Getenv("AWS_BUCKET_NAME"))
 	if err != nil {
 		log.Fatalln("could not create AWS Rekognition adapter: ", err)
 	}
 
-	consumerGroup := consumers.NewConsumerGroup(irs)
+	publisherGroup := publishers.NewPublisherGroup(irs, publisher)
+	consumerGroup := consumers.NewConsumerGroup(irs, publisherGroup)
+
+	adapter := rabbitmqadapter.NewRabbitMQAdapter(consumerGroup, publisherGroup)
+
 	err = consumer.Subscribe(
 		context.Background(),
-		rabbitmqadapter.NewRabbitMQAdapter(consumerGroup),
+		adapter,
 	)
 	if err != nil {
 		log.Fatalln("could not subscribe to queue: ", err)

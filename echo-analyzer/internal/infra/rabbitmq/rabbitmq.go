@@ -13,7 +13,8 @@ import (
 )
 
 type RabbitMQAdapter struct {
-	consumer ports.ConsumerPort
+	consumer  ports.ConsumerPort
+	publisher ports.PublisherPort
 }
 
 func (r *RabbitMQAdapter) Topics() []string {
@@ -42,8 +43,9 @@ func (r *RabbitMQAdapter) Handle(ctx context.Context, msg messaging.Message) mes
 	}
 }
 
-func NewRabbitMQAdapter(consumer ports.ConsumerPort) *RabbitMQAdapter {
+func NewRabbitMQAdapter(consumer ports.ConsumerPort, publisher ports.PublisherPort) *RabbitMQAdapter {
 	return &RabbitMQAdapter{
-		consumer: consumer,
+		consumer:  consumer,
+		publisher: publisher,
 	}
 }
