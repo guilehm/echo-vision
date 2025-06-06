@@ -49,3 +49,24 @@ export async function createEvent({
   });
   return await response.json();
 }
+
+export async function getOwnEvents() {
+  const c = await cookies();
+  const authToken = c.get("accessToken");
+
+  const response = await fetch(`${API_BASE_URL}/events`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: authToken?.value,
+    },
+    credentials: "include",
+  });
+  console.log("getOwnEvents response:", response);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch own events");
+  }
+
+  return await response.json();
+}
