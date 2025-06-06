@@ -298,6 +298,68 @@ var _ = Describe("Event Handler", func() {
 			}
 		})
 
+		It("should list own events successfully", func() {
+			// Arrange
+			req, err := http.NewRequest(
+				http.MethodGet,
+				fmt.Sprintf("%s/events", server.URL),
+				nil,
+			)
+			Expect(err).ToNot(HaveOccurred())
+			token := u.AccessToken()
+			req.Header.Set("Authorization", token)
+
+			// Act
+			client := http.Client{}
+			resp, err := client.Do(req)
+			Expect(err).ToNot(HaveOccurred())
+			defer resp.Body.Close()
+
+			// Assert
+			Expect(resp.StatusCode).To(Equal(http.StatusOK))
+
+			var apiResp web.ApiResponse[ports.ApiListResponse[dtos.EventResponse]]
+			err = json.NewDecoder(resp.Body).Decode(&apiResp)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(apiResp.Data).ToNot(BeNil())
+			Expect(apiResp.Error).To(BeEmpty())
+			Expect(len(apiResp.Data.Results)).To(Equal(2))
+			for i := range apiResp.Data.Results {
+				Expect(apiResp.Data.Results[i].ID).ToNot(BeNil())
+				Expect(apiResp.Data.Results[i].EventType).ToNot(BeEmpty())
+				Expect(apiResp.Data.Results[i].SubType).ToNot(BeEmpty())
+				Expect(apiResp.Data.Results[i].Status).ToNot(BeEmpty())
+				Expect(apiResp.Data.Results[i].UserID).ToNot(BeEmpty())
+				Expect(apiResp.Data.Results[i].UserID.String()).To(Equal(u.ID().String()))
+			}
+		})
+
+		It("should not list own events if not authenticated", func() {
+			// Arrange
+			req, err := http.NewRequest(
+				http.MethodGet,
+				fmt.Sprintf("%s/events", server.URL),
+				nil,
+			)
+			Expect(err).ToNot(HaveOccurred())
+
+			// Do not set the Authorization header
+
+			// Act
+			client := http.Client{}
+			resp, err := client.Do(req)
+			Expect(err).ToNot(HaveOccurred())
+			defer resp.Body.Close()
+
+			// Assert
+			Expect(resp.StatusCode).To(Equal(http.StatusForbidden))
+
+			var apiResp web.ApiResponse[ports.ApiListResponse[dtos.EventResponse]]
+			err = json.NewDecoder(resp.Body).Decode(&apiResp)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(apiResp.Data).To(BeNil())
+			Expect(apiResp.Error).ToNot(BeEmpty())
+		})
 		It("should not list events from another user", func() {
 			// Arrange
 			req, err := http.NewRequest(
