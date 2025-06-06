@@ -8,7 +8,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
+	hubevents "github.com/guilehm/echo-vision/echo-hub/pkg/events"
 )
 
 // Event holds the schema definition for the Event entity.
@@ -23,11 +23,11 @@ func (Event) Fields() []ent.Field {
 			Immutable(),
 		field.UUID("user_id", uuid.UUID{}),
 		field.Enum("type").
-			Values(domain.EventType("").StringValues()...),
+			Values(hubevents.EventType("").StringValues()...),
 		field.Enum("sub_type").
-			Values(domain.EventSubType("").StringValues()...),
+			Values(hubevents.EventSubType("").StringValues()...),
 		field.Enum("status").
-			Values(domain.EventStatus("").StringValues()...),
+			Values(hubevents.EventStatus("").StringValues()...),
 		field.JSON("result", json.RawMessage{}).
 			Optional(),
 		field.Time("created_at").

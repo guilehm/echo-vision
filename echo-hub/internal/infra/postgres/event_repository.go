@@ -11,6 +11,7 @@ import (
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/shared"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/event"
+	hubevents "github.com/guilehm/echo-vision/echo-hub/pkg/events"
 )
 
 var logger = logging.NewLogger()
@@ -117,10 +118,10 @@ func eventToDomain(e *ent.Event) *domain.Event {
 	return domain.NewEvent(
 		e.UserID,
 		e.ID,
-		domain.EventType(e.Type.String()),
-		domain.EventSubType(e.SubType.String()),
+		hubevents.EventType(e.Type.String()),
+		hubevents.EventSubType(e.SubType.String()),
 		e.Result,
-		domain.EventStatus(e.Status.String()),
+		hubevents.EventStatus(e.Status.String()),
 		file,
 		e.CreatedAt,
 		e.UpdatedAt,

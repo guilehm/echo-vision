@@ -10,6 +10,7 @@ import (
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/shared"
+	hubevents "github.com/guilehm/echo-vision/echo-hub/pkg/events"
 )
 
 type UploadHandler struct {
@@ -58,7 +59,7 @@ func (h *UploadHandler) PresignedURL(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: move to a function
 	switch input.EventType {
-	case domain.EventTypeImageAnalysis.String():
+	case hubevents.EventTypeImageAnalysis.String():
 		path = fmt.Sprintf("%s/%s", path, "image-analysis")
 	}
 
