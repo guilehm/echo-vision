@@ -7,13 +7,14 @@ import (
 
 	"github.com/guilehm/echo-vision/echo-common/logging"
 	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
+	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
 	hubevents "github.com/guilehm/echo-vision/echo-hub/pkg/events"
 )
 
 var logger = logging.NewLogger()
 
 type RabbitMQAdapter struct {
-	// consumer  ports.ConsumerPort
+	consumer ports.ConsumerPort
 }
 
 func (r *RabbitMQAdapter) Topics() []string {
@@ -40,13 +41,14 @@ func (r *RabbitMQAdapter) Handle(ctx context.Context, msg messaging.Message) mes
 		logger.Info("received image analysis status update",
 			slog.String("id", message.ID.String()),
 			slog.String("status", string(message.Status)))
-		// return r.consumer.ProcessImageAnalysis(msg.Topic, message)
-		return messaging.Success
+		return r.consumer.ImageAnalysisStatusUpdate(msg.Topic, message)
 	default:
 		return messaging.DeadLetter
 	}
 }
 
-func NewRabbitMQAdapter() *RabbitMQAdapter {
-	return &RabbitMQAdapter{}
+func NewRabbitMQAdapter(consumer ports.ConsumerPort) *RabbitMQAdapter {
+	return &RabbitMQAdapter{
+		consumer: consumer,
+	}
 }

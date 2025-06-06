@@ -13,6 +13,7 @@ import (
 	"github.com/guilehm/echo-vision/echo-common/rabbitmq"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/usecases"
 	bcrypthasher "github.com/guilehm/echo-vision/echo-hub/internal/infra/bcrypt_hasher"
+	"github.com/guilehm/echo-vision/echo-hub/internal/infra/consumers"
 	jwtadapter "github.com/guilehm/echo-vision/echo-hub/internal/infra/jwt"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres"
 	rabbitmqadapter "github.com/guilehm/echo-vision/echo-hub/internal/infra/rabbitmq"
@@ -57,8 +58,11 @@ func main() {
 		log.Fatalln("could not create consumer: ", err)
 	}
 	defer consumer.Close()
+
+	consumers := consumers.NewConsumerGroup()
+	adapter := rabbitmqadapter.NewRabbitMQAdapter(consumers)
 	go func() {
-		err = consumer.Subscribe(context.Background(), rabbitmqadapter.NewRabbitMQAdapter())
+		err = consumer.Subscribe(context.Background(), adapter)
 		if err != nil {
 			log.Fatalln("could not subscribe to queue: ", err)
 		}

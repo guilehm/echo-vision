@@ -87,6 +87,7 @@ const (
 
 const (
 	EventImageAnalysisStatusUpdated           = "hub.event.image_analysis.status_updated"
+	EventImageAnalysisStatusUpdatedGeneric    = "hub.event.image_analysis.status_updated.*"
 	EventImageAnalysisStatusUpdatedPending    = "hub.event.image_analysis.status_updated.pending"
 	EventImageAnalysisStatusUpdatedProcessing = "hub.event.image_analysis.status_updated.processing"
 	EventImageAnalysisStatusUpdatedCompleted  = "hub.event.image_analysis.status_updated.completed"
