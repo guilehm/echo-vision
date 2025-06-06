@@ -24,21 +24,21 @@ var logger = logging.NewLogger()
 func main() {
 	fmt.Println("hello world")
 
-	a, err := filestorage.NewS3Adapter(
-		os.Getenv("AWS_BUCKET_NAME"),
-		os.Getenv("AWS_REGION"),
-	)
-	if err != nil {
-		log.Fatalln("could not create s3 adapter: ", err)
-	}
+	// a, err := filestorage.NewS3Adapter(
+	// 	os.Getenv("AWS_BUCKET_NAME"),
+	// 	os.Getenv("AWS_REGION"),
+	// )
+	// if err != nil {
+	// 	log.Fatalln("could not create s3 adapter: ", err)
+	// }
 
-	fk := filestorage.NewFileKey("users/123/", "test.jpeg")
-	url, err := a.GeneratePreSignedURL(fk, "image/jpeg")
-	if err != nil {
-		log.Fatalln("could not generate pre-signed URL: ", err)
-	}
-
-	fmt.Println("URL", url)
+	// fk := filestorage.NewFileKey("users/123/", "test.jpeg")
+	// url, err := a.GeneratePreSignedURL(fk, "image/jpeg")
+	// if err != nil {
+	// 	log.Fatalln("could not generate pre-signed URL: ", err)
+	// }
+	//
+	// fmt.Println("URL", url)
 
 	client, err := rabbitmq.NewRabbitMQClient(
 		os.Getenv("RABBITMQ_URL"),
