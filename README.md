@@ -30,27 +30,35 @@ Each component plays a specific role within the architecture:
 ### General Commands
 
 - **Setup essential services**:
+
   ```bash
   make setup
   ```
+
   Starts `RabbitMQ` and `PostgreSQL` containers.
 
 - **Run all containers**:
+
   ```bash
   make run
   ```
+
   Starts all Docker containers for the project.
 
 - **Run a specific service (echo-hub)**:
+
   ```bash
   make run_hub
   ```
+
   Starts only the `echo-hub` container.
 
 - **Stop all containers**:
+
   ```bash
   make stop
   ```
+
   Stops all running containers.
 
 - **Remove containers and volumes**:
@@ -64,9 +72,11 @@ Each component plays a specific role within the architecture:
 ### Code Generation and Migrations
 
 - **Generate database templates**:
+
   ```bash
   make generate
   ```
+
   Runs code generation for `echo-hub` service's database templates.
 
 - **Apply database migrations**:
@@ -80,9 +90,11 @@ Each component plays a specific role within the architecture:
 ### Testing
 
 - **Run tests for `echo-hub`**:
+
   ```bash
   make test_hub
   ```
+
   Executes tests for the `echo-hub` service using Ginkgo.
 
 - **Run all tests**:
