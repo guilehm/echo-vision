@@ -8,6 +8,7 @@ Echo-Vision is a distributed system composed of microservices designed to analyz
 - **RabbitMQ** for asynchronous communication between services.
 - **PostgreSQL** for relational data persistence.
 - **Go** with Clean Architecture + DDD for service implementation.
+- **Hosts Configuration**: Add `echo-vision.local` to `/etc/hosts` for proper service resolution.
 
 Each component plays a specific role within the architecture:
 
