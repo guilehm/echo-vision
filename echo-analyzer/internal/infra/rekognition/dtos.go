@@ -2,12 +2,12 @@ package awsrekognition
 
 import (
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
-	"github.com/guilehm/echo-vision/echo-analyzer/internal/app/domain"
+	analysistypes "github.com/guilehm/echo-vision/echo-analyzer/pkg/types"
 )
 
 func labelToDomain(
 	label types.Label,
-) domain.Label {
+) analysistypes.Label {
 	as := make([]string, 0, len(label.Aliases))
 	for _, a := range label.Aliases {
 		if a.Name != nil {
@@ -22,11 +22,11 @@ func labelToDomain(
 		}
 	}
 
-	is := make([]domain.Instance, 0, len(label.Instances))
+	is := make([]analysistypes.Instance, 0, len(label.Instances))
 	for _, i := range label.Instances {
-		is = append(is, domain.Instance{
+		is = append(is, analysistypes.Instance{
 			Confidence: i.Confidence,
-			BoundingBox: domain.BoundingBox{
+			BoundingBox: analysistypes.BoundingBox{
 				Height: i.BoundingBox.Height,
 				Left:   i.BoundingBox.Left,
 				Top:    i.BoundingBox.Top,
@@ -42,7 +42,7 @@ func labelToDomain(
 		}
 	}
 
-	return domain.Label{
+	return analysistypes.Label{
 		Aliases:    as,
 		Categories: cs,
 		Confidence: label.Confidence,

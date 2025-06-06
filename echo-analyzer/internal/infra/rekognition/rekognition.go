@@ -2,6 +2,7 @@ package awsrekognition
 
 import (
 	"context"
+	"log/slog"
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -9,10 +10,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition"
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
-	"github.com/guilehm/echo-vision/echo-analyzer/internal/app/domain"
 	"github.com/guilehm/echo-vision/echo-analyzer/internal/app/ports"
+	analysistypes "github.com/guilehm/echo-vision/echo-analyzer/pkg/types"
+	"github.com/guilehm/echo-vision/echo-common/logging"
 	"github.com/rotisserie/eris"
 )
+
+var logger = logging.NewLogger()
 
 type AWSRekognitionAdapter struct {
 	client *rekognition.Client
@@ -40,7 +44,8 @@ func NewAWSRekognitionAdapter(region, bucketName string) (ports.ImageRecognition
 }
 
 // DetectLabels detects labels in an image using AWS Rekognition.
-func (a *AWSRekognitionAdapter) DetectLabels(filepath string) ([]domain.Label, error) {
+func (a *AWSRekognitionAdapter) DetectLabels(filepath string) ([]analysistypes.Label, error) {
+	logger.Info("detecting labels in image", slog.String("filepath", filepath))
 	input := &rekognition.DetectLabelsInput{
 		Image: &types.Image{
 			S3Object: &types.S3Object{
@@ -56,19 +61,24 @@ func (a *AWSRekognitionAdapter) DetectLabels(filepath string) ([]domain.Label, e
 		return nil, eris.Wrap(err, "error detecting labels")
 	}
 
-	labels := make([]domain.Label, len(result.Labels))
+	labels := make([]analysistypes.Label, len(result.Labels))
 	for i, lbl := range result.Labels {
 		labels[i] = labelToDomain(lbl)
 	}
+	logger.Info("successfully detected labels", slog.Int("count", len(labels)))
 	return labels, nil
 }
 
-// DetectFaces detects faces in an image using AWS Rekognition.
-func (a *AWSRekognitionAdapter) DetectFaces(imageInput any) ([]domain.FaceDetail, error) {
+// DetectFaces detects faces in an image using AWS Rekognition and returns face details including emotions.
+func (a *AWSRekognitionAdapter) DetectFaces(filepath string) ([]analysistypes.FaceDetail, error) {
+	logger.Info("detecting faces in image", slog.String("filepath", filepath))
 	input := &rekognition.DetectFacesInput{
-		// Image: &types.Image{
-		// 	Bytes: imageInput,
-		// },
+		Image: &types.Image{
+			S3Object: &types.S3Object{
+				Bucket: aws.String(a.BucketName()),
+				Name:   aws.String(filepath),
+			},
+		},
 		Attributes: []types.Attribute{types.AttributeAll},
 	}
 
@@ -77,18 +87,28 @@ func (a *AWSRekognitionAdapter) DetectFaces(imageInput any) ([]domain.FaceDetail
 		return nil, eris.Wrap(err, "error detecting faces")
 	}
 
-	faces := make([]domain.FaceDetail, len(result.FaceDetails))
+	faces := make([]analysistypes.FaceDetail, len(result.FaceDetails))
 	for i, face := range result.FaceDetails {
-		faces[i] = domain.FaceDetail{
-			BoundingBox: domain.BoundingBox{
+		emotions := make([]analysistypes.Emotion, len(face.Emotions))
+		for j, emotion := range face.Emotions {
+			emotions[j] = analysistypes.Emotion{
+				Type:       string(emotion.Type),
+				Confidence: emotion.Confidence,
+			}
+		}
+
+		faces[i] = analysistypes.FaceDetail{
+			BoundingBox: analysistypes.BoundingBox{
 				Top:    face.BoundingBox.Top,
 				Left:   face.BoundingBox.Left,
 				Width:  face.BoundingBox.Width,
 				Height: face.BoundingBox.Height,
 			},
 			Confidence: face.Confidence,
+			Emotions:   emotions,
 		}
 	}
+	logger.Info("successfully detected faces", slog.Int("count", len(faces)))
 	return faces, nil
 }
 
