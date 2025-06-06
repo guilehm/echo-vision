@@ -90,6 +90,22 @@ services:
       timeout: 10s
       retries: 5
 
+  nginx:
+    image: nginx:alpine
+    container_name: echo-sentinel
+    volumes:
+      - ./echo-sentinel/nginx.conf:/etc/nginx/nginx.conf
+      - ./echo-sentinel/default.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 80:80
+    links:
+      - echo-hub:echo-hub
+
+    networks:
+      default:
+        aliases:
+          - echo-vision.local
+
 volumes:
   postgres-vision-data:
   rabbitmq_etc:
