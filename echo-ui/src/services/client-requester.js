@@ -1,11 +1,9 @@
 "use client";
 
-const BASE_URL = "http://localhost:8000";
-
-// TODO: move to an environment variable
+import { API_BASE_URL } from "@/settings";
 
 export async function signIn({ email, password }) {
-  const response = await fetch(`${BASE_URL}/users/login`, {
+  const response = await fetch(`${API_BASE_URL}/users/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -15,7 +13,7 @@ export async function signIn({ email, password }) {
 }
 
 export async function signUp({ firstName, lastName, email, password }) {
-  const response = await fetch(`${BASE_URL}/users/`, {
+  const response = await fetch(`${API_BASE_URL}/users/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ firstName, lastName, email, password }),

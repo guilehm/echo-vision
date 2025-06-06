@@ -18,6 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   firstName: z
@@ -33,6 +34,7 @@ const formSchema = z.object({
 });
 
 export function SignUpForm({ className, ...props }) {
+  const router = useRouter();
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -47,7 +49,7 @@ export function SignUpForm({ className, ...props }) {
     try {
       const response = await apiService.signUp(values);
       if (response.status === 200) {
-        toast.success("TODO: fix the toast message");
+        toast.success("Successfully created your account");
         router.push("/dashboard");
         return;
       }

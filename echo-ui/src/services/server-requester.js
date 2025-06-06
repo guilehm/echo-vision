@@ -1,15 +1,13 @@
 "use server";
 
 import { cookies } from "next/headers";
-
-// TODO: move to an environment variable
-const BASE_URL = "http://localhost:8000";
+import { API_BASE_URL } from "@/settings";
 
 export async function getPresignedUrl({ filename, eventType, contentType }) {
   const c = await cookies();
   const authToken = c.get("accessToken");
 
-  const response = await fetch(`${BASE_URL}/uploads/presigned-url`, {
+  const response = await fetch(`${API_BASE_URL}/uploads/presigned-url`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -33,7 +31,7 @@ export async function createEvent({
   const c = await cookies();
   const authToken = c.get("accessToken");
 
-  const response = await fetch(`${BASE_URL}/events`, {
+  const response = await fetch(`${API_BASE_URL}/events`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
