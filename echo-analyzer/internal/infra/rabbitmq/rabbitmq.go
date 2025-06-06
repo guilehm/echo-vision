@@ -20,7 +20,6 @@ type RabbitMQAdapter struct {
 func (r *RabbitMQAdapter) Topics() []string {
 	return []string{
 		hubevents.EventImageAnalysCreated,
-		hubevents.EventImageAnalysisStatusUpdated,
 	}
 }
 

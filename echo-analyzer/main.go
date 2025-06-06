@@ -37,9 +37,24 @@ func main() {
 	}
 	defer consumer.Close()
 
-	publisher, err := client.CreatePublisher()
+	publishConn, err := rabbitmq.NewRabbitMQClient(
+		os.Getenv("RABBITMQ_URL"),
+		logger,
+		rabbitmq.ConfigWithExchangeName("events"),
+		rabbitmq.ConfigWithConfirmMode(),
+	)
+	if err != nil {
+		log.Fatalln("could not create rabbitmq publisher client: ", err)
+	}
+
+	publisher, err := publishConn.CreatePublisher()
 	if err != nil {
 		log.Fatalln("could not create publisher: ", err)
+	}
+	defer publisher.Close()
+
+	if err := publisher.StartPublisher(context.Background()); err != nil {
+		log.Fatalln("could not start publisher", err)
 	}
 
 	irs, err := awsrekognition.NewAWSRekognitionAdapter(os.Getenv("AWS_REGION"), os.Getenv("AWS_BUCKET_NAME"))
