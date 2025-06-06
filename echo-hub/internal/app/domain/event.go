@@ -2,89 +2,21 @@ package domain
 
 import (
 	"encoding/json"
+	"slices"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain/valueobjects"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/shared"
+	hubevents "github.com/guilehm/echo-vision/echo-hub/pkg/events"
 )
-
-type EventType string
-
-const (
-	EventTypeImageAnalysis EventType = "image_analysis"
-)
-
-func (et EventType) Values() []EventType {
-	return []EventType{
-		EventTypeImageAnalysis,
-	}
-}
-
-func (et EventType) StringValues() []string {
-	return toStringValues(et.Values())
-}
-
-func (et EventType) String() string {
-	return string(et)
-}
-
-func (et EventType) IsValid() bool {
-	return isIn(et, et.Values())
-}
-
-type EventSubType string
-
-func (est EventSubType) Values() []EventSubType {
-	return []EventSubType{
-		EventSubTypeDetectLabels,
-	}
-}
-
-func (est EventSubType) StringValues() []string {
-	return toStringValues(est.Values())
-}
-
-func (est EventSubType) String() string {
-	return string(est)
-}
-
-const (
-	EventSubTypeDetectLabels EventSubType = "detect_labels"
-)
-
-type EventStatus string
-
-const (
-	EventStatusPending    EventStatus = "pending"
-	EventStatusProcessing EventStatus = "processing"
-	EventStatusCompleted  EventStatus = "completed"
-	EventStatusFailed     EventStatus = "failed"
-)
-
-func (es EventStatus) String() string {
-	return string(es)
-}
-
-func (es EventStatus) Values() []EventStatus {
-	return []EventStatus{
-		EventStatusPending,
-		EventStatusProcessing,
-		EventStatusCompleted,
-		EventStatusFailed,
-	}
-}
-
-func (es EventStatus) StringValues() []string {
-	return toStringValues(es.Values())
-}
 
 type Event struct {
 	userID    uuid.UUID
 	id        uuid.UUID
-	eventType EventType
-	subType   EventSubType
-	status    EventStatus
+	eventType hubevents.EventType
+	subType   hubevents.EventSubType
+	status    hubevents.EventStatus
 	result    json.RawMessage
 	createdAt time.Time
 	updatedAt time.Time
@@ -94,10 +26,10 @@ type Event struct {
 func NewEvent(
 	userID uuid.UUID,
 	id uuid.UUID,
-	eventType EventType,
-	subType EventSubType,
+	eventType hubevents.EventType,
+	subType hubevents.EventSubType,
 	result json.RawMessage,
-	status EventStatus,
+	status hubevents.EventStatus,
 	file *valueobjects.File,
 	createdAt, updatedAt time.Time,
 ) *Event {
@@ -151,15 +83,15 @@ func (e *Event) UserID() uuid.UUID {
 	return e.userID
 }
 
-func (e *Event) EventType() EventType {
+func (e *Event) EventType() hubevents.EventType {
 	return e.eventType
 }
 
-func (e *Event) SubType() EventSubType {
+func (e *Event) SubType() hubevents.EventSubType {
 	return e.subType
 }
 
-func (e *Event) Status() EventStatus {
+func (e *Event) Status() hubevents.EventStatus {
 	return e.status
 }
 
@@ -177,4 +109,8 @@ func (e *Event) UpdatedAt() time.Time {
 
 func (e *Event) File() *valueobjects.File {
 	return e.file
+}
+
+func isIn[T comparable](s T, values []T) bool {
+	return slices.Contains(values, s)
 }
