@@ -1,4 +1,4 @@
-package domain
+package analysistypes
 
 // VisionAnalysisResult represents the result of an image analysis.
 type VisionAnalysisResult struct {
@@ -25,6 +25,7 @@ type Instance struct {
 type FaceDetail struct {
 	BoundingBox BoundingBox `json:"boundingBox"`
 	Confidence  *float32    `json:"confidence"`
+	Emotions    []Emotion   `json:"emotions"`
 }
 
 // BoundingBox represents the dimensions and position of an object in the image.
@@ -33,4 +34,9 @@ type BoundingBox struct {
 	Width  *float32 `json:"width"`
 	Top    *float32 `json:"top"`
 	Left   *float32 `json:"left"`
+}
+
+type Emotion struct {
+	Type       string
+	Confidence *float32
 }
