@@ -3,7 +3,7 @@ package ports
 import (
 	"net/http"
 
-	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
+	hubevents "github.com/guilehm/echo-vision/echo-hub/pkg/events"
 )
 
 type UploadWebPort interface {
@@ -26,7 +26,7 @@ func (i UploadPresignedURLInput) IsValid() bool {
 	if i.Filename == "" || i.EventType == "" || i.ContentType == "" {
 		return false
 	}
-	if !domain.EventType(i.EventType).IsValid() {
+	if !hubevents.EventType(i.EventType).IsValid() {
 		return false
 	}
 	return true

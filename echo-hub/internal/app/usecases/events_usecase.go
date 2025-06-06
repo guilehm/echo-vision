@@ -38,10 +38,10 @@ func (uc *ManageEvents) CreateEvent(
 	event := domain.NewEvent(
 		userID,
 		uuid.New(),
-		domain.EventType(eventType),
-		domain.EventSubType(subType),
+		hubevents.EventType(eventType),
+		hubevents.EventSubType(subType),
 		nil,
-		domain.EventStatusPending,
+		hubevents.EventStatusPending,
 		file,
 		now,
 		now,

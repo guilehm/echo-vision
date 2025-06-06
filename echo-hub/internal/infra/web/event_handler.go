@@ -61,6 +61,32 @@ func (h *EventHandler) ListEvents(w http.ResponseWriter, r *http.Request) {
 	}, nil))
 }
 
+// ListOwnEvents implements ports.EventWebPort.
+func (h *EventHandler) ListOwnEvents(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	user, err := fromContext[domain.User](ctx, contextKeyMeUser)
+	if err != nil {
+		logger.Error("error getting user from context", slog.String("error", err.Error()))
+		handleApiResponse(w, apiResponse[any](nil, newApiError(
+			http.StatusForbidden,
+			err.Error(),
+		)))
+		return
+	}
+
+	events, err := h.eventPort.EventsByUser(ctx, user.ID())
+	if err != nil {
+		logger.Error("error getting events by user", slog.String("error", err.Error()))
+		handleApiResponse(w, apiResponse[any](nil, err))
+		return
+	}
+
+	handleApiResponse(w, apiResponse(&ports.ApiListResponse[dtos.EventResponse]{
+		Results: ports.MapEventsToApiResponse(events),
+	}, nil))
+}
+
 func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	var input ports.EventCreateInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
