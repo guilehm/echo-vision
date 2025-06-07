@@ -25,6 +25,7 @@ import (
 	jwtadapter "github.com/guilehm/echo-vision/echo-hub/internal/infra/jwt"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent"
+
 	rabbitmqadapter "github.com/guilehm/echo-vision/echo-hub/internal/infra/rabbitmq"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/web"
 	. "github.com/onsi/ginkgo/v2"
@@ -42,6 +43,10 @@ var (
 	eventUseCase    ports.EventPort
 	s3Mock          filestorage.FileStoragePort
 	jwtSecretKey    = os.Getenv("JWT_SECRET")
+	publisher       messaging.Publisher
+	consumer        messaging.Consumer
+	adapter         *rabbitmqadapter.RabbitMQAdapter
+	handler         *rabbitmqmocks.Handler
 )
 
 func TestEchoHub(t *testing.T) {
@@ -107,17 +112,20 @@ var _ = BeforeSuite(func() {
 
 	// setup rabbitmq mocks
 	mockChan := make(chan messaging.Message)
-	publisher := rabbitmqmocks.NewPublisher(mockChan)
-	consumer := rabbitmqmocks.NewConsumer(mockChan)
-
-	consumers := consumers.NewConsumerGroup(eventUseCase)
+	publisher = rabbitmqmocks.NewPublisher(mockChan)
 
 	// setup usecases
 	userUseCase = usecases.NewManageUsersUseCase(repo, jwtAdapter, passwordAdapter)
 	eventUseCase = usecases.NewManageEventsUseCase(repo, publisher)
 
-	handler := rabbitmqadapter.NewRabbitMQAdapter(consumers)
+	consumerGroup := consumers.NewConsumerGroup(eventUseCase)
+	consumer = rabbitmqmocks.NewConsumer(mockChan)
+	adapter = rabbitmqadapter.NewRabbitMQAdapter(consumerGroup)
+	handler = rabbitmqmocks.NewHandler()
+
+	// go consumer.Subscribe(context.Background(), adapter)
 	go consumer.Subscribe(context.Background(), handler)
+	go publisher.StartPublisher(context.Background())
 
 	// setup http server
 	router := web.NewRouter(userUseCase, eventUseCase, s3Mock, publisher)
@@ -125,6 +133,7 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
-	_ = pg.Stop()
+	err := pg.Stop()
+	Expect(err).ToNot(HaveOccurred())
 	server.Close()
 })
