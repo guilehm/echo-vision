@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log/slog"
 
+	analyzerevents "github.com/guilehm/echo-vision/echo-analyzer/pkg/events"
 	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
 	hubevents "github.com/guilehm/echo-vision/echo-hub/pkg/events"
 )
@@ -19,6 +20,18 @@ func (c *ConsumerGroup) ProcessImageAnalysis(topic string, message hubevents.Eve
 
 	if message.Type != hubevents.EventTypeImageAnalysis {
 		logger.Error("message type is not image analysis", slog.String("type", string(message.Type)))
+		return messaging.DeadLetter
+	}
+
+	// publish processing status
+	err := c.publisher.PublishImageAnalysisStatusUpdate(
+		ctx,
+		message.ID,
+		analyzerevents.EventStatusProcessing,
+		nil,
+	)
+	if err != nil {
+		logger.Error("could not publish image analysis status update", slog.String("error", err.Error()))
 		return messaging.DeadLetter
 	}
 
@@ -41,12 +54,13 @@ func (c *ConsumerGroup) ProcessImageAnalysis(topic string, message hubevents.Eve
 		data = toRawMessage(faces)
 	}
 
-	err := c.publisher.PublishImageAnalysisStatusUpdate(ctx, message.ID, hubevents.EventStatusUpdateMessage{
-		ID:     message.ID,
-		Type:   message.Type,
-		Status: hubevents.EventStatusCompleted,
-		Data:   data,
-	})
+	// publish completed status
+	err = c.publisher.PublishImageAnalysisStatusUpdate(
+		ctx,
+		message.ID,
+		analyzerevents.EventStatusCompleted,
+		data,
+	)
 	if err != nil {
 		logger.Error("could not publish image analysis status update", slog.String("error", err.Error()))
 		return messaging.DeadLetter
