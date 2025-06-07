@@ -120,10 +120,16 @@ func (uc *ManageEvents) HandleEventStatusUpdate(
 		return eris.Wrap(err, "failed to save event")
 	}
 
-	// publish event status update
-	payload, err := ports.MapEventToMessage(event)
+	// TODO: do not do this here
+	message := hubevents.EventStatusUpdateMessage{
+		ID:     id,
+		Type:   event.EventType(),
+		Status: status,
+		Data:   result,
+	}
+	payload, err := json.Marshal(message)
 	if err != nil {
-		return eris.Wrap(err, "failed to map event to json message")
+		return eris.Wrap(err, "failed to marshal event status update message")
 	}
 
 	// TODO: only publish this message on commit
