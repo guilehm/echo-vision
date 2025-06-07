@@ -39,7 +39,11 @@ func (r *RabbitMQAdapter) Handle(ctx context.Context, msg messaging.Message) mes
 		logger.Info("received image analysis status update",
 			slog.String("id", message.ID.String()),
 			slog.String("status", string(message.Status)))
-		return r.consumer.ImageAnalysisStatusUpdate(msg.Topic, message.ID, message.Status.String())
+		return r.consumer.ImageAnalysisStatusUpdate(
+			message.ID,
+			message.Status.String(),
+			message.Data,
+		)
 	default:
 		return messaging.DeadLetter
 	}

@@ -123,3 +123,8 @@ func (e *Event) SetStatus(status hubevents.EventStatus) error {
 	e.updatedAt = time.Now()
 	return nil
 }
+
+func (e *Event) SetResult(result json.RawMessage) {
+	e.result = result
+	e.updatedAt = time.Now()
+}
