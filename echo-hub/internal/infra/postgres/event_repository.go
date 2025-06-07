@@ -90,6 +90,7 @@ func (r *Repository) FindEventsByUserID(
 	events, err := c.Event.Query().
 		Where(event.UserID(userID)).
 		WithFile().
+		Order(ent.Desc(event.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
 		return nil, err
