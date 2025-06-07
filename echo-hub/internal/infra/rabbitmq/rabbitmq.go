@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"log/slog"
 
+	analyzerevents "github.com/guilehm/echo-vision/echo-analyzer/pkg/events"
 	"github.com/guilehm/echo-vision/echo-common/logging"
 	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
-	hubevents "github.com/guilehm/echo-vision/echo-hub/pkg/events"
 )
 
 var logger = logging.NewLogger()
@@ -19,18 +19,19 @@ type RabbitMQAdapter struct {
 
 func (r *RabbitMQAdapter) Topics() []string {
 	return []string{
-		hubevents.EventImageAnalysisStatusUpdatedGeneric,
+		analyzerevents.EventImageAnalysisStatusUpdatedProcessing,
+		analyzerevents.EventImageAnalysisStatusUpdatedCompleted,
+		analyzerevents.EventImageAnalysisStatusUpdatedFailed,
 	}
 }
 
 func (r *RabbitMQAdapter) Handle(ctx context.Context, msg messaging.Message) messaging.HandlerResponse {
 	switch msg.Topic {
 	case
-		hubevents.EventImageAnalysisStatusUpdatedCompleted,
-		hubevents.EventImageAnalysisStatusUpdatedFailed,
-		hubevents.EventImageAnalysisStatusUpdatedProcessing,
-		hubevents.EventImageAnalysisStatusUpdatedPending:
-		var message hubevents.EventStatusUpdateMessage
+		analyzerevents.EventImageAnalysisStatusUpdatedProcessing,
+		analyzerevents.EventImageAnalysisStatusUpdatedCompleted,
+		analyzerevents.EventImageAnalysisStatusUpdatedFailed:
+		var message analyzerevents.EventImageAnalysisStatusUpdateMessage
 		if err := json.Unmarshal(msg.Payload, &message); err != nil {
 			logger.Error("could not unmarshal event", slog.String("error", err.Error()))
 			return messaging.DeadLetter
@@ -38,7 +39,7 @@ func (r *RabbitMQAdapter) Handle(ctx context.Context, msg messaging.Message) mes
 		logger.Info("received image analysis status update",
 			slog.String("id", message.ID.String()),
 			slog.String("status", string(message.Status)))
-		return r.consumer.ImageAnalysisStatusUpdate(msg.Topic, message)
+		return r.consumer.ImageAnalysisStatusUpdate(msg.Topic, message.ID, message.Status.String())
 	default:
 		return messaging.DeadLetter
 	}

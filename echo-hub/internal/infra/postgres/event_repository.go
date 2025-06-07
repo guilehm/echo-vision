@@ -128,3 +128,15 @@ func eventToDomain(e *ent.Event) *domain.Event {
 		e.UpdatedAt,
 	)
 }
+
+func (r *Repository) UpdateEventStatus(
+	ctx context.Context,
+	tx repositories.Transaction,
+	id uuid.UUID,
+	status hubevents.EventStatus,
+) error {
+	c := r.resolveClient(tx)
+	return c.Event.UpdateOneID(id).
+		SetStatus(event.Status(status)).
+		Exec(ctx)
+}
