@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"reflect"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
 	. "github.com/onsi/gomega"
 )
@@ -56,4 +58,39 @@ func generateRefreshTokenMock(user *domain.User, delay time.Duration) string {
 	tokenStr, err := token.SignedString([]byte(jwtSecretKey))
 	Expect(err).ToNot(HaveOccurred())
 	return tokenStr
+}
+
+func handleMessage(topic string, message any) {
+	payload, err := json.Marshal(message)
+	Expect(err).ToNot(HaveOccurred())
+	msg := messaging.Message{
+		Topic:   topic,
+		Payload: payload,
+		Headers: map[string]string{},
+	}
+	response := adapter.Handle(ctx, msg)
+	Expect(response).To(Equal(messaging.Success))
+}
+
+func handleDeadLetterMessage(topic string, message any) {
+	payload, err := json.Marshal(message)
+	Expect(err).ToNot(HaveOccurred())
+	msg := messaging.Message{
+		Topic:   topic,
+		Payload: payload,
+		Headers: map[string]string{},
+	}
+	response := adapter.Handle(ctx, msg)
+	Expect(response).To(Equal(messaging.DeadLetter))
+}
+
+func jsonEqual(a, b json.RawMessage) bool {
+	var o1, o2 any
+	if err := json.Unmarshal(a, &o1); err != nil {
+		return false
+	}
+	if err := json.Unmarshal(b, &o2); err != nil {
+		return false
+	}
+	return reflect.DeepEqual(o1, o2)
 }
