@@ -12,6 +12,7 @@ type Message struct {
 // Publisher defines the interface for a message publisher.
 type Publisher interface {
 	Publish(ctx context.Context, msg Message) error
+	StartPublisher(ctx context.Context) error
 }
 
 // Consumer defines the interface for a message consumer.
