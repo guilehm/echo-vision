@@ -2,6 +2,7 @@ package consumers
 
 import (
 	"context"
+	"encoding/json"
 	"log/slog"
 
 	"github.com/google/uuid"
@@ -10,9 +11,9 @@ import (
 )
 
 // ImageAnalysisStatusUpdate implements ports.ConsumerPort.
-func (c *ConsumerGroup) ImageAnalysisStatusUpdate(topic string, id uuid.UUID, status string) messaging.HandlerResponse {
+func (c *ConsumerGroup) ImageAnalysisStatusUpdate(id uuid.UUID, status string, result json.RawMessage) messaging.HandlerResponse {
 	ctx := context.Background()
-	err := c.EventUseCase.SetEventStatus(ctx, id, hubevents.EventStatus(status))
+	err := c.EventUseCase.HandleEventStatusUpdate(ctx, id, hubevents.EventStatus(status), result)
 	if err != nil {
 		logger.Error("could not set event status",
 			slog.String("id", id.String()),

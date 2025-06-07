@@ -22,4 +22,9 @@ type EventRepository interface {
 		id uuid.UUID,
 		status hubevents.EventStatus,
 	) error
+	UpdateEvent(
+		ctx context.Context,
+		tx Transaction,
+		event *domain.Event,
+	) error
 }

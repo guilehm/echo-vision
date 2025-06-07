@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -89,21 +90,49 @@ func (uc *ManageEvents) EventsByUser(ctx context.Context, userID uuid.UUID) ([]*
 	return uc.Repository.FindEventsByUserID(ctx, nil, userID)
 }
 
-// SetEventStatus implements ports.EventPort.
-func (uc *ManageEvents) SetEventStatus(
+// HandleEventStatusUpdate implements ports.EventPort.
+func (uc *ManageEvents) HandleEventStatusUpdate(
 	ctx context.Context,
 	id uuid.UUID,
 	status hubevents.EventStatus,
+	result json.RawMessage,
 ) error {
 	event, err := uc.Repository.FindEventByID(ctx, nil, id)
 	if err != nil {
-		return err
+		return eris.Wrap(err, "failed to find event by ID")
 	}
+
+	// set event status
 	if err := event.SetStatus(status); err != nil {
 		return eris.Wrap(err, "failed to set event status")
 	}
-	if err := uc.Repository.UpdateEventStatus(ctx, nil, id, event.Status()); err != nil {
+
+	// set result
+	event.SetResult(result)
+
+	// validate event before saving
+	if err := event.Validate(); err != nil {
+		return eris.Wrap(err, "failed to validate event")
+	}
+
+	// persist the event
+	if err := uc.Repository.UpdateEvent(ctx, nil, event); err != nil {
 		return eris.Wrap(err, "failed to save event")
+	}
+
+	// publish event status update
+	payload, err := ports.MapEventToMessage(event)
+	if err != nil {
+		return eris.Wrap(err, "failed to map event to json message")
+	}
+
+	// TODO: only publish this message on commit
+	err = uc.publisher.Publish(ctx, messaging.Message{
+		Topic:   hubevents.BuildEventStatusUpdatedTopic(event.EventType(), event.Status()),
+		Payload: payload,
+	})
+	if err != nil {
+		return eris.Wrap(err, "failed to publish event status update")
 	}
 	return nil
 }

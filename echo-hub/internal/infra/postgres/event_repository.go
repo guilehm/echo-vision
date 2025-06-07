@@ -140,3 +140,17 @@ func (r *Repository) UpdateEventStatus(
 		SetStatus(event.Status(status)).
 		Exec(ctx)
 }
+
+func (r *Repository) UpdateEvent(
+	ctx context.Context,
+	tx repositories.Transaction,
+	e *domain.Event,
+) error {
+	c := r.resolveClient(tx)
+	return c.Event.UpdateOneID(e.ID()).
+		SetType(event.Type(e.EventType())).
+		SetSubType(event.SubType(e.SubType())).
+		SetStatus(event.Status(e.Status())).
+		SetResult(e.Result()).
+		Exec(ctx)
+}
