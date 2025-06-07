@@ -19,7 +19,7 @@ type RabbitMQAdapter struct {
 
 func (r *RabbitMQAdapter) Topics() []string {
 	return []string{
-		hubevents.EventImageAnalysisStatusUpdated,
+		hubevents.EventImageAnalysisStatusUpdatedGeneric,
 	}
 }
 
@@ -32,10 +32,7 @@ func (r *RabbitMQAdapter) Handle(ctx context.Context, msg messaging.Message) mes
 		hubevents.EventImageAnalysisStatusUpdatedPending:
 		var message hubevents.EventStatusUpdateMessage
 		if err := json.Unmarshal(msg.Payload, &message); err != nil {
-			logger.Error(
-				"could not unmarshal event",
-				slog.String("error", err.Error()),
-			)
+			logger.Error("could not unmarshal event", slog.String("error", err.Error()))
 			return messaging.DeadLetter
 		}
 		logger.Info("received image analysis status update",
