@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
+	hubevents "github.com/guilehm/echo-vision/echo-hub/pkg/events"
 )
 
 type EventRepository interface {
@@ -15,4 +16,10 @@ type EventRepository interface {
 		tx Transaction,
 		userID uuid.UUID,
 	) ([]*domain.Event, error)
+	UpdateEventStatus(
+		ctx context.Context,
+		tx Transaction,
+		id uuid.UUID,
+		status hubevents.EventStatus,
+	) error
 }

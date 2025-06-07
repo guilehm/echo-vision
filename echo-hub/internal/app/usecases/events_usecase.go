@@ -88,3 +88,22 @@ func (uc *ManageEvents) SaveEvent(
 func (uc *ManageEvents) EventsByUser(ctx context.Context, userID uuid.UUID) ([]*domain.Event, error) {
 	return uc.Repository.FindEventsByUserID(ctx, nil, userID)
 }
+
+// SetEventStatus implements ports.EventPort.
+func (uc *ManageEvents) SetEventStatus(
+	ctx context.Context,
+	id uuid.UUID,
+	status hubevents.EventStatus,
+) error {
+	event, err := uc.Repository.FindEventByID(ctx, nil, id)
+	if err != nil {
+		return err
+	}
+	if err := event.SetStatus(status); err != nil {
+		return eris.Wrap(err, "failed to set event status")
+	}
+	if err := uc.Repository.UpdateEventStatus(ctx, nil, id, event.Status()); err != nil {
+		return eris.Wrap(err, "failed to save event")
+	}
+	return nil
+}
