@@ -11,6 +11,7 @@ import (
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/event"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/file"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/web"
+	hubevents "github.com/guilehm/echo-vision/echo-hub/pkg/events"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -25,8 +26,8 @@ var _ = Describe("Event Handler", func() {
 		It("should create a event successfully", func() {
 			// Arrange
 			input := ports.EventCreateInput{
-				EventType: domain.EventTypeImageAnalysis.String(),
-				SubType:   domain.EventSubTypeDetectLabels.String(),
+				EventType: hubevents.EventTypeImageAnalysis.String(),
+				SubType:   hubevents.EventSubTypeDetectLabels.String(),
 			}
 
 			req, err := http.NewRequest(
@@ -58,17 +59,17 @@ var _ = Describe("Event Handler", func() {
 				Where(event.IDEQ(apiResp.Data.ID)).
 				OnlyX(ctx)
 
-			Expect(createdEvent.Type).To(BeEquivalentTo(domain.EventTypeImageAnalysis))
-			Expect(createdEvent.SubType).To(BeEquivalentTo(domain.EventSubTypeDetectLabels))
-			Expect(createdEvent.Status).To(BeEquivalentTo(domain.EventStatusPending))
+			Expect(createdEvent.Type).To(BeEquivalentTo(hubevents.EventTypeImageAnalysis))
+			Expect(createdEvent.SubType).To(BeEquivalentTo(hubevents.EventSubTypeDetectLabels))
+			Expect(createdEvent.Status).To(BeEquivalentTo(hubevents.EventStatusPending))
 			Expect(createdEvent.UserID.String()).To(BeEquivalentTo(u.ID().String()))
 		})
 
 		It("should return 401 for an invalid token", func() {
 			// Arrange
 			input := ports.EventCreateInput{
-				EventType: domain.EventTypeImageAnalysis.String(),
-				SubType:   domain.EventSubTypeDetectLabels.String(),
+				EventType: hubevents.EventTypeImageAnalysis.String(),
+				SubType:   hubevents.EventSubTypeDetectLabels.String(),
 			}
 
 			req, err := http.NewRequest(
@@ -92,8 +93,8 @@ var _ = Describe("Event Handler", func() {
 		It("should return 403 for a missing token", func() {
 			// Arrange
 			input := ports.EventCreateInput{
-				EventType: domain.EventTypeImageAnalysis.String(),
-				SubType:   domain.EventSubTypeDetectLabels.String(),
+				EventType: hubevents.EventTypeImageAnalysis.String(),
+				SubType:   hubevents.EventSubTypeDetectLabels.String(),
 			}
 
 			req, err := http.NewRequest(
@@ -117,7 +118,7 @@ var _ = Describe("Event Handler", func() {
 			// Arrange
 			input := ports.EventCreateInput{
 				EventType: "InvalidType",
-				SubType:   domain.EventSubTypeDetectLabels.String(),
+				SubType:   hubevents.EventSubTypeDetectLabels.String(),
 			}
 
 			req, err := http.NewRequest(
@@ -147,7 +148,7 @@ var _ = Describe("Event Handler", func() {
 		It("should return 400 for an invalid SubType", func() {
 			// Arrange
 			input := ports.EventCreateInput{
-				EventType: domain.EventTypeImageAnalysis.String(),
+				EventType: hubevents.EventTypeImageAnalysis.String(),
 				SubType:   "InvalidSubType",
 			}
 
@@ -179,8 +180,8 @@ var _ = Describe("Event Handler", func() {
 			It("should create a event with a file successfully", func() {
 				// Arrange
 				input := ports.EventCreateInput{
-					EventType:   domain.EventTypeImageAnalysis.String(),
-					SubType:     domain.EventSubTypeDetectLabels.String(),
+					EventType:   hubevents.EventTypeImageAnalysis.String(),
+					SubType:     hubevents.EventSubTypeDetectLabels.String(),
 					Filepath:    "path/to/file.jpg",
 					Filename:    "file.jpg",
 					ContentType: "image/jpeg",
@@ -224,8 +225,8 @@ var _ = Describe("Event Handler", func() {
 			It("should return 400 for an invalid file", func() {
 				// Arrange
 				input := ports.EventCreateInput{
-					EventType:   domain.EventTypeImageAnalysis.String(),
-					SubType:     domain.EventSubTypeDetectLabels.String(),
+					EventType:   hubevents.EventTypeImageAnalysis.String(),
+					SubType:     hubevents.EventSubTypeDetectLabels.String(),
 					Filepath:    "path/to/file",
 					Filename:    "file.jpg",
 					ContentType: "",

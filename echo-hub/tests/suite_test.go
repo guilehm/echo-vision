@@ -21,6 +21,7 @@ import (
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/repositories"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/usecases"
 	bcrypthasher "github.com/guilehm/echo-vision/echo-hub/internal/infra/bcrypt_hasher"
+	"github.com/guilehm/echo-vision/echo-hub/internal/infra/consumers"
 	jwtadapter "github.com/guilehm/echo-vision/echo-hub/internal/infra/jwt"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent"
@@ -103,7 +104,8 @@ var _ = BeforeSuite(func() {
 
 	// setup rabbitmq mocks
 	mockChan := make(chan messaging.Message)
-	handler := rabbitmqadapter.NewRabbitMQAdapter()
+	consumers := consumers.NewConsumerGroup()
+	handler := rabbitmqadapter.NewRabbitMQAdapter(consumers)
 	publisher := rabbitmqmocks.NewPublisher(mockChan)
 	consumer := rabbitmqmocks.NewConsumer(mockChan)
 	go consumer.Subscribe(context.Background(), handler)

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"time"
 
+	hubevents "github.com/guilehm/echo-vision/echo-hub/pkg/events"
+
 	"github.com/google/uuid"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/shared"
@@ -20,9 +22,9 @@ var _ = Describe("Event Domain Validation", func() {
 	eventCreationTests := []struct {
 		name        string
 		id          uuid.UUID
-		eventType   domain.EventType
-		subType     domain.EventSubType
-		status      domain.EventStatus
+		eventType   hubevents.EventType
+		subType     hubevents.EventSubType
+		status      hubevents.EventStatus
 		result      json.RawMessage
 		wantErr     bool
 		expectedErr error
@@ -32,9 +34,9 @@ var _ = Describe("Event Domain Validation", func() {
 		{
 			name:        "Valid event",
 			id:          validID,
-			eventType:   domain.EventTypeImageAnalysis,
-			subType:     domain.EventSubTypeDetectLabels,
-			status:      domain.EventStatusPending,
+			eventType:   hubevents.EventTypeImageAnalysis,
+			subType:     hubevents.EventSubTypeDetectLabels,
+			status:      hubevents.EventStatusPending,
 			result:      json.RawMessage(`{"result": "success"}`),
 			createdAt:   validTime,
 			updatedAt:   validTime,
@@ -44,9 +46,9 @@ var _ = Describe("Event Domain Validation", func() {
 		{
 			name:        "Invalid event ID",
 			id:          uuid.Nil,
-			eventType:   domain.EventTypeImageAnalysis,
-			subType:     domain.EventSubTypeDetectLabels,
-			status:      domain.EventStatusPending,
+			eventType:   hubevents.EventTypeImageAnalysis,
+			subType:     hubevents.EventSubTypeDetectLabels,
+			status:      hubevents.EventStatusPending,
 			result:      json.RawMessage(`{"result": "success"}`),
 			wantErr:     true,
 			expectedErr: shared.ErrInvalidID,
@@ -55,8 +57,8 @@ var _ = Describe("Event Domain Validation", func() {
 			name:        "Invalid event type",
 			id:          validID,
 			eventType:   "",
-			subType:     domain.EventSubTypeDetectLabels,
-			status:      domain.EventStatusPending,
+			subType:     hubevents.EventSubTypeDetectLabels,
+			status:      hubevents.EventStatusPending,
 			result:      json.RawMessage(`{"result": "success"}`),
 			createdAt:   validTime,
 			updatedAt:   validTime,
@@ -67,9 +69,9 @@ var _ = Describe("Event Domain Validation", func() {
 		// {
 		// 	name:        "Nil payload",
 		// 	id:          validID,
-		// 	eventType:   domain.EventTypeImageAnalysis,
-		// 	subType:     domain.EventSubTypeDetectLabels,
-		// 	status:      domain.EventStatusPending,
+		// 	eventType:   hubevents.EventTypeImageAnalysis,
+		// 	subType:     hubevents.EventSubTypeDetectLabels,
+		// 	status:      hubevents.EventStatusPending,
 		// 	payload:     nil,
 		// 	result:      json.RawMessage(`{"result": "updated"}`),
 		// 	createdAt:   validTime,
@@ -80,8 +82,8 @@ var _ = Describe("Event Domain Validation", func() {
 		{
 			name:        "Empty status",
 			id:          validID,
-			eventType:   domain.EventTypeImageAnalysis,
-			subType:     domain.EventSubTypeDetectLabels,
+			eventType:   hubevents.EventTypeImageAnalysis,
+			subType:     hubevents.EventSubTypeDetectLabels,
 			status:      "",
 			result:      json.RawMessage(`{"result": "deleted"}`),
 			createdAt:   validTime,

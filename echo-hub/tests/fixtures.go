@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"time"
 
+	hubevents "github.com/guilehm/echo-vision/echo-hub/pkg/events"
+
 	"github.com/google/uuid"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain/valueobjects"
@@ -23,10 +25,10 @@ var validUser = domain.NewUser(
 var validEvent = domain.NewEvent(
 	validUser.ID(),
 	uuid.New(),
-	domain.EventTypeImageAnalysis,
-	domain.EventSubTypeDetectLabels,
+	hubevents.EventTypeImageAnalysis,
+	hubevents.EventSubTypeDetectLabels,
 	json.RawMessage(`{"result": "success"}`),
-	domain.EventStatusPending,
+	hubevents.EventStatusPending,
 	nil,
 	time.Now(),
 	time.Now(),
@@ -35,10 +37,10 @@ var validEvent = domain.NewEvent(
 var validEventWithFile = domain.NewEvent(
 	validUser.ID(),
 	uuid.New(),
-	domain.EventTypeImageAnalysis,
-	domain.EventSubTypeDetectLabels,
+	hubevents.EventTypeImageAnalysis,
+	hubevents.EventSubTypeDetectLabels,
 	json.RawMessage(`{"result": "success"}`),
-	domain.EventStatusPending,
+	hubevents.EventStatusPending,
 	valueobjects.NewFile(
 		"path/to/file.jpg",
 		"file.jpg",
@@ -66,10 +68,10 @@ func makeEvent(u *domain.User) *domain.Event {
 	return domain.NewEvent(
 		u.ID(),
 		uuid.New(),
-		domain.EventTypeImageAnalysis,
-		domain.EventSubTypeDetectLabels,
+		hubevents.EventTypeImageAnalysis,
+		hubevents.EventSubTypeDetectLabels,
 		json.RawMessage(`{"result": "success"}`),
-		domain.EventStatusPending,
+		hubevents.EventStatusPending,
 		nil,
 		time.Now(),
 		time.Now(),

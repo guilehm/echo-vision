@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
+	hubevents "github.com/guilehm/echo-vision/echo-hub/pkg/events"
+
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/web"
 	. "github.com/onsi/ginkgo/v2"
@@ -22,8 +23,8 @@ var _ = Describe("Uploads Handler", func() {
 
 			// create input
 			input := ports.UploadPresignedURLInput{
-				Filename:  "test.jpg",
-				EventType: domain.EventTypeImageAnalysis.String(),
+				Filename:    "test.jpg",
+				EventType:   hubevents.EventTypeImageAnalysis.String(),
 				ContentType: "image/jpeg",
 			}
 			req, err := http.NewRequest(
@@ -55,7 +56,7 @@ var _ = Describe("Uploads Handler", func() {
 			// Arrange
 			input := ports.UploadPresignedURLInput{
 				Filename:    "test.jpg",
-				EventType: domain.EventTypeImageAnalysis.String(),
+				EventType:   hubevents.EventTypeImageAnalysis.String(),
 				ContentType: "image/jpeg",
 			}
 
@@ -84,7 +85,7 @@ var _ = Describe("Uploads Handler", func() {
 			u := saveUser(makeUser("mario@nintendo.com"))
 			input := ports.UploadPresignedURLInput{
 				Filename:    "",
-				EventType: domain.EventTypeImageAnalysis.String(),
+				EventType:   hubevents.EventTypeImageAnalysis.String(),
 				ContentType: "",
 			}
 
