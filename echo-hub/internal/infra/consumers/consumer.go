@@ -7,8 +7,12 @@ import (
 
 var logger = logging.NewLogger()
 
-type ConsumerGroup struct{}
+type ConsumerGroup struct {
+	EventUseCase ports.EventPort
+}
 
-func NewConsumerGroup() ports.ConsumerPort {
-	return &ConsumerGroup{}
+func NewConsumerGroup(eventUseCase ports.EventPort) ports.ConsumerPort {
+	return &ConsumerGroup{
+		EventUseCase: eventUseCase,
+	}
 }
