@@ -114,3 +114,12 @@ func (e *Event) File() *valueobjects.File {
 func isIn[T comparable](s T, values []T) bool {
 	return slices.Contains(values, s)
 }
+
+func (e *Event) SetStatus(status hubevents.EventStatus) error {
+	if !isIn(status, e.status.Values()) {
+		return shared.ErrInvalidStatus
+	}
+	e.status = status
+	e.updatedAt = time.Now()
+	return nil
+}
