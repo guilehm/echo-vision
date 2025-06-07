@@ -102,20 +102,22 @@ var _ = BeforeSuite(func() {
 	// setup bcrypt password manager
 	passwordAdapter = bcrypthasher.NewBcryptAdapter()
 
+	// setup s3 mock
+	s3Mock = filestoragemocks.NewFileStorageMock("echo-hub")
+
 	// setup rabbitmq mocks
 	mockChan := make(chan messaging.Message)
-	consumers := consumers.NewConsumerGroup()
-	handler := rabbitmqadapter.NewRabbitMQAdapter(consumers)
 	publisher := rabbitmqmocks.NewPublisher(mockChan)
 	consumer := rabbitmqmocks.NewConsumer(mockChan)
-	go consumer.Subscribe(context.Background(), handler)
+
+	consumers := consumers.NewConsumerGroup(eventUseCase)
 
 	// setup usecases
 	userUseCase = usecases.NewManageUsersUseCase(repo, jwtAdapter, passwordAdapter)
 	eventUseCase = usecases.NewManageEventsUseCase(repo, publisher)
 
-	// setup s3 mock
-	s3Mock = filestoragemocks.NewFileStorageMock("echo-hub")
+	handler := rabbitmqadapter.NewRabbitMQAdapter(consumers)
+	go consumer.Subscribe(context.Background(), handler)
 
 	// setup http server
 	router := web.NewRouter(userUseCase, eventUseCase, s3Mock, publisher)

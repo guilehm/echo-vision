@@ -59,14 +59,8 @@ func main() {
 	}
 	defer consumer.Close()
 
-	consumers := consumers.NewConsumerGroup()
-	adapter := rabbitmqadapter.NewRabbitMQAdapter(consumers)
-	go func() {
-		err = consumer.Subscribe(context.Background(), adapter)
-		if err != nil {
-			log.Fatalln("could not subscribe to queue: ", err)
-		}
-	}()
+	e := postgres.NewEnt(os.Getenv("DATABASE_URL"), os.Getenv("DATABASE_SCHEMA"))
+	repo := postgres.NewRepository(e)
 
 	publishConn, err := rabbitmq.NewRabbitMQClient(
 		os.Getenv("RABBITMQ_URL"),
@@ -87,6 +81,24 @@ func main() {
 	if err := publisher.StartPublisher(context.Background()); err != nil {
 		log.Fatalln("could not start publisher", err)
 	}
+
+	jwtAdapter := jwtadapter.NewJWTManager(
+		os.Getenv("JWT_SECRET"),
+		1*time.Hour,
+		24*time.Hour,
+	)
+	passwordAdapter := bcrypthasher.NewBcryptAdapter()
+	userUseCase := usecases.NewManageUsersUseCase(repo, jwtAdapter, passwordAdapter)
+	eventUseCase := usecases.NewManageEventsUseCase(repo, publisher)
+
+	consumers := consumers.NewConsumerGroup(eventUseCase)
+	adapter := rabbitmqadapter.NewRabbitMQAdapter(consumers)
+	go func() {
+		err = consumer.Subscribe(context.Background(), adapter)
+		if err != nil {
+			log.Fatalln("could not subscribe to queue: ", err)
+		}
+	}()
 
 	// go func() {
 	// 	for i := 0; i < 500000; i++ {
@@ -125,19 +137,6 @@ func main() {
 	// 	}
 	// 	fmt.Println("published messages")
 	// }
-
-	jwtAdapter := jwtadapter.NewJWTManager(
-		os.Getenv("JWT_SECRET"),
-		1*time.Hour,
-		24*time.Hour,
-	)
-	passwordAdapter := bcrypthasher.NewBcryptAdapter()
-
-	e := postgres.NewEnt(os.Getenv("DATABASE_URL"), os.Getenv("DATABASE_SCHEMA"))
-	repo := postgres.NewRepository(e)
-
-	userUseCase := usecases.NewManageUsersUseCase(repo, jwtAdapter, passwordAdapter)
-	eventUseCase := usecases.NewManageEventsUseCase(repo, publisher)
 
 	uploadPort, err := filestorage.NewS3Adapter(
 		os.Getenv("AWS_BUCKET_NAME"),
