@@ -33,7 +33,7 @@ remove:
 	@echo "stopping all containers and removing volumes"
 	$(DOCKER_COMPOSE) down -v
 
-test: test_hub test_analyzer
+test: clear_database test_hub test_analyzer
 	@echo "all tests completed"
 
 migrate:
@@ -52,10 +52,13 @@ run_hub:
 	@echo "starting echo-hub"
 	$(DOCKER_COMPOSE) up echo-hub
 
-test_analyzer:
+test_analyzer: clear_database
 	@echo "running tests for echo-analyzer"
 	TZ=UTC ginkgo -v echo-analyzer/tests
 
-test_hub:
+test_hub: clear_database
 	@echo "running tests for echo-hub"
 	TZ=UTC ginkgo -v echo-hub/tests
+
+clear_database:
+	lsof -ti tcp:15432 | xargs kill -9 || true
