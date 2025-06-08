@@ -10,9 +10,9 @@ import (
 )
 
 type ApiResponse[T any] struct {
-	Error  string `json:"error,omitempty"`
-	Data   *T     `json:"data,omitempty"`
 	Status int    `json:"status,omitempty"`
+	Data   *T     `json:"data,omitempty"`
+	Error  string `json:"error,omitempty"`
 }
 
 func apiResponse[T any](data *T, err error) *ApiResponse[T] {
@@ -73,15 +73,15 @@ func apiResponse[T any](data *T, err error) *ApiResponse[T] {
 		}
 
 		return &ApiResponse[T]{
+			Status: status,
 			Data:   data,
 			Error:  errorMessage,
-			Status: status,
 		}
 	}
 
 	return &ApiResponse[T]{
-		Data:   data,
 		Status: http.StatusOK,
+		Data:   data,
 	}
 }
 
