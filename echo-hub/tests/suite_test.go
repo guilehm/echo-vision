@@ -129,7 +129,6 @@ var _ = BeforeSuite(func() {
 	adapter = rabbitmqadapter.NewRabbitMQAdapter(consumerGroup)
 	handler = rabbitmqmocks.NewHandler()
 
-	// go consumer.Subscribe(context.Background(), adapter)
 	go consumer.Subscribe(context.Background(), handler)
 	go publisher.StartPublisher(context.Background())
 

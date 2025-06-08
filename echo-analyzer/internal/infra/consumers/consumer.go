@@ -8,13 +8,13 @@ import (
 var logger = logging.NewLogger()
 
 type ConsumerGroup struct {
-	irs       ports.ImageRecognitionServicePort
-	publisher ports.PublisherPort
+	publisher            ports.PublisherPort
+	imageAnalysisUseCase ports.ImageAnalysisPort
 }
 
-func NewConsumerGroup(irs ports.ImageRecognitionServicePort, publisher ports.PublisherPort) ports.ConsumerPort {
+func NewConsumerGroup(imageAnalysisUseCase ports.ImageAnalysisPort, publisher ports.PublisherPort) ports.ConsumerPort {
 	return &ConsumerGroup{
-		irs:       irs,
-		publisher: publisher,
+		publisher:            publisher,
+		imageAnalysisUseCase: imageAnalysisUseCase,
 	}
 }

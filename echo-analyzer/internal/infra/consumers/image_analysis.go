@@ -2,10 +2,8 @@ package consumers
 
 import (
 	"context"
-	"encoding/json"
 	"log/slog"
 
-	analyzerevents "github.com/guilehm/echo-vision/echo-analyzer/pkg/events"
 	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
 	hubevents "github.com/guilehm/echo-vision/echo-hub/pkg/events"
 )
@@ -23,56 +21,20 @@ func (c *ConsumerGroup) ProcessImageAnalysis(topic string, message hubevents.Eve
 		return messaging.DeadLetter
 	}
 
-	// publish processing status
-	err := c.publisher.PublishImageAnalysisStatusUpdate(
-		ctx,
-		message.ID,
-		analyzerevents.EventStatusProcessing,
-		nil,
-	)
-	if err != nil {
-		logger.Error("could not publish image analysis status update", slog.String("error", err.Error()))
-		return messaging.DeadLetter
-	}
-
-	var data json.RawMessage
 	switch message.SubType {
 	case hubevents.EventSubTypeDetectLabels:
-		labels, err := c.irs.DetectLabels(message.File.Filepath)
+		_, err := c.imageAnalysisUseCase.DetectLabels(ctx, message.ID, message.File.Filepath)
 		if err != nil {
-			logger.Error("could not detect labels: ", slog.String("error", err.Error()))
+			logger.Error("could not detect labels", slog.String("error", err.Error()))
 			return messaging.DeadLetter
 		}
-		data = toRawMessage(labels)
-
 	case hubevents.EventSubTypeDetectFaces:
-		faces, err := c.irs.DetectFaces(message.File.Filepath)
+		_, err := c.imageAnalysisUseCase.DetectFaces(ctx, message.ID, message.File.Filepath)
 		if err != nil {
-			logger.Error("could not detect faces ", slog.String("error", err.Error()))
+			logger.Error("could not detect faces", slog.String("error", err.Error()))
 			return messaging.DeadLetter
 		}
-		data = toRawMessage(faces)
 	}
 
-	// publish completed status
-	err = c.publisher.PublishImageAnalysisStatusUpdate(
-		ctx,
-		message.ID,
-		analyzerevents.EventStatusCompleted,
-		data,
-	)
-	if err != nil {
-		logger.Error("could not publish image analysis status update", slog.String("error", err.Error()))
-		return messaging.DeadLetter
-	}
 	return messaging.Success
-}
-
-func toRawMessage(data any) json.RawMessage {
-	raw, err := json.Marshal(data)
-	if err != nil {
-		logger.Error("could not marshal data to raw message", slog.String("error", err.Error()))
-		return nil
-	}
-	return raw
 }

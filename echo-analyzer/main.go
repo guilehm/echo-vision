@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/guilehm/echo-vision/echo-analyzer/internal/app/usecases"
 	"github.com/guilehm/echo-vision/echo-analyzer/internal/infra/consumers"
 	"github.com/guilehm/echo-vision/echo-analyzer/internal/infra/publishers"
 	rabbitmqadapter "github.com/guilehm/echo-vision/echo-analyzer/internal/infra/rabbitmq"
@@ -62,8 +63,9 @@ func main() {
 		log.Fatalln("could not create AWS Rekognition adapter: ", err)
 	}
 
-	publisherGroup := publishers.NewPublisherGroup(irs, publisher)
-	consumerGroup := consumers.NewConsumerGroup(irs, publisherGroup)
+	publisherGroup := publishers.NewPublisherGroup(publisher)
+	imageAnalysisUseCase := usecases.NewImageAnalysisUseCase(publisherGroup, irs)
+	consumerGroup := consumers.NewConsumerGroup(imageAnalysisUseCase, publisherGroup)
 
 	adapter := rabbitmqadapter.NewRabbitMQAdapter(consumerGroup, publisherGroup)
 
