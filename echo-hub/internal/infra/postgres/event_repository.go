@@ -88,28 +88,16 @@ func (r *Repository) FindEventsByUserID(
 	cursor string,
 ) ([]*domain.Event, string, error) {
 	c := r.resolveClient(tx)
+
+	var err error
+
 	query := c.Event.Query().
 		Where(event.UserID(userID)).
 		WithFile()
 
-	if cursor != "" {
-		// decode cursor: createdAt|id
-		createdAt, id, err := decodeCursor(cursor)
-		if err != nil {
-			return nil, "", shared.ErrInvalidCursor
-		}
-		// if cursor is provided, filter events created before the cursor
-		query = query.Where(
-			event.Or(
-				event.And(
-					event.CreatedAtLT(createdAt),
-				),
-				event.And(
-					event.IDLT(id),
-					event.CreatedAtEQ(createdAt),
-				),
-			),
-		)
+	query, err = applyCursorFilter(query, cursor)
+	if err != nil {
+		return nil, "", err
 	}
 
 	events, err := query.
