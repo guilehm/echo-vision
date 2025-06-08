@@ -423,12 +423,17 @@ var _ = Describe("Event Handler", func() {
 
 		It("should handle last pagination successfully", func() {
 			// Arrange
+			firstEvent := entClient.Event.Query().
+				Where(event.UserIDEQ(u.ID())).
+				Order(ent.Desc(event.FieldCreatedAt)).
+				FirstX(ctx)
+
 			lastEvent := entClient.Event.Query().
 				Where(event.UserIDEQ(u.ID())).
 				Order(ent.Asc(event.FieldCreatedAt)).
 				FirstX(ctx)
 
-			cursor := postgres.EncodeCursorForTest(lastEvent.CreatedAt, lastEvent.ID)
+			cursor := postgres.EncodeCursorForTest(firstEvent.CreatedAt, firstEvent.ID)
 
 			// add pagination param
 			paginationLimit := 1
