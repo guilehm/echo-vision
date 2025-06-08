@@ -12,9 +12,8 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ImageUpload from "@/components/uploads/image-upload";
-import { formatDate } from "@/utils";
-import { statusStyles } from "@/utils";
 import { getOwnEvents } from "@/services/server-requester";
+import { formatDate, statusStyles } from "@/utils";
 
 async function fetchUserAnalyses() {
   const response = await getOwnEvents();

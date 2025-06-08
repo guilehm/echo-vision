@@ -1,12 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useDropzone } from "react-dropzone";
-import Image from "next/image";
-import { toast } from "sonner";
-import { createEvent, getPresignedUrl } from "@/services/server-requester";
 import { Button } from "@/components/ui/button";
-import { uploadS3File } from "@/services/client-requester";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -15,6 +9,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { uploadS3File } from "@/services/client-requester";
+import { createEvent, getPresignedUrl } from "@/services/server-requester";
+import Image from "next/image";
+import { useState } from "react";
+import { useDropzone } from "react-dropzone";
+import { toast } from "sonner";
 
 const handleErrors = (error) => {
   console.log(error);
@@ -97,8 +97,6 @@ export default function ImageUpload() {
     };
 
     getPresignedUrl(data).then(handlePresignedSuccess).catch(handleErrors);
-
-    // Implement API upload logic here
   };
 
   return (
