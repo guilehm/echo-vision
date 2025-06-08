@@ -23,7 +23,7 @@ const handleErrors = (error) => {
 
 export default function ImageUpload() {
   const [file, setFile] = useState(null);
-  const [eventType, setEventType] = useState("detect_labels");
+  const [eventSubType, setEventSubType] = useState("detect_labels");
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: { "image/*": [] },
@@ -34,7 +34,7 @@ export default function ImageUpload() {
   });
 
   const handleTypeChange = (value) => {
-    setEventType(value);
+    setEventSubType(value);
   };
 
   const handleSubmit = () => {
@@ -79,7 +79,7 @@ export default function ImageUpload() {
         filename: presignedResponse.data?.filename,
         filepath: presignedResponse.data?.filepath,
         eventType: "image_analysis",
-        subType: eventType,
+        subType: eventSubType,
         contentType: file.type,
         filesize: file.size,
       };
@@ -122,7 +122,7 @@ export default function ImageUpload() {
         )}
       </div>
       <div className="mt-4">
-        <AnalysisTypeSelect value={eventType} onChange={handleTypeChange} />
+        <AnalysisTypeSelect value={eventSubType} onChange={handleTypeChange} />
       </div>
       <Button className="my-4" onClick={handleSubmit}>
         Submit
@@ -132,7 +132,7 @@ export default function ImageUpload() {
 }
 
 export function AnalysisTypeSelect({ value, onChange }) {
-  const analysisTypes = [
+  const analysisSubTypes = [
     // TODO: do not hardcode the values
     { value: "detect_labels", label: "Label Detection" },
     { value: "detect_faces", label: "Face Detection" },
@@ -146,7 +146,7 @@ export function AnalysisTypeSelect({ value, onChange }) {
           <SelectValue placeholder="Select analysis type" />
         </SelectTrigger>
         <SelectContent>
-          {analysisTypes.map((type) => (
+          {analysisSubTypes.map((type) => (
             <SelectItem key={type.value} value={type.value}>
               {type.label}
             </SelectItem>

@@ -103,7 +103,7 @@ export default async function ImageAnalysis() {
 
               <div className="md:order-1 space-y-6">
                 <TabsContent value="edit" className="mt-0 border-0 p-0">
-                  <ImageUpload eventType={"image_analysis"} />
+                  <ImageUpload eventSubType={"image_analysis"} />
                 </TabsContent>
                 <AnalysisListTable analyses={results} />
               </div>
