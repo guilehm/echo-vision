@@ -25,5 +25,6 @@ var (
 	ErrDecodingRequestBody  = errors.New("decoding request body")
 
 	ErrInvalidCursor     = errors.New("invalid cursor")
+	ErrInvalidLimit      = errors.New("invalid limit")
 	ErrInvalidQueryParam = errors.New("invalid query parameter")
 )

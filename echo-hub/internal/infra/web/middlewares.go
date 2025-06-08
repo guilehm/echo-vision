@@ -89,7 +89,7 @@ func paginationMiddleware(next http.Handler) http.Handler {
 				logger.Error("invalid limit parameter", slog.String("limit", limitQuery))
 				handleApiResponse(w, apiResponse[any](nil, newApiError(
 					http.StatusBadRequest,
-					"invalid limit parameter",
+					shared.ErrInvalidLimit.Error(),
 				)))
 				return
 			}

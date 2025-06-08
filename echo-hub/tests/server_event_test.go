@@ -326,7 +326,7 @@ var _ = Describe("Event Handler", func() {
 			}
 		})
 
-		FIt("should list paginated events", func() {
+		It("should list paginated events", func() {
 			// Arrange
 			firstEvent := entClient.Event.Query().
 				Where(event.UserIDEQ(u.ID())).
@@ -503,11 +503,10 @@ var _ = Describe("Event Handler", func() {
 			}
 		})
 
-		It("should return 400 for invalid pagination parameters", func() {
+		It("should return 400 for invalid pagination limit", func() {
 			// Arrange
 			params := url.Values{}
-			params.Add("limit", "invalid")  // Invalid limit
-			params.Add("cursor", "invalid") // Invalid cursor
+			params.Add("limit", "invalid") // Invalid limit
 			req, err := http.NewRequest(
 				http.MethodGet,
 				fmt.Sprintf("%s/users/%s/events?%s", server.URL, u.ID().String(), params.Encode()),
@@ -528,6 +527,35 @@ var _ = Describe("Event Handler", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(apiResp.Data).To(BeNil())
 			Expect(apiResp.Error).ToNot(BeEmpty())
+			Expect(apiResp.Error).To(ContainSubstring("invalid limit"))
+		})
+
+		It("should return 400 for invalid pagination cursor", func() {
+			// Arrange
+			params := url.Values{}
+			params.Add("limit", "1")
+			params.Add("cursor", "invalid_cursor") // Invalid cursor
+			req, err := http.NewRequest(
+				http.MethodGet,
+				fmt.Sprintf("%s/users/%s/events?%s", server.URL, u.ID().String(), params.Encode()),
+				nil,
+			)
+			Expect(err).ToNot(HaveOccurred())
+			token := u.AccessToken()
+			req.Header.Set("Authorization", token)
+			// Act
+			client := http.Client{}
+			resp, err := client.Do(req)
+			Expect(err).ToNot(HaveOccurred())
+			defer resp.Body.Close()
+			// Assert
+			Expect(resp.StatusCode).To(Equal(http.StatusBadRequest))
+			var apiResp web.ApiResponse[ports.ApiListResponse[dtos.EventResponse]]
+			err = json.NewDecoder(resp.Body).Decode(&apiResp)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(apiResp.Data).To(BeNil())
+			Expect(apiResp.Error).ToNot(BeEmpty())
+			Expect(apiResp.Error).To(ContainSubstring("invalid cursor"))
 		})
 
 		It("should not list own events if not authenticated", func() {

@@ -44,6 +44,21 @@ func apiResponse[T any](data *T, err error) *ApiResponse[T] {
 			errorMessage = http.StatusText(http.StatusUnauthorized)
 		}
 
+		// handle invalid parameters
+		if errors.Is(err, shared.ErrInvalidQueryParam) {
+			status = http.StatusBadRequest
+		}
+
+		// handle invalid limit
+		if errors.Is(err, shared.ErrInvalidLimit) {
+			status = http.StatusBadRequest
+		}
+
+		// handle invalid cursor
+		if errors.Is(err, shared.ErrInvalidCursor) {
+			status = http.StatusBadRequest
+		}
+
 		// handle specific error type for postgres
 		var pgErr *pq.Error
 		if errors.As(err, &pgErr) {
