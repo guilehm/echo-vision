@@ -11,44 +11,90 @@ import (
 
 // DetectFaces implements ports.ImageAnalysisPort.
 func (i ImageAnalysisUseCase) DetectFaces(ctx context.Context, eventID uuid.UUID, filePath string) ([]analyzerevents.FaceDetail, error) {
-	err := i.publisher.PublishImageAnalysisStatusUpdate(
-		ctx,
-		eventID,
-		analyzerevents.EventStatusProcessing,
-		nil,
-	)
-	faces, err := i.irs.DetectFaces(filePath)
+	detecFunc := func(ctx context.Context, eventID uuid.UUID, filePath string) ([]analyzerevents.FaceDetail, error) {
+		faces, err := i.irs.DetectFaces(filePath)
+		if err != nil {
+			return nil, err
+		}
+		return faces, nil
+	}
+
+	faces, err := runDetection(ctx, i, detecFunc, eventID, filePath)
 	if err != nil {
+		logger.Error("failed to detect faces", slog.String("error", err.Error()))
 		return nil, err
 	}
-	err = i.publisher.PublishImageAnalysisStatusUpdate(
-		ctx,
-		eventID,
-		analyzerevents.EventStatusCompleted,
-		toRawMessage(faces),
-	)
 	return faces, nil
 }
 
 // DetectLabels implements ports.ImageAnalysisPort.
 func (i ImageAnalysisUseCase) DetectLabels(ctx context.Context, eventID uuid.UUID, filePath string) ([]analyzerevents.Label, error) {
-	err := i.publisher.PublishImageAnalysisStatusUpdate(
+	detecFunc := func(ctx context.Context, eventID uuid.UUID, filePath string) ([]analyzerevents.Label, error) {
+		labels, err := i.irs.DetectLabels(filePath)
+		if err != nil {
+			return nil, err
+		}
+		return labels, nil
+	}
+
+	labels, err := runDetection(ctx, i, detecFunc, eventID, filePath)
+	if err != nil {
+		logger.Error("failed to detect labels", slog.String("error", err.Error()))
+		return nil, err
+	}
+
+	return labels, nil
+}
+
+func runDetection[T any](
+	ctx context.Context,
+	i ImageAnalysisUseCase,
+	detectFunc func(ctx context.Context, eventID uuid.UUID, filePath string) (T, error),
+	eventID uuid.UUID,
+	filePath string,
+) (T, error) {
+	var zeroValue T
+	var err error
+
+	defer func() {
+		// publish failure status if an error occurs
+		if err != nil {
+			if publishErr := i.publisher.PublishImageAnalysisStatusUpdate(
+				ctx,
+				eventID,
+				analyzerevents.EventImageAnalysisStatusUpdatedFailed,
+				nil,
+			); publishErr != nil {
+				logger.Error("failed to publish image analysis failure status", slog.String("error", publishErr.Error()))
+			}
+		}
+	}()
+
+	err = i.publisher.PublishImageAnalysisStatusUpdate(
 		ctx,
 		eventID,
 		analyzerevents.EventStatusProcessing,
 		nil,
 	)
-	labels, err := i.irs.DetectLabels(filePath)
 	if err != nil {
-		return nil, err
+		return zeroValue, err
 	}
+
+	data, err := detectFunc(ctx, eventID, filePath)
+	if err != nil {
+		return zeroValue, err
+	}
+
 	err = i.publisher.PublishImageAnalysisStatusUpdate(
 		ctx,
 		eventID,
 		analyzerevents.EventStatusCompleted,
-		toRawMessage(labels),
+		toRawMessage(data),
 	)
-	return labels, nil
+	if err != nil {
+		return zeroValue, err
+	}
+	return data, nil
 }
 
 func toRawMessage(data any) json.RawMessage {
