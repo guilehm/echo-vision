@@ -17,7 +17,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { signUp } from "@/services/client";
-import { clientRequester } from "@/services/client-requester-final";
+import { clientRequester } from "@/services/client-requester";
 
 const formSchema = z.object({
   firstName: z

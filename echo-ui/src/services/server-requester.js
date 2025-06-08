@@ -34,6 +34,7 @@ export async function serverRequester(url, options = {}, next = {}) {
   return fetch(requestURL, config);
 }
 
+// TODO: remove this function and use the serverRequester instead
 export async function getPresignedUrl({ filename, eventType, contentType }) {
   const c = await cookies();
   const authToken = c.get("accessToken");
@@ -51,6 +52,7 @@ export async function getPresignedUrl({ filename, eventType, contentType }) {
   return await response.json();
 }
 
+// TODO: remove this function and use the serverRequester instead
 export async function createEvent({
   eventType,
   subType,
@@ -78,25 +80,5 @@ export async function createEvent({
     }),
     credentials: "include",
   });
-  return await response.json();
-}
-
-export async function getOwnEvents() {
-  const c = await cookies();
-  const authToken = c.get("accessToken");
-
-  const response = await fetch(`${API_BASE_URL}/events`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: authToken?.value,
-    },
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch own events");
-  }
-
   return await response.json();
 }

@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { clientRequester } from "@/services/client-requester-final";
+import { clientRequester } from "@/services/client-requester";
 import { getOwnEvents } from "@/services/client";
 import { formatDate, statusStyles } from "@/utils";
 import { useState } from "react";

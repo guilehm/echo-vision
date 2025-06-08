@@ -33,3 +33,22 @@ export async function signUp(requester, data = {}) {
     body: data,
   });
 }
+
+export async function signIn(requester, { email, password }) {
+  return await makeRequest(requester, "/users/login", {
+    method: "POST",
+    body: { email, password },
+  });
+}
+
+export async function uploadS3File({ file, presignedURL }) {
+  const response = await fetch(presignedURL, {
+    method: "PUT",
+    headers: { "Content-Type": file.type },
+    body: file,
+  });
+  if (!response.ok) {
+    throw new Error("Failed to upload file");
+  }
+  return response;
+}

@@ -9,7 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { uploadS3File } from "@/services/client-requester";
+import { uploadS3File } from "@/services/client";
+import { clientRequester } from "@/services/client-requester";
 import { createEvent, getPresignedUrl } from "@/services/server-requester";
 import Image from "next/image";
 import { useState } from "react";
@@ -17,6 +18,7 @@ import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 
 const handleErrors = (error) => {
+  console.error("An error occurred:", error);
   toast.error("An error occurred. Please try again later.");
 };
 
