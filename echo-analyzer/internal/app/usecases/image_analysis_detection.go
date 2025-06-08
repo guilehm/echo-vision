@@ -62,7 +62,7 @@ func runDetection[T any](
 			if publishErr := i.publisher.PublishImageAnalysisStatusUpdate(
 				ctx,
 				eventID,
-				analyzerevents.EventImageAnalysisStatusUpdatedFailed,
+				analyzerevents.EventStatusFailed,
 				nil,
 			); publishErr != nil {
 				logger.Error("failed to publish image analysis failure status", slog.String("error", publishErr.Error()))
