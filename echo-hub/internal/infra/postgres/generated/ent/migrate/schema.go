@@ -12,7 +12,7 @@ var (
 	EventsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"image_analysis"}},
-		{Name: "sub_type", Type: field.TypeEnum, Enums: []string{"detect_labels"}},
+		{Name: "sub_type", Type: field.TypeEnum, Enums: []string{"detect_labels", "detect_faces"}},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "processing", "completed", "failed"}},
 		{Name: "result", Type: field.TypeJSON, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},

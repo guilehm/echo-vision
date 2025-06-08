@@ -121,6 +121,7 @@ type SubType string
 // SubType values.
 const (
 	SubTypeDetectLabels SubType = "detect_labels"
+	SubTypeDetectFaces  SubType = "detect_faces"
 )
 
 func (st SubType) String() string {
@@ -130,7 +131,7 @@ func (st SubType) String() string {
 // SubTypeValidator is a validator for the "sub_type" field enum values. It is called by the builders before save.
 func SubTypeValidator(st SubType) error {
 	switch st {
-	case SubTypeDetectLabels:
+	case SubTypeDetectLabels, SubTypeDetectFaces:
 		return nil
 	default:
 		return fmt.Errorf("event: invalid enum value for sub_type field: %q", st)
