@@ -38,9 +38,8 @@ var _ = Describe("Image Analysis Consumer", func() {
 			// Arrange
 			data := json.RawMessage(`{"labels": ["cat", "dog"]}`)
 
-			statusUpdateCalled := make(chan any)
+			done := make(chan any)
 			topic := hubevents.EventImageAnalysisStatusUpdatedProcessing
-			// var msg hubevents.EventStatusUpdateMessage
 
 			expectFunc := func(msg hubevents.EventStatusUpdateMessage) {
 				Expect(msg).ToNot(BeNil())
@@ -52,7 +51,7 @@ var _ = Describe("Image Analysis Consumer", func() {
 			// Expect the status update message to be handled
 			expectMessageCalled(
 				topic,
-				statusUpdateCalled,
+				done,
 				expectFunc,
 			)
 
@@ -67,7 +66,7 @@ var _ = Describe("Image Analysis Consumer", func() {
 			)
 
 			// Assert
-			Eventually(statusUpdateCalled, "1s").Should(BeClosed())
+			Eventually(done, "1s").Should(BeClosed())
 			updatedEvent, err := eventUseCase.FindEventByID(ctx, eventID)
 			Expect(err).ToNot(HaveOccurred())
 
@@ -76,5 +75,6 @@ var _ = Describe("Image Analysis Consumer", func() {
 			Expect(updatedEvent.Status()).To(Equal(hubevents.EventStatusProcessing))
 			Expect(updatedEvent.Result()).To(Equal(data))
 		})
+		// TODO: Add more tests for other event statuses like Completed, Failed, etc.
 	})
 })

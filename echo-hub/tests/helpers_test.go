@@ -26,7 +26,7 @@ func saveUser(u *domain.User) *domain.User {
 		u.Password(),
 	)
 	Expect(err).ToNot(HaveOccurred())
-	_, err = userUseCase.SaveUser(ctx, vu)
+	_, err = repo.SaveUser(ctx, nil, vu)
 	Expect(err).ToNot(HaveOccurred())
 	return vu
 }
@@ -40,7 +40,7 @@ func saveEvent(e *domain.Event) *domain.Event {
 		nil,
 	)
 	Expect(err).ToNot(HaveOccurred())
-	_, err = eventUseCase.SaveEvent(ctx, ve)
+	_, err = repo.SaveEvent(ctx, nil, ve)
 	Expect(err).ToNot(HaveOccurred())
 	return ve
 }

@@ -18,6 +18,7 @@ import (
 
 var _ = Describe("Event Handler", func() {
 	var u *domain.User
+	topic := hubevents.EventImageAnalysCreated
 	BeforeEach(func() {
 		u = saveUser(makeUser("arthur@gmail.com"))
 	})
@@ -25,6 +26,17 @@ var _ = Describe("Event Handler", func() {
 	Context("Create Event", func() {
 		It("should create a event successfully", func() {
 			// Arrange
+
+			done := make(chan any)
+			expectFunc := func(msg hubevents.EventMessage) {
+				Expect(msg).ToNot(BeNil())
+				Expect(msg.ID).ToNot(BeNil())
+				Expect(msg.Type).To(Equal(hubevents.EventTypeImageAnalysis))
+				Expect(msg.SubType).To(Equal(hubevents.EventSubTypeDetectLabels))
+				Expect(msg.File).To(BeNil())
+			}
+			expectMessageCalled(topic, done, expectFunc)
+
 			input := ports.EventCreateInput{
 				EventType: hubevents.EventTypeImageAnalysis.String(),
 				SubType:   hubevents.EventSubTypeDetectLabels.String(),
@@ -46,6 +58,7 @@ var _ = Describe("Event Handler", func() {
 			defer resp.Body.Close()
 
 			// Assert
+			Eventually(done, "1s").Should(BeClosed())
 			Expect(resp.StatusCode).To(Equal(http.StatusOK))
 
 			var apiResp web.ApiResponse[dtos.EventCreateResponse]
@@ -188,6 +201,16 @@ var _ = Describe("Event Handler", func() {
 					Filesize:    1024,
 				}
 
+				done := make(chan any)
+				expectFunc := func(msg hubevents.EventMessage) {
+					Expect(msg).ToNot(BeNil())
+					Expect(msg.ID).ToNot(BeNil())
+					Expect(msg.Type).To(Equal(hubevents.EventTypeImageAnalysis))
+					Expect(msg.SubType).To(Equal(hubevents.EventSubTypeDetectLabels))
+					Expect(msg.File).ToNot(BeNil())
+				}
+				expectMessageCalled(topic, done, expectFunc)
+
 				req, err := http.NewRequest(
 					http.MethodPost,
 					fmt.Sprintf("%s/events", server.URL),
@@ -204,6 +227,7 @@ var _ = Describe("Event Handler", func() {
 				defer resp.Body.Close()
 
 				// Assert
+				Eventually(done, "1s").Should(BeClosed())
 				Expect(resp.StatusCode).To(Equal(http.StatusOK))
 
 				createdFile := entClient.File.Query().
@@ -361,6 +385,7 @@ var _ = Describe("Event Handler", func() {
 			Expect(apiResp.Data).To(BeNil())
 			Expect(apiResp.Error).ToNot(BeEmpty())
 		})
+
 		It("should not list events from another user", func() {
 			// Arrange
 			req, err := http.NewRequest(
