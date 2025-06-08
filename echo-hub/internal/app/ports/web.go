@@ -1,6 +1,6 @@
 package ports
 
 type ApiListResponse[T any] struct {
-	Results []*T `json:"results"`
-	// TODO: implement cursor
+	Results    []*T   `json:"results"`
+	NextCursor string `json:"nextCursor"`
 }
