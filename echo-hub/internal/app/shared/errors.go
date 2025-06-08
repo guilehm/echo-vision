@@ -24,5 +24,6 @@ var (
 	ErrContextValueNotFound = errors.New("context value not found")
 	ErrDecodingRequestBody  = errors.New("decoding request body")
 
-	ErrInvalidCursor = errors.New("invalid cursor")
+	ErrInvalidCursor     = errors.New("invalid cursor")
+	ErrInvalidQueryParam = errors.New("invalid query parameter")
 )

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/cors"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
@@ -71,4 +72,33 @@ func newAuthenticationMiddleware(userPort ports.UserPort) func(next http.Handler
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
+}
+
+func paginationMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		params := defaultPaginationParams()
+		cursor := r.URL.Query().Get("cursor")
+		limitQuery := r.URL.Query().Get("limit")
+
+		limit := params.limit
+
+		if limitQuery != "" {
+			var err error
+			limit, err = strconv.Atoi(limitQuery)
+			if err != nil || limit <= 0 || limit > 100 {
+				logger.Error("invalid limit parameter", slog.String("limit", limitQuery))
+				handleApiResponse(w, apiResponse[any](nil, newApiError(
+					http.StatusBadRequest,
+					"invalid limit parameter",
+				)))
+				return
+			}
+		}
+
+		params.limit = limit
+		params.cursor = cursor
+
+		ctx := context.WithValue(r.Context(), contextKeyPaginationParams, params)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }

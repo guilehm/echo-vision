@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
-	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
@@ -50,22 +49,8 @@ func (h *EventHandler) ListEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cursor := r.URL.Query().Get("cursor")
-	limitQuery := r.URL.Query().Get("limit")
-	limit := 10
-	if limitQuery != "" {
-		limit, err = strconv.Atoi(limitQuery)
-		if err != nil || limit <= 0 || limit > 100 {
-			logger.Error("invalid limit parameter", slog.String("limit", limitQuery))
-			handleApiResponse(w, apiResponse[any](nil, newApiError(
-				http.StatusBadRequest,
-				"invalid limit parameter",
-			)))
-			return
-		}
-	}
-
-	events, nextCursor, err := h.eventPort.EventsByUser(ctx, user.ID(), limit, cursor)
+	paginationParams := paginationParamsFromContext(ctx)
+	events, nextCursor, err := h.eventPort.EventsByUser(ctx, user.ID(), paginationParams.limit, paginationParams.cursor)
 	if err != nil {
 		logger.Error("error getting events by user", slog.String("error", err.Error()))
 		handleApiResponse(w, apiResponse[any](nil, err))
@@ -92,21 +77,8 @@ func (h *EventHandler) ListOwnEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cursor := r.URL.Query().Get("cursor")
-	limitQuery := r.URL.Query().Get("limit")
-	limit := 10
-	if limitQuery != "" {
-		limit, err = strconv.Atoi(limitQuery)
-		if err != nil || limit <= 0 || limit > 100 {
-			logger.Error("invalid limit parameter", slog.String("limit", limitQuery))
-			handleApiResponse(w, apiResponse[any](nil, newApiError(
-				http.StatusBadRequest,
-				"invalid limit parameter",
-			)))
-			return
-		}
-	}
-	events, nextCursor, err := h.eventPort.EventsByUser(ctx, user.ID(), limit, cursor)
+	paginationParams := paginationParamsFromContext(ctx)
+	events, nextCursor, err := h.eventPort.EventsByUser(ctx, user.ID(), paginationParams.limit, paginationParams.cursor)
 	if err != nil {
 		logger.Error("error getting events by user", slog.String("error", err.Error()))
 		handleApiResponse(w, apiResponse[any](nil, err))
