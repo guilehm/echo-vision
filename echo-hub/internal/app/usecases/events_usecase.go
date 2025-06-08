@@ -86,8 +86,8 @@ func (uc *ManageEvents) SaveEvent(
 }
 
 // EventsByUser implements ports.EventPort.
-func (uc *ManageEvents) EventsByUser(ctx context.Context, userID uuid.UUID) ([]*domain.Event, error) {
-	return uc.Repository.FindEventsByUserID(ctx, nil, userID)
+func (uc *ManageEvents) EventsByUser(ctx context.Context, userID uuid.UUID, limit int, cursor string) ([]*domain.Event, string, error) {
+	return uc.Repository.FindEventsByUserID(ctx, nil, userID, limit, cursor)
 }
 
 // HandleEventStatusUpdate implements ports.EventPort.

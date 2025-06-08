@@ -84,28 +84,6 @@ func (r *Repository) FindEventsByUserID(
 	ctx context.Context,
 	tx repositories.Transaction,
 	userID uuid.UUID,
-) ([]*domain.Event, error) {
-	// TODO: paginate with cursor
-	c := r.resolveClient(tx)
-	events, err := c.Event.Query().
-		Where(event.UserID(userID)).
-		WithFile().
-		Order(ent.Desc(event.FieldCreatedAt)).
-		All(ctx)
-	if err != nil {
-		return nil, err
-	}
-	var result []*domain.Event
-	for _, e := range events {
-		result = append(result, eventToDomain(e))
-	}
-	return result, nil
-}
-
-func (r *Repository) FindEventsByUserIDWithCursor(
-	ctx context.Context,
-	tx repositories.Transaction,
-	userID uuid.UUID,
 	limit int,
 	cursor string,
 ) ([]*domain.Event, string, error) {

@@ -15,7 +15,9 @@ type EventRepository interface {
 		ctx context.Context,
 		tx Transaction,
 		userID uuid.UUID,
-	) ([]*domain.Event, error)
+		limit int,
+		cursor string,
+	) ([]*domain.Event, string, error)
 	UpdateEventStatus(
 		ctx context.Context,
 		tx Transaction,

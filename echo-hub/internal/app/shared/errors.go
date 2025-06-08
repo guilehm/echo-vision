@@ -23,4 +23,6 @@ var (
 	ErrInvalidSigningMethod = errors.New("invalid signing method")
 	ErrContextValueNotFound = errors.New("context value not found")
 	ErrDecodingRequestBody  = errors.New("decoding request body")
+
+	ErrInvalidCursor = errors.New("invalid cursor")
 )
