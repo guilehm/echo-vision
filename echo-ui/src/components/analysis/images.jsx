@@ -1,27 +1,20 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ImageUpload from "@/components/uploads/image-upload";
-import { getOwnEvents } from "@/services/server-requester";
-import { formatDate, statusStyles } from "@/utils";
+import { getOwnEvents } from "@/services/client";
+import { AnalysisListTable } from "./analysisTable";
+import { serverRequester } from "@/services/server-requester";
 
 async function fetchUserAnalyses() {
-  const response = await getOwnEvents();
-  return response.data?.results;
+  const response = await getOwnEvents(serverRequester, null, null);
+  return {
+    results: response?.data?.results ?? [],
+    nextCursor: response?.data?.nextCursor ?? null,
+  };
 }
 
 export default async function ImageAnalysis() {
-  const results = await fetchUserAnalyses();
+  const { results, nextCursor } = await fetchUserAnalyses();
   return (
     <div className="flex flex-col gap-4 p-4 pt-0">
       <div className="flex-1 space-y-4 pt-6">
@@ -104,86 +97,15 @@ export default async function ImageAnalysis() {
                 <TabsContent value="edit" className="mt-0 border-0 p-0">
                   <ImageUpload eventSubType={"image_analysis"} />
                 </TabsContent>
-                <AnalysisListTable analyses={results} />
+                <AnalysisListTable
+                  initialData={results}
+                  initialCursor={nextCursor}
+                />
               </div>
             </div>
           </div>
         </Tabs>
       </div>
-    </div>
-  );
-}
-
-export function AnalysisListTable({ analyses }) {
-  if (!analyses || analyses.length === 0) {
-    return;
-  }
-  return (
-    <div className="mt-8">
-      <Card>
-        <CardHeader>
-          <CardTitle>Previous Analyses</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {analyses.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8">
-              <p className="text-muted-foreground">No analyses found</p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Analysis ID</TableHead>
-                  {/* <TableHead>Type</TableHead> */}
-                  <TableHead>Type</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created At</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {analyses.map((analysis) => (
-                  <TableRow key={analysis.id}>
-                    <TableCell className="font-medium">
-                      {analysis.id.substring(0, 8)}...
-                    </TableCell>
-                    {/* <TableCell className="capitalize"> */}
-                    {/*   {analysis.eventType.replace("_", " ")} */}
-                    {/* </TableCell> */}
-                    <TableCell className="capitalize">
-                      {analysis.subType.replace("_", " ")}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        style={{
-                          backgroundColor:
-                            statusStyles[analysis.status]?.bg ||
-                            statusStyles.default.bg,
-                          color:
-                            statusStyles[analysis.status]?.text ||
-                            statusStyles.default.text,
-                          borderColor:
-                            statusStyles[analysis.status]?.border ||
-                            statusStyles.default.border,
-                        }}
-                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
-                      >
-                        {analysis.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{formatDate(analysis.createdAt)}</TableCell>
-                    <TableCell>
-                      <Button variant="outline" size="sm">
-                        View
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }
