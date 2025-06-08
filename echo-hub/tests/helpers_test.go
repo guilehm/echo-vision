@@ -102,7 +102,15 @@ func expectMessageCalled[T any](
 	done chan any,
 	expectFunc func(msg T),
 ) {
-	handler.Mock.On("Handle", mock.Anything, mock.Anything).Once().
+	handler.Mock.On(
+		"Handle",
+		mock.Anything,
+		mock.MatchedBy(func(msg messaging.Message) bool {
+			defer GinkgoRecover()
+			Expect(msg.Topic).To(Equal(topic))
+			return true
+		}),
+	).Once().
 		Return(messaging.Success).
 		Run(func(args mock.Arguments) {
 			defer GinkgoRecover()
