@@ -33,7 +33,7 @@ var _ = Describe("Image Analysis Consumer", func() {
 		Expect(err).ToNot(HaveOccurred())
 	})
 
-	FContext("when processing an image analysis event", func() {
+	Context("when processing an image analysis event", func() {
 		It("should successfully persist the event and publish the event status update message", func() {
 			// Arrange
 			data := json.RawMessage(`{"labels": ["cat", "dog"]}`)
