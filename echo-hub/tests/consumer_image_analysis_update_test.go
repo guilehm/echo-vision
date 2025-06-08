@@ -6,12 +6,10 @@ import (
 
 	"github.com/google/uuid"
 	analyzerevents "github.com/guilehm/echo-vision/echo-analyzer/pkg/events"
-	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
 	hubevents "github.com/guilehm/echo-vision/echo-hub/pkg/events"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/stretchr/testify/mock"
 )
 
 var _ = Describe("Image Analysis Consumer", func() {
@@ -35,37 +33,28 @@ var _ = Describe("Image Analysis Consumer", func() {
 		Expect(err).ToNot(HaveOccurred())
 	})
 
-	Context("when processing an image analysis event", func() {
+	FContext("when processing an image analysis event", func() {
 		It("should successfully persist the event and publish the event status update message", func() {
 			// Arrange
 			data := json.RawMessage(`{"labels": ["cat", "dog"]}`)
 
 			statusUpdateCalled := make(chan any)
 			topic := hubevents.EventImageAnalysisStatusUpdatedProcessing
-			var msg hubevents.EventStatusUpdateMessage
+			// var msg hubevents.EventStatusUpdateMessage
 
-			handler.Mock.On("Handle", mock.Anything, mock.Anything).Once().
-				Return(messaging.Success).
-				Run(func(args mock.Arguments) {
-					defer GinkgoRecover()
+			expectFunc := func(msg hubevents.EventStatusUpdateMessage) {
+				Expect(msg).ToNot(BeNil())
+				Expect(msg.ID).To(Equal(eventID))
+				Expect(msg.Status).To(Equal(hubevents.EventStatusProcessing))
+				Expect(jsonEqual(msg.Data, data)).To(BeTrue())
+			}
 
-					Expect(args).To(HaveLen(2))
-					Expect(args.Get(0)).ToNot(BeNil())
-					Expect(args.Get(1)).ToNot(BeNil())
-
-					message := args.Get(1).(messaging.Message)
-					Expect(message.Topic).To(Equal(topic))
-
-					err := json.Unmarshal(message.Payload, &msg)
-					Expect(err).ToNot(HaveOccurred())
-
-					Expect(msg).ToNot(BeNil())
-					Expect(msg.ID).To(Equal(eventID))
-					Expect(msg.Status).To(Equal(hubevents.EventStatusProcessing))
-					Expect(jsonEqual(msg.Data, data)).To(BeTrue())
-
-					close(statusUpdateCalled)
-				})
+			// Expect the status update message to be handled
+			expectMessageCalled(
+				topic,
+				statusUpdateCalled,
+				expectFunc,
+			)
 
 			// Act
 			handleMessage(

@@ -10,7 +10,9 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/stretchr/testify/mock"
 )
 
 func saveUser(u *domain.User) *domain.User {
@@ -93,4 +95,29 @@ func jsonEqual(a, b json.RawMessage) bool {
 		return false
 	}
 	return reflect.DeepEqual(o1, o2)
+}
+
+func expectMessageCalled[T any](
+	topic string,
+	done chan any,
+	expectFunc func(msg T),
+) {
+	handler.Mock.On("Handle", mock.Anything, mock.Anything).Once().
+		Return(messaging.Success).
+		Run(func(args mock.Arguments) {
+			defer GinkgoRecover()
+			Expect(args).To(HaveLen(2))
+			Expect(args.Get(0)).ToNot(BeNil())
+			Expect(args.Get(1)).ToNot(BeNil())
+
+			message, ok := args.Get(1).(messaging.Message)
+			Expect(ok).To(BeTrue())
+			Expect(message.Topic).To(Equal(topic))
+
+			var msg T
+			err := json.Unmarshal(message.Payload, &msg)
+			Expect(err).ToNot(HaveOccurred())
+			expectFunc(msg)
+			close(done)
+		})
 }
