@@ -15,6 +15,7 @@ import { getOwnEvents } from "@/services/client";
 import { formatDate, statusStyles } from "@/utils";
 import { useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
+import { toast } from "sonner";
 
 export function AnalysisListTable({ initialData, initialCursor }) {
   const [analyses, setAnalyses] = useState(initialData);
@@ -29,8 +30,7 @@ export function AnalysisListTable({ initialData, initialCursor }) {
   async function fetchMoreData() {
     const response = await getOwnEvents(clientRequester, limit, cursor);
     if (response.status !== 200) {
-      console.error("Failed to fetch more analyses:", response);
-      // TODO: Handle error appropriately, e.g., show a notification
+      toast.error("Failed to load more analyses");
       return;
     }
     const newAnalyses = response.data?.results || [];

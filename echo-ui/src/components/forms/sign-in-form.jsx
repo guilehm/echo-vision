@@ -49,7 +49,6 @@ export function SignInForm({ className, ...props }) {
       }
       toast.error("An error occurred while trying to login");
     } catch (err) {
-      console.log("could not authenticate", err);
       toast.error("Could not authenticate, check again later");
     }
   }

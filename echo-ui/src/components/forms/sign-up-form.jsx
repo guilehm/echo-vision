@@ -11,12 +11,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import * as apiService from "@/services/client-requester";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { signUp } from "@/services/client";
+import { clientRequester } from "@/services/client-requester-final";
 
 const formSchema = z.object({
   firstName: z
@@ -45,21 +46,22 @@ export function SignUpForm({ className, ...props }) {
 
   async function onSubmit(values) {
     try {
-      const response = await apiService.signUp(values);
+      const response = await signUp(clientRequester, values);
       if (response.status === 200) {
         toast.success("Successfully created your account");
         router.push("/dashboard");
         return;
       }
       if (response.status === 400) {
-        toast.warning(
-          "Could not create your account, please review your details",
-        );
+        if (response.errorMessage.includes("unique constraint violation")) {
+          toast.warning("Email already exists, please login instead");
+          return;
+        }
+        toast.warning("Please check your input and try again");
         return;
       }
       toast.error("An error occurred while trying to create your account");
     } catch (err) {
-      console.log("could not authenticate", err);
       toast.error("Could not authenticate, check again later");
     }
   }

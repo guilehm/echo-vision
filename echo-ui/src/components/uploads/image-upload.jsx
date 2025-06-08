@@ -17,7 +17,6 @@ import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 
 const handleErrors = (error) => {
-  console.log(error);
   toast.error("An error occurred. Please try again later.");
 };
 
@@ -52,7 +51,6 @@ export default function ImageUpload() {
 
     const handlePresignedSuccess = (presignedResponse) => {
       if (presignedResponse.status !== 200) {
-        console.log(presignedResponse.data);
         toast.error("An error occurred. Please try again later.");
         return;
       }
@@ -69,7 +67,6 @@ export default function ImageUpload() {
 
     const handleUploadSuccess = (response, presignedResponse) => {
       if (response.status !== 200) {
-        console.log(response.data);
         toast.error("Could not upload the file. Please try again later.");
         return;
       }
@@ -89,7 +86,6 @@ export default function ImageUpload() {
 
     const handleCreateEventSuccess = (response) => {
       if (response.status !== 200) {
-        console.log(response.data);
         toast.error("Could not create the event. Please try again later.");
         return;
       }

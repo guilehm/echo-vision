@@ -4,9 +4,16 @@ export async function makeRequest(requester, url, options, next) {
     if (response.status === 204) return {};
     return await response.json();
   }
-  throw new Error(
-    `Request failed with status ${response.status}: ${response.statusText}`,
-  );
+  const errorData = {
+    status: response.status,
+    errorMessage: response.statusText || "An error occurred",
+  };
+  try {
+    const jsonResponse = await response.json();
+    errorData.errorMessage = jsonResponse.error;
+  } catch { }
+
+  return errorData;
 }
 
 export async function getOwnEvents(requester, limit, cursor) {
@@ -17,5 +24,12 @@ export async function getOwnEvents(requester, limit, cursor) {
   return await makeRequest(requester, "/events", {
     method: "GET",
     params,
+  });
+}
+
+export async function signUp(requester, data = {}) {
+  return await makeRequest(requester, "/users", {
+    method: "POST",
+    body: data,
   });
 }
