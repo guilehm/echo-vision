@@ -35,7 +35,7 @@ type paginationParams struct {
 var defaultPaginationParams = func() *paginationParams {
 	return &paginationParams{
 		cursor: "",
-		limit:  20,
+		limit:  10,
 	}
 }
 
