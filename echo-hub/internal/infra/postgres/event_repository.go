@@ -91,15 +91,18 @@ func (r *Repository) FindEventsByUserID(
 
 	var err error
 
+	// build the default query
 	query := c.Event.Query().
 		Where(event.UserID(userID)).
 		WithFile()
 
-	query, err = applyCursorFilter(query, cursor)
+	// apply limit and cursor filters if provided
+	query, err = eventsCursorFilter(query, cursor)
 	if err != nil {
 		return nil, "", err
 	}
 
+	// execute the query
 	events, err := query.
 		Order(ent.Desc(event.FieldCreatedAt), ent.Desc(event.FieldID)).
 		Limit(limit + 1).
@@ -108,17 +111,9 @@ func (r *Repository) FindEventsByUserID(
 		return nil, "", err
 	}
 
-	var result []*domain.Event
-	var nextCursor string
-	for i, e := range events {
-		result = append(result, eventToDomain(e))
-		if i+1 == limit && len(events) > limit {
-			// if this is the last event, set the next cursor
-			nextCursor = encodeCursor(e.CreatedAt, e.ID)
-			break
-		}
-	}
-	return result, nextCursor, nil
+	// map results to domain
+	results, nextCursor := eventResultsAndCursor(events, limit)
+	return results, nextCursor, nil
 }
 
 // eventToDomain transfer the ent object to the domain object
