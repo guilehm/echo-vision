@@ -90,7 +90,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Name:     "accessToken",
 		Value:    user.AccessToken(),
 		Path:     "/",
-		HttpOnly: true,
+		HttpOnly: false,
 		// TODO: control based on env
 		Secure:   false,
 		SameSite: http.SameSiteLaxMode,
@@ -101,7 +101,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Value: user.RefreshToken(),
 		// TODO: do not use / as path for refresh token
 		Path:     "/",
-		HttpOnly: true,
+		HttpOnly: false,
 		// TODO: control based on env
 		Secure:   false,
 		SameSite: http.SameSiteLaxMode,
