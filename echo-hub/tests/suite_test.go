@@ -56,6 +56,12 @@ func TestEchoHub(t *testing.T) {
 
 var _ = BeforeEach(func() {
 	Expect(m.Up()).To(Succeed())
+	t := GinkgoT()
+	handler.Mock.Test(t)
+	DeferCleanup(func() {
+		Expect(handler.Mock.AssertExpectations(t)).To(BeTrue())
+		handler.ResetMock()
+	})
 })
 
 var _ = AfterEach(func() {
