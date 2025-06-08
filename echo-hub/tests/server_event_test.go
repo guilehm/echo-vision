@@ -4,10 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports/dtos"
+	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres"
+	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/event"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent/file"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/web"
@@ -323,6 +326,147 @@ var _ = Describe("Event Handler", func() {
 			}
 		})
 
+		FIt("should list paginated events", func() {
+			// Arrange
+			firstEvent := entClient.Event.Query().
+				Where(event.UserIDEQ(u.ID())).
+				Order(ent.Desc(event.FieldCreatedAt)).
+				FirstX(ctx)
+
+			// add pagination param
+			paginationLimit := 1
+			params := url.Values{}
+			params.Add("limit", fmt.Sprintf("%d", paginationLimit))
+
+			req, err := http.NewRequest(
+				http.MethodGet,
+				fmt.Sprintf("%s/users/%s/events", server.URL, u.ID().String()),
+				nil,
+			)
+			Expect(err).ToNot(HaveOccurred())
+			token := u.AccessToken()
+			req.Header.Set("Authorization", token)
+			req.URL.RawQuery = params.Encode()
+
+			// Act
+			client := http.Client{}
+			resp, err := client.Do(req)
+			Expect(err).ToNot(HaveOccurred())
+			defer resp.Body.Close()
+
+			// Assert
+			Expect(resp.StatusCode).To(Equal(http.StatusOK))
+
+			var apiResp web.ApiResponse[ports.ApiListResponse[dtos.EventResponse]]
+			err = json.NewDecoder(resp.Body).Decode(&apiResp)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(apiResp.Data).ToNot(BeNil())
+			Expect(apiResp.Error).To(BeEmpty())
+			Expect(len(apiResp.Data.Results)).To(Equal(1))
+			for i := range apiResp.Data.Results {
+				Expect(apiResp.Data.Results[i].ID).To(Equal(firstEvent.ID))
+			}
+			Expect(apiResp.Data.NextCursor).ToNot(BeEmpty())
+			Expect(apiResp.Data.NextCursor).To(Equal(postgres.EncodeCursorForTest(firstEvent.CreatedAt, firstEvent.ID)))
+		})
+
+		It("should list paginated events with cursor", func() {
+			// Arrange
+			firstEvent := entClient.Event.Query().
+				Where(event.UserIDEQ(u.ID())).
+				Order(ent.Desc(event.FieldCreatedAt)).
+				FirstX(ctx)
+
+			lastEvent := entClient.Event.Query().
+				Where(event.UserIDEQ(u.ID())).
+				Order(ent.Asc(event.FieldCreatedAt)).
+				FirstX(ctx)
+
+			cursor := postgres.EncodeCursorForTest(firstEvent.CreatedAt, firstEvent.ID)
+
+			// add pagination param
+			paginationLimit := 1
+			params := url.Values{}
+			params.Add("limit", fmt.Sprintf("%d", paginationLimit))
+			params.Add("cursor", cursor)
+
+			req, err := http.NewRequest(
+				http.MethodGet,
+				fmt.Sprintf("%s/users/%s/events", server.URL, u.ID().String()),
+				nil,
+			)
+			Expect(err).ToNot(HaveOccurred())
+			token := u.AccessToken()
+			req.Header.Set("Authorization", token)
+			req.URL.RawQuery = params.Encode()
+
+			// Act
+			client := http.Client{}
+			resp, err := client.Do(req)
+			Expect(err).ToNot(HaveOccurred())
+			defer resp.Body.Close()
+
+			// Assert
+			Expect(resp.StatusCode).To(Equal(http.StatusOK))
+
+			var apiResp web.ApiResponse[ports.ApiListResponse[dtos.EventResponse]]
+			err = json.NewDecoder(resp.Body).Decode(&apiResp)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(apiResp.Data).ToNot(BeNil())
+			Expect(apiResp.Error).To(BeEmpty())
+			Expect(len(apiResp.Data.Results)).To(Equal(1))
+			for i := range apiResp.Data.Results {
+				Expect(apiResp.Data.Results[i].ID).To(Equal(lastEvent.ID))
+			}
+			Expect(apiResp.Data.NextCursor).To(BeEmpty())
+		})
+
+		It("should handle last pagination successfully", func() {
+			// Arrange
+			lastEvent := entClient.Event.Query().
+				Where(event.UserIDEQ(u.ID())).
+				Order(ent.Asc(event.FieldCreatedAt)).
+				FirstX(ctx)
+
+			cursor := postgres.EncodeCursorForTest(lastEvent.CreatedAt, lastEvent.ID)
+
+			// add pagination param
+			paginationLimit := 1
+			params := url.Values{}
+			params.Add("limit", fmt.Sprintf("%d", paginationLimit))
+			params.Add("cursor", cursor)
+
+			req, err := http.NewRequest(
+				http.MethodGet,
+				fmt.Sprintf("%s/users/%s/events", server.URL, u.ID().String()),
+				nil,
+			)
+			Expect(err).ToNot(HaveOccurred())
+			token := u.AccessToken()
+			req.Header.Set("Authorization", token)
+			req.URL.RawQuery = params.Encode()
+
+			// Act
+			client := http.Client{}
+			resp, err := client.Do(req)
+			Expect(err).ToNot(HaveOccurred())
+			defer resp.Body.Close()
+
+			// Assert
+			Expect(resp.StatusCode).To(Equal(http.StatusOK))
+
+			var apiResp web.ApiResponse[ports.ApiListResponse[dtos.EventResponse]]
+			err = json.NewDecoder(resp.Body).Decode(&apiResp)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(apiResp.Data).ToNot(BeNil())
+			Expect(apiResp.Error).To(BeEmpty())
+			Expect(len(apiResp.Data.Results)).To(Equal(1))
+			for i := range apiResp.Data.Results {
+				Expect(apiResp.Data.Results[i].ID).To(Equal(lastEvent.ID))
+			}
+			Expect(apiResp.Data.NextCursor).To(BeEmpty())
+		})
+
 		It("should list own events successfully", func() {
 			// Arrange
 			req, err := http.NewRequest(
@@ -357,6 +501,33 @@ var _ = Describe("Event Handler", func() {
 				Expect(apiResp.Data.Results[i].UserID).ToNot(BeEmpty())
 				Expect(apiResp.Data.Results[i].UserID.String()).To(Equal(u.ID().String()))
 			}
+		})
+
+		It("should return 400 for invalid pagination parameters", func() {
+			// Arrange
+			params := url.Values{}
+			params.Add("limit", "invalid")  // Invalid limit
+			params.Add("cursor", "invalid") // Invalid cursor
+			req, err := http.NewRequest(
+				http.MethodGet,
+				fmt.Sprintf("%s/users/%s/events?%s", server.URL, u.ID().String(), params.Encode()),
+				nil,
+			)
+			Expect(err).ToNot(HaveOccurred())
+			token := u.AccessToken()
+			req.Header.Set("Authorization", token)
+			// Act
+			client := http.Client{}
+			resp, err := client.Do(req)
+			Expect(err).ToNot(HaveOccurred())
+			defer resp.Body.Close()
+			// Assert
+			Expect(resp.StatusCode).To(Equal(http.StatusBadRequest))
+			var apiResp web.ApiResponse[ports.ApiListResponse[dtos.EventResponse]]
+			err = json.NewDecoder(resp.Body).Decode(&apiResp)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(apiResp.Data).To(BeNil())
+			Expect(apiResp.Error).ToNot(BeEmpty())
 		})
 
 		It("should not list own events if not authenticated", func() {
