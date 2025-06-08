@@ -7,6 +7,14 @@ import { toast } from "sonner";
 import { createEvent, getPresignedUrl } from "@/services/server-requester";
 import { Button } from "@/components/ui/button";
 import { uploadS3File } from "@/services/client-requester";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const handleErrors = (error) => {
   console.log(error);
@@ -15,6 +23,7 @@ const handleErrors = (error) => {
 
 export default function ImageUpload() {
   const [file, setFile] = useState(null);
+  const [eventType, setEventType] = useState("detect_labels");
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: { "image/*": [] },
@@ -23,6 +32,10 @@ export default function ImageUpload() {
       setFile(acceptedFiles[0]);
     },
   });
+
+  const handleTypeChange = (value) => {
+    setEventType(value);
+  };
 
   const handleSubmit = () => {
     if (!file) {
@@ -66,7 +79,7 @@ export default function ImageUpload() {
         filename: presignedResponse.data?.filename,
         filepath: presignedResponse.data?.filepath,
         eventType: "image_analysis",
-        subType: "detect_labels",
+        subType: eventType,
         contentType: file.type,
         filesize: file.size,
       };
@@ -108,9 +121,38 @@ export default function ImageUpload() {
           </p>
         )}
       </div>
+      <div className="mt-4">
+        <AnalysisTypeSelect value={eventType} onChange={handleTypeChange} />
+      </div>
       <Button className="my-4" onClick={handleSubmit}>
         Submit
       </Button>
     </>
+  );
+}
+
+export function AnalysisTypeSelect({ value, onChange }) {
+  const analysisTypes = [
+    // TODO: do not hardcode the values
+    { value: "detect_labels", label: "Label Detection" },
+    { value: "detect_faces", label: "Face Detection" },
+  ];
+
+  return (
+    <div className="grid w-full max-w-sm items-center gap-1.5">
+      <Label htmlFor="analysis-type">Analysis Type</Label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Select analysis type" />
+        </SelectTrigger>
+        <SelectContent>
+          {analysisTypes.map((type) => (
+            <SelectItem key={type.value} value={type.value}>
+              {type.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }
