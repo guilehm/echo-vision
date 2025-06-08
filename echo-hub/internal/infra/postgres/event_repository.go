@@ -102,6 +102,59 @@ func (r *Repository) FindEventsByUserID(
 	return result, nil
 }
 
+func (r *Repository) FindEventsByUserIDWithCursor(
+	ctx context.Context,
+	tx repositories.Transaction,
+	userID uuid.UUID,
+	limit int,
+	cursor string,
+) ([]*domain.Event, string, error) {
+	c := r.resolveClient(tx)
+	query := c.Event.Query().
+		Where(event.UserID(userID)).
+		WithFile()
+
+	if cursor != "" {
+		// decode cursor: createdAt|id
+		createdAt, id, err := decodeCursor(cursor)
+		if err != nil {
+			return nil, "", shared.ErrInvalidCursor
+		}
+		// if cursor is provided, filter events created before the cursor
+		query = query.Where(
+			event.Or(
+				event.And(
+					event.CreatedAtLT(createdAt),
+				),
+				event.And(
+					event.IDLT(id),
+					event.CreatedAtEQ(createdAt),
+				),
+			),
+		)
+	}
+
+	events, err := query.
+		Order(ent.Desc(event.FieldCreatedAt), ent.Desc(event.FieldID)).
+		Limit(limit + 1).
+		All(ctx)
+	if err != nil {
+		return nil, "", err
+	}
+
+	var result []*domain.Event
+	var nextCursor string
+	for i, e := range events {
+		result = append(result, eventToDomain(e))
+		if i+1 == limit && len(events) > limit {
+			// if this is the last event, set the next cursor
+			nextCursor = encodeCursor(e.CreatedAt, e.ID)
+			break
+		}
+	}
+	return result, nextCursor, nil
+}
+
 // eventToDomain transfer the ent object to the domain object
 func eventToDomain(e *ent.Event) *domain.Event {
 	if e == nil {
