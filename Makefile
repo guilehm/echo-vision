@@ -54,11 +54,11 @@ run_hub:
 
 test_analyzer: clear_database
 	@echo "running tests for echo-analyzer"
-	TZ=UTC ginkgo -v echo-analyzer/tests
+	TZ=UTC ginkgo -v --race echo-analyzer/tests
 
 test_hub: clear_database
 	@echo "running tests for echo-hub"
-	TZ=UTC ginkgo -v echo-hub/tests
+	TZ=UTC ginkgo -v --race echo-hub/tests
 
 clear_database:
 	lsof -ti tcp:15432 | xargs kill -9 || true
