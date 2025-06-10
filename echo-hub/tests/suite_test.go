@@ -13,6 +13,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/guilehm/echo-vision/echo-common/pkg/filestorage"
+	"github.com/guilehm/echo-vision/echo-hub/internal/infra/publishers"
 
 	filestoragemocks "github.com/guilehm/echo-vision/echo-common/pkg/filestorage/mocks"
 	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
@@ -119,6 +120,7 @@ var _ = BeforeSuite(func() {
 	// setup rabbitmq mocks
 	mockChan := make(chan messaging.Message)
 	publisher = rabbitmqmocks.NewPublisher(mockChan)
+	publisherGroup := publishers.NewPublisherGroup(publisher)
 
 	// setup usecases
 	userUseCase = usecases.NewManageUsersUseCase(repo, jwtAdapter, passwordAdapter)
@@ -133,7 +135,8 @@ var _ = BeforeSuite(func() {
 	go publisher.StartPublisher(context.Background())
 
 	// setup http server
-	router := web.NewRouter(userUseCase, eventUseCase, s3Mock, publisher)
+	router := web.NewRouter(userUseCase, eventUseCase, s3Mock, publisherGroup)
+	// router := web.NewRouter(userUseCase, eventUseCase, s3Mock, publisher)
 	server = httptest.NewServer(router)
 })
 

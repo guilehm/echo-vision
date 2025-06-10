@@ -16,6 +16,7 @@ import (
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/consumers"
 	jwtadapter "github.com/guilehm/echo-vision/echo-hub/internal/infra/jwt"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres"
+	"github.com/guilehm/echo-vision/echo-hub/internal/infra/publishers"
 	rabbitmqadapter "github.com/guilehm/echo-vision/echo-hub/internal/infra/rabbitmq"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/web"
 )
@@ -77,6 +78,8 @@ func main() {
 		log.Fatalln("could not create publisher: ", err)
 	}
 	defer publisher.Close()
+
+	publisherGroup := publishers.NewPublisherGroup(publisher)
 
 	if err := publisher.StartPublisher(context.Background()); err != nil {
 		log.Fatalln("could not start publisher", err)
@@ -146,7 +149,8 @@ func main() {
 		log.Fatalln("could not create s3 adapter: ", err)
 	}
 
-	router := web.NewRouter(userUseCase, eventUseCase, uploadPort, publisher)
+	// router := web.NewRouter(userUseCase, eventUseCase, uploadPort, publisher)
+	router := web.NewRouter(userUseCase, eventUseCase, uploadPort, publisherGroup)
 	err = http.ListenAndServe("0.0.0.0:80", router)
 	if err != nil {
 		log.Fatalln("could not start server: ", err)

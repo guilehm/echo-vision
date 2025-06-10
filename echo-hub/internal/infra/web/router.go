@@ -6,7 +6,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/guilehm/echo-vision/echo-common/logging"
 	"github.com/guilehm/echo-vision/echo-common/pkg/filestorage"
-	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
 )
 
@@ -16,7 +15,7 @@ func NewRouter(
 	up ports.UserPort,
 	ep ports.EventPort,
 	upp filestorage.FileStoragePort,
-	publisher messaging.Publisher,
+	publisher ports.PublisherPort,
 ) http.Handler {
 	// handlers
 	uh := NewUserHandler(up)
