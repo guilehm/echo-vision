@@ -52,11 +52,11 @@ run_hub:
 	@echo "starting echo-hub"
 	$(DOCKER_COMPOSE) up echo-hub
 
-test_analyzer: clear_database
+test_analyzer:
 	@echo "running tests for echo-analyzer"
 	TZ=UTC ginkgo -v --race echo-analyzer/tests
 
-test_hub: clear_database
+test_hub:
 	@echo "running tests for echo-hub"
 	TZ=UTC ginkgo -v --race echo-hub/tests
 
