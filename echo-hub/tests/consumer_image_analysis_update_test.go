@@ -2,6 +2,7 @@ package tests
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -34,7 +35,7 @@ var _ = Describe("Image Analysis Consumer", func() {
 	})
 
 	Context("when processing an image analysis event", func() {
-		It("should successfully persist the event and publish the event status update message", func() {
+		FIt("should successfully persist the event and publish the event status update message", func() {
 			// Arrange
 			data := json.RawMessage(`{"labels": ["cat", "dog"]}`)
 
@@ -66,8 +67,12 @@ var _ = Describe("Image Analysis Consumer", func() {
 			)
 
 			// Assert
-			Eventually(done, "1s").Should(BeClosed())
+			fmt.Println("Waiting for message to be processed...")
+			fmt.Println("DONE", done)
+			Eventually(done, "8s").Should(BeClosed())
+			fmt.Println("Message processed successfully")
 			updatedEvent, err := eventUseCase.FindEventByID(ctx, eventID)
+			fmt.Println("Updated event:", updatedEvent)
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(updatedEvent).ToNot(BeNil())

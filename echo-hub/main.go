@@ -85,6 +85,8 @@ func main() {
 		log.Fatalln("could not start publisher", err)
 	}
 
+	publisherGroup := publishers.NewPublisherGroup(publisher)
+
 	jwtAdapter := jwtadapter.NewJWTManager(
 		os.Getenv("JWT_SECRET"),
 		1*time.Hour,
@@ -92,7 +94,7 @@ func main() {
 	)
 	passwordAdapter := bcrypthasher.NewBcryptAdapter()
 	userUseCase := usecases.NewManageUsersUseCase(repo, jwtAdapter, passwordAdapter)
-	eventUseCase := usecases.NewManageEventsUseCase(repo, publisher)
+	eventUseCase := usecases.NewManageEventsUseCase(repo, publisherGroup)
 
 	consumers := consumers.NewConsumerGroup(eventUseCase)
 	adapter := rabbitmqadapter.NewRabbitMQAdapter(consumers)

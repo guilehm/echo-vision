@@ -26,6 +26,7 @@ import (
 	jwtadapter "github.com/guilehm/echo-vision/echo-hub/internal/infra/jwt"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/postgres/generated/ent"
+	"github.com/guilehm/echo-vision/echo-hub/internal/infra/publishers"
 
 	rabbitmqadapter "github.com/guilehm/echo-vision/echo-hub/internal/infra/rabbitmq"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/web"
@@ -122,9 +123,11 @@ var _ = BeforeSuite(func() {
 	publisher = rabbitmqmocks.NewPublisher(mockChan)
 	publisherGroup := publishers.NewPublisherGroup(publisher)
 
+	publisherGroup := publishers.NewPublisherGroup(publisher)
+
 	// setup usecases
 	userUseCase = usecases.NewManageUsersUseCase(repo, jwtAdapter, passwordAdapter)
-	eventUseCase = usecases.NewManageEventsUseCase(repo, publisher)
+	eventUseCase = usecases.NewManageEventsUseCase(repo, publisherGroup)
 
 	consumerGroup := consumers.NewConsumerGroup(eventUseCase)
 	consumer = rabbitmqmocks.NewConsumer(mockChan)
@@ -136,7 +139,6 @@ var _ = BeforeSuite(func() {
 
 	// setup http server
 	router := web.NewRouter(userUseCase, eventUseCase, s3Mock, publisherGroup)
-	// router := web.NewRouter(userUseCase, eventUseCase, s3Mock, publisher)
 	server = httptest.NewServer(router)
 })
 
