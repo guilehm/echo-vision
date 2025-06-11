@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain/valueobjects"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
@@ -17,10 +16,10 @@ import (
 
 type ManageEvents struct {
 	Repository repositories.Repository
-	publisher  messaging.Publisher
+	publisher  ports.PublisherPort
 }
 
-func NewManageEventsUseCase(repository repositories.Repository, publisher messaging.Publisher) ports.EventPort {
+func NewManageEventsUseCase(repository repositories.Repository, publisher ports.PublisherPort) ports.EventPort {
 	return &ManageEvents{
 		Repository: repository,
 		publisher:  publisher,
@@ -69,16 +68,7 @@ func (uc *ManageEvents) SaveEvent(
 		return id, err
 	}
 
-	payload, err := ports.MapEventToMessage(event)
-	if err != nil {
-		return id, eris.Wrap(err, "failed to map event to json message")
-	}
-
-	// TODO: only publish this message on commit
-	err = uc.publisher.Publish(ctx, messaging.Message{
-		Topic:   hubevents.BuildEventCreatedTopic(event.EventType()),
-		Payload: payload,
-	})
+	err = uc.publisher.PublishEventCreated(ctx, event)
 	if err != nil {
 		return id, err
 	}
@@ -90,8 +80,8 @@ func (uc *ManageEvents) EventsByUser(ctx context.Context, userID uuid.UUID, limi
 	return uc.Repository.FindEventsByUserID(ctx, nil, userID, limit, cursor)
 }
 
-// HandleEventStatusUpdate implements ports.EventPort.
-func (uc *ManageEvents) HandleEventStatusUpdate(
+// HandleImageAnalysisStatusUpdate implements ports.EventPort.
+func (uc *ManageEvents) HandleImageAnalysisStatusUpdate(
 	ctx context.Context,
 	id uuid.UUID,
 	status hubevents.EventStatus,
@@ -120,23 +110,8 @@ func (uc *ManageEvents) HandleEventStatusUpdate(
 		return eris.Wrap(err, "failed to save event")
 	}
 
-	// TODO: do not do this here
-	message := hubevents.EventStatusUpdateMessage{
-		ID:     id,
-		Type:   event.EventType(),
-		Status: status,
-		Data:   result,
-	}
-	payload, err := json.Marshal(message)
-	if err != nil {
-		return eris.Wrap(err, "failed to marshal event status update message")
-	}
-
 	// TODO: only publish this message on commit
-	err = uc.publisher.Publish(ctx, messaging.Message{
-		Topic:   hubevents.BuildEventStatusUpdatedTopic(event.EventType(), event.Status()),
-		Payload: payload,
-	})
+	err = uc.publisher.PublishEventStatusUpdated(ctx, event, result)
 	if err != nil {
 		return eris.Wrap(err, "failed to publish event status update")
 	}
