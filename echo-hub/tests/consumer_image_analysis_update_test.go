@@ -35,7 +35,7 @@ var _ = Describe("Image Analysis Consumer", func() {
 	})
 
 	Context("when processing an image analysis event", func() {
-		FIt("should successfully persist the event and publish the event status update message", func() {
+		It("should successfully persist the event and publish the event status update message", func() {
 			// Arrange
 			data := json.RawMessage(`{"labels": ["cat", "dog"]}`)
 

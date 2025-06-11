@@ -85,8 +85,6 @@ func main() {
 		log.Fatalln("could not start publisher", err)
 	}
 
-	publisherGroup := publishers.NewPublisherGroup(publisher)
-
 	jwtAdapter := jwtadapter.NewJWTManager(
 		os.Getenv("JWT_SECRET"),
 		1*time.Hour,
