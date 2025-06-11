@@ -13,7 +13,7 @@ import (
 // ImageAnalysisStatusUpdate implements ports.ConsumerPort.
 func (c *ConsumerGroup) ImageAnalysisStatusUpdate(id uuid.UUID, status string, result json.RawMessage) messaging.HandlerResponse {
 	ctx := context.Background()
-	err := c.EventUseCase.HandleEventStatusUpdate(ctx, id, hubevents.EventStatus(status), result)
+	err := c.EventUseCase.HandleImageAnalysisStatusUpdate(ctx, id, hubevents.EventStatus(status), result)
 	if err != nil {
 		logger.Error("could not set event status",
 			slog.String("id", id.String()),
