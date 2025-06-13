@@ -1,4 +1,4 @@
-package filestorage
+package s3
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/guilehm/echo-vision/echo-common/pkg/filestorage"
 	"github.com/rotisserie/eris"
 )
 
@@ -18,7 +19,7 @@ type S3Adapter struct {
 	bucket    string
 }
 
-func NewS3Adapter(bucketName, region string) (FileStoragePort, error) {
+func NewS3Adapter(bucketName, region string) (filestorage.FileStoragePort, error) {
 	if bucketName == "" {
 		return nil, eris.New("bucket name cannot be empty")
 	}
@@ -48,7 +49,7 @@ func NewS3Adapter(bucketName, region string) (FileStoragePort, error) {
 	}, nil
 }
 
-func (s *S3Adapter) GeneratePreSignedURL(fileKey FileKey, contentType string) (string, error) {
+func (s *S3Adapter) GeneratePreSignedURL(fileKey filestorage.FileKey, contentType string) (string, error) {
 	req, err := s.presigner.PresignPutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket:      aws.String(s.bucket),
 		Key:         aws.String(fileKey.Filepath),

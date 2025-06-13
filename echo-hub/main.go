@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/guilehm/echo-vision/echo-common/logging"
-	"github.com/guilehm/echo-vision/echo-common/pkg/filestorage"
 	"github.com/guilehm/echo-vision/echo-common/pkg/rabbitmq"
+	"github.com/guilehm/echo-vision/echo-common/pkg/s3"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/usecases"
 	bcrypthasher "github.com/guilehm/echo-vision/echo-hub/internal/infra/bcrypt_hasher"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/consumers"
@@ -141,7 +141,7 @@ func main() {
 	// 	fmt.Println("published messages")
 	// }
 
-	uploadPort, err := filestorage.NewS3Adapter(
+	uploadPort, err := s3.NewS3Adapter(
 		os.Getenv("AWS_BUCKET_NAME"),
 		os.Getenv("AWS_REGION"),
 	)

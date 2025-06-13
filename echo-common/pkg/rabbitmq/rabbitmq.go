@@ -9,24 +9,12 @@ import (
 	"github.com/rotisserie/eris"
 )
 
-type ExchangeType string
-
-func (et ExchangeType) String() string {
-	return string(et)
-}
-
-const (
-	ExchangeTypeDirect  ExchangeType = "direct"
-	ExchangeTypeFanout  ExchangeType = "fanout"
-	ExchangeTypeTopic   ExchangeType = "topic"
-	ExchangeTypeHeaders ExchangeType = "headers"
-)
 
 type RabbitMQClient struct {
 	config *Config
 }
 
-func NewRabbitMQClient(url string, logger *slog.Logger, opts ...ConfigOpt) (AsyncMessagingPort, error) {
+func NewRabbitMQClient(url string, logger *slog.Logger, opts ...ConfigOpt) (messaging.AsyncMessagingPort, error) {
 	config := newRabbitMQConfig(url, logger, opts...)
 	if config.URL == "" {
 		return nil, ErrRabbitMQURLIsRequired
@@ -49,7 +37,7 @@ func createConnection(config *Config) (*amqp.Connection, error) {
 }
 
 // CreateConsumer implements AsyncMessagingPort.
-func (r *RabbitMQClient) CreateConsumer() (Consumer, error) {
+func (r *RabbitMQClient) CreateConsumer() (messaging.Consumer, error) {
 	if r.config.ConsumerName == "" {
 		return nil, ErrConsumerNameIsRequired
 	}
@@ -78,7 +66,7 @@ func (r *RabbitMQClient) CreateConsumer() (Consumer, error) {
 }
 
 // CreatePublisher implements AsyncMessagingPort.
-func (r *RabbitMQClient) CreatePublisher() (Publisher, error) {
+func (r *RabbitMQClient) CreatePublisher() (messaging.Publisher, error) {
 	if r.config.ExchangeName == "" {
 		return nil, ErrExchangeNameIsRequired
 	}

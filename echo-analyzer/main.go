@@ -12,7 +12,7 @@ import (
 	rabbitmqadapter "github.com/guilehm/echo-vision/echo-analyzer/internal/infra/rabbitmq"
 	awsrekognition "github.com/guilehm/echo-vision/echo-analyzer/internal/infra/rekognition"
 	"github.com/guilehm/echo-vision/echo-common/logging"
-	"github.com/guilehm/echo-vision/echo-common/rabbitmq"
+	"github.com/guilehm/echo-vision/echo-common/pkg/rabbitmq"
 )
 
 var logger = logging.NewLogger()
