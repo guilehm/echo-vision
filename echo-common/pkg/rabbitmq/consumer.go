@@ -89,7 +89,7 @@ func (r *RabbitMQConsumer) startConsumers(handler messaging.Handler) error {
 	}
 
 	r.wg.Add(r.config.ConcurrentConsumers)
-	for i := 0; i < r.config.ConcurrentConsumers; i++ {
+	for range r.config.ConcurrentConsumers {
 		go func() {
 			r.handler(msgs, handler)
 			r.wg.Done()

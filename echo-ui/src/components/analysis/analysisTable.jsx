@@ -61,9 +61,11 @@ export function AnalysisListTable({ initialData, initialCursor }) {
                 </p>
               }
               endMessage={
-                <p className="mt-2 text-center text-muted-foreground">
-                  {"Yay! You've seen it all!"}
-                </p>
+                initialData.length !== analyses.length && (
+                  <p className="mt-2 text-center text-muted-foreground">
+                    {"Yay! You've seen it all!"}
+                  </p>
+                )
               }
             >
               <Table>
