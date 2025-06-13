@@ -119,6 +119,7 @@ func (e *Event) SetStatus(status hubevents.EventStatus) error {
 	if !isIn(status, e.status.Values()) {
 		return shared.ErrInvalidStatus
 	}
+	// TODO: add state validation here
 	e.status = status
 	e.updatedAt = time.Now()
 	return nil

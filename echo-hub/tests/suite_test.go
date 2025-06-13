@@ -16,7 +16,7 @@ import (
 
 	filestoragemocks "github.com/guilehm/echo-vision/echo-common/pkg/filestorage/mocks"
 	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
-	rabbitmqmocks "github.com/guilehm/echo-vision/echo-common/rabbitmq/mocks"
+	rabbitmqmocks "github.com/guilehm/echo-vision/echo-common/pkg/rabbitmq/mocks"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/repositories"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/usecases"
