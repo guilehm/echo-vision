@@ -11,7 +11,7 @@ import (
 	"github.com/guilehm/echo-vision/echo-analyzer/internal/infra/publishers"
 	rabbitmqadapter "github.com/guilehm/echo-vision/echo-analyzer/internal/infra/rabbitmq"
 	awsrekognition "github.com/guilehm/echo-vision/echo-analyzer/internal/infra/rekognition"
-	"github.com/guilehm/echo-vision/echo-common/logging"
+	"github.com/guilehm/echo-vision/echo-common/pkg/logging"
 	"github.com/guilehm/echo-vision/echo-common/pkg/rabbitmq"
 )
 

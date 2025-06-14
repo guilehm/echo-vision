@@ -6,7 +6,7 @@ import (
 	"log/slog"
 
 	analyzerevents "github.com/guilehm/echo-vision/echo-analyzer/pkg/events"
-	"github.com/guilehm/echo-vision/echo-common/logging"
+	"github.com/guilehm/echo-vision/echo-common/pkg/logging"
 	"github.com/guilehm/echo-vision/echo-common/pkg/messaging"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
 )

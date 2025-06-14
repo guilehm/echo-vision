@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/guilehm/echo-vision/echo-common/logging"
+	"github.com/guilehm/echo-vision/echo-common/pkg/logging"
 	"github.com/guilehm/echo-vision/echo-common/pkg/rabbitmq"
 	"github.com/guilehm/echo-vision/echo-common/pkg/s3"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/usecases"

@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/guilehm/echo-vision/echo-common/logging"
 	"github.com/guilehm/echo-vision/echo-common/pkg/filestorage"
+	"github.com/guilehm/echo-vision/echo-common/pkg/logging"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
 )
 

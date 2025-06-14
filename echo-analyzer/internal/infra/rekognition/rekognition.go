@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/rekognition/types"
 	"github.com/guilehm/echo-vision/echo-analyzer/internal/app/ports"
 	analyzerevents "github.com/guilehm/echo-vision/echo-analyzer/pkg/events"
-	"github.com/guilehm/echo-vision/echo-common/logging"
+	"github.com/guilehm/echo-vision/echo-common/pkg/logging"
 	"github.com/rotisserie/eris"
 )
 
