@@ -37,3 +37,16 @@ export const statusStyles = {
     border: "#d4d4d8",
   },
 };
+
+export function getInitials(name, addDots) {
+  if (!name) return "";
+
+  const words = name.trim().split(" ");
+  const firstWord = words[0];
+  const lastWord = words.length > 1 ? words[words.length - 1] : firstWord[1];
+
+  if (addDots) {
+    return `${firstWord[0]}.${lastWord[0]}.`.toUpperCase();
+  }
+  return `${firstWord[0]}${lastWord[0]}`.toUpperCase();
+}
