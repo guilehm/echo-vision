@@ -1,13 +1,15 @@
 import { AppSidebar } from "@/components/sidebars/app-sidebar";
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+
+import { getSession } from "@/auth";
 
 export default async function DashboardLayout({ children }) {
+  // TODO: replace this with a proper session management
+  const user = await getSession();
+  user.fullName = `${user.firstName} ${user.lastName}`;
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar user={user} />
       <SidebarInset>
         {children}
         {/* TODO: move to a skeleton component */}
