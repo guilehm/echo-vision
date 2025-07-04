@@ -124,7 +124,7 @@ var _ = BeforeSuite(func() {
 
 	// setup usecases
 	userUseCase = usecases.NewManageUsersUseCase(repo, jwtAdapter, passwordAdapter)
-	eventUseCase = usecases.NewManageEventsUseCase(repo, publisherGroup)
+	eventUseCase = usecases.NewManageEventsUseCase(repo, publisherGroup, s3Mock)
 
 	consumerGroup := consumers.NewConsumerGroup(eventUseCase)
 	consumer = rabbitmqmocks.NewConsumer(mockChan)
