@@ -37,7 +37,7 @@ func saveEvent(e *domain.Event) *domain.Event {
 		e.UserID(),
 		e.EventType().String(),
 		e.SubType().String(),
-		nil,
+		e.File(),
 	)
 	Expect(err).ToNot(HaveOccurred())
 	_, err = repo.SaveEvent(ctx, nil, ve)

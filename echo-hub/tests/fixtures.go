@@ -34,22 +34,24 @@ var validEvent = domain.NewEvent(
 	time.Now(),
 )
 
-var validEventWithFile = domain.NewEvent(
-	validUser.ID(),
-	uuid.New(),
-	hubevents.EventTypeImageAnalysis,
-	hubevents.EventSubTypeDetectLabels,
-	json.RawMessage(`{"result": "success"}`),
-	hubevents.EventStatusPending,
-	valueobjects.NewFile(
-		"path/to/file.jpg",
-		"file.jpg",
-		"image/jpeg",
-		1024,
-	),
-	time.Now(),
-	time.Now(),
-)
+func validEventWithFile(u *domain.User) *domain.Event {
+	return domain.NewEvent(
+		u.ID(),
+		uuid.New(),
+		hubevents.EventTypeImageAnalysis,
+		hubevents.EventSubTypeDetectLabels,
+		json.RawMessage(`{"result": "success"}`),
+		hubevents.EventStatusPending,
+		valueobjects.NewFile(
+			"path/to/file.jpg",
+			"file.jpg",
+			"image/jpeg",
+			1024,
+		),
+		time.Now(),
+		time.Now(),
+	)
+}
 
 var ctx = context.Background()
 
