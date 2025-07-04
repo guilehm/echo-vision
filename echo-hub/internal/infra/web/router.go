@@ -36,8 +36,8 @@ func NewRouter(
 	r.Route("/users", func(r chi.Router) {
 		r.Post("/", uh.CreateUser)
 		r.Post("/login", uh.Login)
-		r.Post("/refresh-token", uh.RefreshToken)
 		r.Post("/logout", uh.Logout)
+		r.Post("/refresh-token", uh.RefreshToken)
 
 		r.Route("/{userID}", func(r chi.Router) {
 			r.Use(authMiddleware)

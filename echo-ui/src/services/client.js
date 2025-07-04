@@ -11,7 +11,7 @@ export async function makeRequest(requester, url, options, next) {
   try {
     const jsonResponse = await response.json();
     errorData.errorMessage = jsonResponse.error;
-  } catch { }
+  } catch {}
 
   return errorData;
 }
@@ -38,6 +38,12 @@ export async function signIn(requester, { email, password }) {
   return await makeRequest(requester, "/users/login", {
     method: "POST",
     body: { email, password },
+  });
+}
+
+export async function logout(requester) {
+  return await makeRequest(requester, "/users/logout", {
+    method: "POST",
   });
 }
 
