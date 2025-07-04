@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { clientRequester } from "@/services/client-requester";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export function NavUser({ user }) {
   const { isMobile } = useSidebar();
@@ -35,6 +36,7 @@ export function NavUser({ user }) {
 
   const handleLogout = async () => {
     await logout(clientRequester);
+    toast.success("Successfully logged out");
     router.push("/");
   };
 
