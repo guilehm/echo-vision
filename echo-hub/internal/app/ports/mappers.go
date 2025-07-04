@@ -7,6 +7,16 @@ import (
 )
 
 func MapEventToApiResponse(e *domain.Event) *dtos.EventResponse {
+	var fileResponse *dtos.FileResponse
+	if e.File() != nil {
+		fileResponse = &dtos.FileResponse{
+			Filename:    e.File().Filename,
+			Filepath:    e.File().Filepath,
+			ContentType: e.File().ContentType,
+			Filesize:    e.File().Filesize,
+		}
+	}
+
 	return &dtos.EventResponse{
 		UserID:    e.UserID(),
 		ID:        e.ID(),
@@ -14,6 +24,7 @@ func MapEventToApiResponse(e *domain.Event) *dtos.EventResponse {
 		SubType:   e.SubType().String(),
 		Status:    e.Status().String(),
 		Result:    e.Result(),
+		File:      fileResponse,
 		CreatedAt: e.CreatedAt(),
 		UpdateAt:  e.UpdatedAt(),
 	}
