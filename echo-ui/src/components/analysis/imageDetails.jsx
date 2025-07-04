@@ -26,6 +26,17 @@ import {
 import { useState } from "react";
 import { imagePlaceholder } from "@/utils";
 
+const emotionColors = {
+  CALM: "#3b82f6", // blue
+  HAPPY: "#f59e0b", // yellow
+  SAD: "#6366f1", // indigo
+  ANGRY: "#ef4444", // red
+  SURPRISED: "#10b981", // green
+  FEAR: "#8b5cf6", // purple
+  DISGUSTED: "#ec4899", // pink
+  CONFUSED: "#64748b", // slate
+};
+
 export default function ImageAnalysisDetail({ event }) {
   const [copiedField, setCopiedField] = useState(null);
 
@@ -323,6 +334,27 @@ export default function ImageAnalysisDetail({ event }) {
                         {formatFileSize(event.file.filesize)}
                       </p>
                     </div>
+                    {/* Emotion Legend */}
+                    <div className="space-y-2">
+                      <span className="text-sm font-medium text-muted-foreground">
+                        Emotion Colors
+                      </span>
+                      <div className="grid grid-cols-2 gap-2">
+                        {event.result?.[0]?.emotions?.map((emotion) => (
+                          <div key={emotion.Type} className="flex items-center">
+                            <div
+                              className="w-3 h-3 mr-2 rounded-full"
+                              style={{
+                                backgroundColor:
+                                  emotionColors[emotion.Type] || "#000",
+                              }}
+                            />
+                            <span className="text-xs">{emotion.Type}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
                     <Button className="w-full bg-transparent" variant="outline">
                       <Download className="w-4 h-4 mr-2" />
                       Download Original
