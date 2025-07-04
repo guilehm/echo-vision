@@ -806,14 +806,26 @@ export default function ImageAnalysisDetail({ event }) {
                       </div>
                       <div className="text-center">
                         <div className="font-semibold">
-                          {
-                            parseEmotionResults(event.result)
+                          {(() => {
+                            const emotionCounts = parseEmotionResults(
+                              event.result,
+                            )
                               .map((d) => getTopEmotion(d.emotions)?.Type)
+                              .filter(Boolean)
                               .reduce((acc, emotion) => {
                                 acc[emotion] = (acc[emotion] || 0) + 1;
                                 return acc;
-                              }, {}).mostCommonEmotion
-                          }
+                              }, {});
+
+                            const mostCommon = Object.entries(
+                              emotionCounts,
+                            ).reduce(
+                              (a, b) => (b[1] > a[1] ? b : a),
+                              ["None", 0],
+                            );
+
+                            return mostCommon[0];
+                          })()}
                         </div>
                         <div className="text-muted-foreground">
                             Most Common
