@@ -1,19 +1,21 @@
 package dtos
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 type EventResponse struct {
-	UserID    uuid.UUID `json:"userID"`
-	ID        uuid.UUID `json:"id"`
-	EventType string    `json:"eventType"`
-	SubType   string    `json:"subType"`
-	Status    string    `json:"status"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdateAt  time.Time `json:"updatedAt"`
+	UserID    uuid.UUID       `json:"userId"`
+	ID        uuid.UUID       `json:"id"`
+	EventType string          `json:"eventType"`
+	SubType   string          `json:"subType"`
+	Status    string          `json:"status"`
+	Result    json.RawMessage `json:"result,omitempty"`
+	CreatedAt time.Time       `json:"createdAt"`
+	UpdateAt  time.Time       `json:"updatedAt"`
 }
 
 type EventCreateResponse struct {

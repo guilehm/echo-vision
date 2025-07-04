@@ -13,6 +13,7 @@ func MapEventToApiResponse(e *domain.Event) *dtos.EventResponse {
 		EventType: e.EventType().String(),
 		SubType:   e.SubType().String(),
 		Status:    e.Status().String(),
+		Result:    e.Result(),
 		CreatedAt: e.CreatedAt(),
 		UpdateAt:  e.UpdatedAt(),
 	}
