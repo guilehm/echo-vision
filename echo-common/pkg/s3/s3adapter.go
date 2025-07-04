@@ -60,3 +60,14 @@ func (s *S3Adapter) GeneratePreSignedURL(fileKey filestorage.FileKey, contentTyp
 	}
 	return req.URL, nil
 }
+
+func (s *S3Adapter) GenerateFileURL(fileKey filestorage.FileKey) (string, error) {
+	req, err := s.presigner.PresignGetObject(context.TODO(), &s3.GetObjectInput{
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(fileKey.Filepath),
+	}, s3.WithPresignExpires(15*time.Minute))
+	if err != nil {
+		return "", eris.Wrap(err, "error generating pre-signed GET URL")
+	}
+	return req.URL, nil
+}
