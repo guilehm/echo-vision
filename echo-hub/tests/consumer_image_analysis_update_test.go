@@ -2,7 +2,6 @@ package tests
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -67,12 +66,8 @@ var _ = Describe("Image Analysis Consumer", func() {
 			)
 
 			// Assert
-			fmt.Println("Waiting for message to be processed...")
-			fmt.Println("DONE", done)
 			Eventually(done, "8s").Should(BeClosed())
-			fmt.Println("Message processed successfully")
 			updatedEvent, err := eventUseCase.FindEventByID(ctx, eventID)
-			fmt.Println("Updated event:", updatedEvent)
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(updatedEvent).ToNot(BeNil())
