@@ -54,6 +54,46 @@ var _ = Describe("Event By ID Handler", func() {
 			Expect(apiResp.Error).To(BeEmpty())
 		})
 
+		It("should return an event with file by ID successfully", func() {
+			// Arrange
+			event := saveEvent(validEventWithFile)
+
+			req, err := http.NewRequest(
+				http.MethodGet,
+				fmt.Sprintf("%s/events/%s", server.URL, event.ID().String()),
+				nil,
+			)
+			Expect(err).ToNot(HaveOccurred())
+			token := u.AccessToken()
+			req.Header.Set("Authorization", token)
+
+			// Act
+			client := http.Client{}
+			resp, err := client.Do(req)
+			Expect(err).ToNot(HaveOccurred())
+			defer resp.Body.Close()
+
+			// Assert
+			Expect(resp.StatusCode).To(Equal(http.StatusOK))
+
+			var apiResp web.ApiResponse[dtos.EventResponse]
+			err = json.NewDecoder(resp.Body).Decode(&apiResp)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(apiResp.Data).ToNot(BeNil())
+			Expect(apiResp.Data.ID).To(Equal(event.ID()))
+			Expect(apiResp.Data.EventType).To(Equal(event.EventType().String()))
+			Expect(apiResp.Data.SubType).To(Equal(event.SubType().String()))
+			Expect(apiResp.Data.Status).To(Equal(event.Status().String()))
+			Expect(apiResp.Data.UserID).To(Equal(event.UserID()))
+			Expect(apiResp.Data.File).ToNot(BeNil())
+			Expect(apiResp.Data.File.ContentType).To(Equal(event.File().ContentType))
+			Expect(apiResp.Data.File.Filename).To(Equal(event.File().Filename))
+			Expect(apiResp.Data.File.ContentType).To(Equal(event.File().ContentType))
+			Expect(apiResp.Data.File.Filesize).To(Equal(event.File().Filesize))
+			Expect(apiResp.Data.File.URL).To(ContainSubstring(event.File().Filepath))
+			Expect(apiResp.Error).To(BeEmpty())
+		})
+
 		It("should return 404 if event is not found", func() {
 			// Arrange
 			notFoundID := uuid.New()
