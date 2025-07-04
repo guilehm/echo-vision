@@ -1,6 +1,5 @@
 "use client";
 
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -63,6 +62,8 @@ const getTopEmotion = (emotions) => {
 
 export default function ImageAnalysisDetail({ event }) {
   const [copiedField, setCopiedField] = useState(null);
+  const [hoveredDetection, setHoveredDetection] = useState(null);
+  const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
 
   const isImageFile = (contentType) => {
     return contentType.startsWith("image/");
@@ -307,33 +308,226 @@ export default function ImageAnalysisDetail({ event }) {
         </div>
 
         <div className="py-6 space-y-6">
-          {/* Image Display Section */}
+          {/* Enhanced Image Display Section with Bounding Boxes */}
           {event.file && isImageFile(event.file.contentType) && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <ImageIcon className="w-4 h-4" />
-                  Image Preview
+                  Image Analysis Preview
                 </CardTitle>
                 <CardDescription>
-                  Original image that was analyzed
+                  Original image with detected info
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col lg:flex-row gap-6">
+                <div className="flex flex-col xl:flex-row gap-6">
                   <div className="flex-1">
                     <div className="relative bg-muted rounded-lg overflow-hidden">
-                      <img
-                        src={event.file.url || imagePlaceholder}
-                        alt={event.file.filename}
-                        className="w-full h-auto max-h-96 object-contain"
-                        onError={(e) => {
-                          e.currentTarget.src = imagePlaceholder;
-                        }}
-                      />
+                      <div className="relative inline-block">
+                        <img
+                          id="analysis-image"
+                          src={event.file.url || imagePlaceholder}
+                          alt={event.file.filename}
+                          className="w-full h-auto max-h-96 object-contain"
+                          onError={(e) => {
+                            e.currentTarget.src = imagePlaceholder;
+                          }}
+                          onLoad={(e) => {
+                            // Draw bounding boxes when image loads
+                            const img = e.currentTarget;
+                            const container = img.parentElement;
+                            if (!container) return;
+
+                            // Remove existing overlays
+                            const existingOverlays = container.querySelectorAll(
+                              ".bounding-box-overlay",
+                            );
+                            existingOverlays.forEach((overlay) =>
+                              overlay.remove(),
+                            );
+
+                            // Add new overlays with hover functionality
+                            const emotionResults = parseEmotionResults(
+                              event.result,
+                            );
+                            emotionResults.forEach((detection, index) => {
+                              if (detection.boundingBox) {
+                                const overlay = document.createElement("div");
+                                overlay.className =
+                                  "bounding-box-overlay absolute border-2 border-red-500 bg-red-500/10 pointer-events-auto cursor-pointer transition-all hover:border-red-600 hover:bg-red-500/20";
+                                overlay.style.left = `${detection.boundingBox.left * 100}%`;
+                                overlay.style.top = `${detection.boundingBox.top * 100}%`;
+                                overlay.style.width = `${detection.boundingBox.width * 100}%`;
+                                overlay.style.height = `${detection.boundingBox.height * 100}%`;
+
+                                // Add hover event listeners
+                                overlay.addEventListener("mouseenter", (e) => {
+                                  setHoveredDetection(index);
+                                  const rect =
+                                    container.getBoundingClientRect();
+                                  setHoverPosition({
+                                    x: e.clientX + rect.left,
+                                    y: e.clientY + rect.top,
+                                  });
+                                });
+
+                                overlay.addEventListener("mousemove", (e) => {
+                                  const rect =
+                                    container.getBoundingClientRect();
+                                  setHoverPosition({
+                                    x: e.clientX + rect.left,
+                                    y: e.clientY + rect.top,
+                                  });
+                                });
+
+                                overlay.addEventListener("mouseleave", () => {
+                                  setHoveredDetection(null);
+                                });
+
+                                // Add label
+                                const topEmotion = getTopEmotion(
+                                  detection.emotions,
+                                );
+                                if (topEmotion) {
+                                  const label = document.createElement("div");
+                                  label.className =
+                                    "absolute -top-6 left-0 bg-red-500 text-white text-xs px-2 py-1 rounded whitespace-nowrap pointer-events-none";
+                                  label.textContent = `${topEmotion.Type} (${topEmotion.Confidence.toFixed(1)}%)`;
+                                  overlay.appendChild(label);
+                                }
+
+                                container.appendChild(overlay);
+                              }
+                            });
+                          }}
+                        />
+                      </div>
                     </div>
+                    {/* Hover Card */}
+                    {hoveredDetection !== null && (
+                      <div
+                        className="absolute z-50 pointer-events-none"
+                        style={{
+                          left: `${hoverPosition.x + 10}px`,
+                          top: `${hoverPosition.y - 10}px`,
+                          transform:
+                            hoverPosition.x > 300
+                              ? "translateX(-100%)"
+                              : "translateX(0)",
+                        }}
+                      >
+                        {(() => {
+                          const detection = parseEmotionResults(event.result)[
+                            hoveredDetection
+                          ];
+                          const topEmotion = getTopEmotion(detection.emotions);
+                          const topEmotions = detection.emotions
+                            .sort((a, b) => b.Confidence - a.Confidence)
+                            .slice(0, 3);
+
+                          return (
+                            <Card className="w-64 shadow-lg border-2 bg-white/95 backdrop-blur-sm">
+                              <CardHeader className="pb-2">
+                                <div className="flex items-center justify-between">
+                                  <CardTitle className="text-sm">
+                                    Face #{hoveredDetection + 1}
+                                  </CardTitle>
+                                  <Badge
+                                    variant="outline"
+                                    className="text-xs bg-green-50 text-green-700 border-green-200"
+                                  >
+                                    {detection.confidence.toFixed(1)}%
+                                  </Badge>
+                                </div>
+                              </CardHeader>
+                              <CardContent className="pt-0 space-y-3">
+                                {/* Primary Emotion */}
+                                {topEmotion && (
+                                  <div className="text-center p-2 rounded-lg bg-muted/50">
+                                    <Badge
+                                      className={`${getEmotionColor(topEmotion.Type)} mb-1`}
+                                    >
+                                      {topEmotion.Type}
+                                    </Badge>
+                                    <div className="text-lg font-bold">
+                                      {topEmotion.Confidence.toFixed(1)}%
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Top 3 Emotions */}
+                                <div className="space-y-1">
+                                  {topEmotions.map((emotion, emotionIndex) => (
+                                    <div
+                                      key={emotionIndex}
+                                      className="flex items-center justify-between text-xs"
+                                    >
+                                      <span
+                                        className={`px-2 py-1 rounded text-xs ${getEmotionColor(emotion.Type)}`}
+                                      >
+                                        {emotion.Type}
+                                      </span>
+                                      <div className="flex items-center gap-1 flex-1 ml-2">
+                                        <div className="flex-1 bg-muted rounded-full h-1.5">
+                                          <div
+                                            className="bg-primary h-1.5 rounded-full transition-all"
+                                            style={{
+                                              width: `${Math.min(emotion.Confidence, 100)}%`,
+                                            }}
+                                          />
+                                        </div>
+                                        <span className="text-xs text-muted-foreground min-w-[2.5rem] text-right">
+                                          {emotion.Confidence.toFixed(1)}%
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+
+                                {/* Bounding Box Info */}
+                                {detection.boundingBox && (
+                                  <div className="text-xs text-muted-foreground bg-muted/30 p-2 rounded">
+                                    <div className="grid grid-cols-2 gap-1">
+                                      <div>
+                                        X:{" "}
+                                        {(
+                                          detection.boundingBox.left * 100
+                                        ).toFixed(0)}
+                                        %
+                                      </div>
+                                      <div>
+                                        Y:{" "}
+                                        {(
+                                          detection.boundingBox.top * 100
+                                        ).toFixed(0)}
+                                        %
+                                      </div>
+                                      <div>
+                                        W:{" "}
+                                        {(
+                                          detection.boundingBox.width * 100
+                                        ).toFixed(0)}
+                                        %
+                                      </div>
+                                      <div>
+                                        H:{" "}
+                                        {(
+                                          detection.boundingBox.height * 100
+                                        ).toFixed(0)}
+                                        %
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
+                          );
+                        })()}
+                      </div>
+                    )}
                   </div>
-                  <div className="lg:w-80 space-y-4">
+                  <div className="xl:w-80 space-y-4">
                     <div className="space-y-2">
                       <span className="text-sm font-medium text-muted-foreground">
                         Filename
@@ -358,7 +552,6 @@ export default function ImageAnalysisDetail({ event }) {
                         {formatFileSize(event.file.filesize)}
                       </p>
                     </div>
-
                     <Button className="w-full bg-transparent" variant="outline">
                       <Download className="w-4 h-4 mr-2" />
                       Download Original
