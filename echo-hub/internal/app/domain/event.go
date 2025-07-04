@@ -111,6 +111,12 @@ func (e *Event) File() *valueobjects.File {
 	return e.file
 }
 
+func (e *Event) SetFileURL(url string) {
+	if e.file != nil {
+		e.file.SetURL(url)
+	}
+}
+
 func isIn[T comparable](s T, values []T) bool {
 	return slices.Contains(values, s)
 }
