@@ -5,7 +5,6 @@ import { withAuth } from "@/auth";
 
 export default async function DashboardLayout({ children }) {
   const user = await withAuth();
-  user.fullName = `${user.firstName} ${user.lastName}`;
 
   return (
     <SidebarProvider>

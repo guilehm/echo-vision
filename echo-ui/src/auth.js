@@ -15,6 +15,7 @@ export async function getSession() {
 
   try {
     const decoded = jwtDecode(accessToken);
+    decoded.fullName = `${decoded.firstName} ${decoded.lastName}`;
     return decoded;
   } catch (error) {
     console.error("could not decode session", error);
