@@ -167,7 +167,7 @@ export default function ImageAnalysisDetail({ event }) {
                     <Copy className="w-3 h-3" />
                   </Button>
                 </div>
-                <p className="text-sm font-mono bg-muted p-2 rounded text-xs break-all">
+                <p className="font-mono bg-muted p-2 rounded text-xs break-all">
                   {event.id}
                 </p>
                 {copiedField === "id" && (

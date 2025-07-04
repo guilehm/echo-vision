@@ -2,10 +2,9 @@ export const formatDate = (dateString) => {
   const options = {
     year: "numeric",
     month: "short",
-    // TODO: Uncomment the following lines to include day, hour, and minute
-    // day: "numeric",
-    // hour: "2-digit",
-    // minute: "2-digit",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   };
   return new Date(dateString).toLocaleDateString("en-US", options);
 };

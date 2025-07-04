@@ -1,6 +1,6 @@
 "use client";
 import * as badge from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -76,14 +76,16 @@ export function AnalysisListTable({ initialData, initialCursor }) {
                     <TableHead>Type</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Created At</TableHead>
-                    <TableHead>Actions</TableHead>
+                    {/* <TableHead>Actions</TableHead> */}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {analyses.map((analysis) => (
                     <TableRow key={analysis.id}>
                       <TableCell className="font-medium">
-                        {analysis.id.substring(0, 8)}...
+                        <Link href={`images/${analysis.id}`}>
+                          {analysis.id.substring(0, 8)}...
+                        </Link>
                       </TableCell>
                       {/* <TableCell className="capitalize"> */}
                       {/*   {analysis.eventType.replace("_", " ")} */}
@@ -110,11 +112,11 @@ export function AnalysisListTable({ initialData, initialCursor }) {
                         </badge.Badge>
                       </TableCell>
                       <TableCell>{formatDate(analysis.createdAt)}</TableCell>
-                      <TableCell>
-                        <Button variant="outline" size="sm">
-                          View
-                        </Button>
-                      </TableCell>
+                      {/* <TableCell> */}
+                      {/*   <Button variant="outline" size="sm"> */}
+                      {/*     View */}
+                      {/*   </Button> */}
+                      {/* </TableCell> */}
                     </TableRow>
                   ))}
                 </TableBody>
