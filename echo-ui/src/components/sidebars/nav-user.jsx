@@ -27,9 +27,16 @@ import {
   Sparkles,
 } from "lucide-react";
 import { clientRequester } from "@/services/client-requester";
+import { useRouter } from "next/navigation";
 
 export function NavUser({ user }) {
   const { isMobile } = useSidebar();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await logout(clientRequester);
+    router.push("/");
+  };
 
   return (
     <SidebarMenu>
@@ -94,7 +101,7 @@ export function NavUser({ user }) {
               {/* </DropdownMenuItem> */}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => logout(clientRequester)}>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut />
               Log out
             </DropdownMenuItem>
