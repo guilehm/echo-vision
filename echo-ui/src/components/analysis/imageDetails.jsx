@@ -27,6 +27,9 @@ import {
 import { useState } from "react";
 import { imagePlaceholder } from "@/utils";
 
+// TODO: use types
+const isDetectFaces = (event) => event.subType === "detect_faces";
+
 const getEmotionColor = (emotionType) => {
   const colors = {
     HAPPY: "text-yellow-600 bg-yellow-50 border-yellow-200",
@@ -461,117 +464,211 @@ export default function ImageAnalysisDetail({ event }) {
           )}
 
           {/* Emotion Analysis Results */}
-          {event.result && parseEmotionResults(event.result).length > 0 && (
+          {isDetectFaces(event) &&
+            event.result &&
+            parseEmotionResults(event.result).length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Tag className="w-4 h-4" />
-                  Emotion Analysis Results
+                    Emotion Analysis Results {isDetectFaces}
                 </CardTitle>
                 <CardDescription>
-                  Detected emotions with confidence scores
+                  {parseEmotionResults(event.result).length} face
+                  {parseEmotionResults(event.result).length > 1
+                    ? "s"
+                    : ""}{" "}
+                    detected
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  {parseEmotionResults(event.result).map((detection, index) => {
-                    const topEmotion = getTopEmotion(detection.emotions);
-                    return (
-                      <div
-                        key={index}
-                        className="border rounded-lg p-4 space-y-4"
-                      >
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-semibold">
-                            Detection #{index + 1}
-                          </h4>
-                          <Badge
-                            variant="outline"
-                            className="bg-green-50 text-green-700 border-green-200"
-                          >
-                            {detection.confidence.toFixed(2)}% Confidence
-                          </Badge>
-                        </div>
+                <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {parseEmotionResults(event.result).map(
+                    (detection, index) => {
+                      const topEmotion = getTopEmotion(detection.emotions);
+                      const topEmotions = detection.emotions
+                        .sort((a, b) => b.Confidence - a.Confidence)
+                        .slice(0, 3); // Show only top 3 emotions
 
-                        {topEmotion && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-muted-foreground">
-                              Primary Emotion:
-                            </span>
-                            <Badge className={getEmotionColor(topEmotion.Type)}>
-                              {topEmotion.Type} (
-                              {topEmotion.Confidence.toFixed(1)}%)
-                            </Badge>
-                          </div>
-                        )}
+                      return (
+                        <Card key={index} className="relative">
+                          <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between">
+                              <CardTitle className="text-sm">
+                                  Face #{index + 1}
+                              </CardTitle>
+                              <Badge
+                                variant="outline"
+                                className="text-xs bg-green-50 text-green-700 border-green-200"
+                              >
+                                {detection.confidence.toFixed(1)}%
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="pt-0 space-y-3">
+                            {/* Primary Emotion */}
+                            {topEmotion && (
+                              <div className="text-center p-2 rounded-lg bg-muted/50">
+                                <Badge
+                                  className={`${getEmotionColor(topEmotion.Type)} mb-1`}
+                                >
+                                  {topEmotion.Type}
+                                </Badge>
+                                <div className="text-lg font-bold">
+                                  {topEmotion.Confidence.toFixed(1)}%
+                                </div>
+                              </div>
+                            )}
 
-                        <div className="space-y-3">
-                          <span className="text-sm font-medium text-muted-foreground">
-                            All Emotions:
-                          </span>
-                          <div className="grid gap-2">
-                            {detection.emotions
-                              .sort((a, b) => b.Confidence - a.Confidence)
-                              .map((emotion, emotionIndex) => (
+                            {/* Top 3 Emotions */}
+                            <div className="space-y-1">
+                              {topEmotions.map((emotion, emotionIndex) => (
                                 <div
                                   key={emotionIndex}
-                                  className="flex items-center justify-between gap-4"
+                                  className="flex items-center justify-between text-xs"
                                 >
-                                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                                    <Badge
-                                      variant="outline"
-                                      className={`${getEmotionColor(emotion.Type)} text-xs`}
-                                    >
-                                      {emotion.Type}
-                                    </Badge>
-                                    <span className="text-sm text-muted-foreground">
-                                      {emotion.Confidence.toFixed(2)}%
+                                  <span
+                                    className={`px-2 py-1 rounded text-xs ${getEmotionColor(emotion.Type)}`}
+                                  >
+                                    {emotion.Type}
+                                  </span>
+                                  <div className="flex items-center gap-1 flex-1 ml-2">
+                                    <div className="flex-1 bg-muted rounded-full h-1.5">
+                                      <div
+                                        className="bg-primary h-1.5 rounded-full transition-all"
+                                        style={{
+                                          width: `${Math.min(emotion.Confidence, 100)}%`,
+                                        }}
+                                      />
+                                    </div>
+                                    <span className="text-xs text-muted-foreground min-w-[2.5rem] text-right">
+                                      {emotion.Confidence.toFixed(1)}%
                                     </span>
-                                  </div>
-                                  <div className="flex-1 max-w-32">
-                                    <Progress
-                                      value={emotion.Confidence}
-                                      className="h-2"
-                                    />
                                   </div>
                                 </div>
                               ))}
-                          </div>
-                        </div>
-
-                        {detection.boundingBox && (
-                          <div className="space-y-2">
-                            <span className="text-sm font-medium text-muted-foreground">
-                              Bounding Box:
-                            </span>
-                            <div className="grid grid-cols-2 gap-2 text-xs font-mono bg-muted p-2 rounded">
-                              <div>
-                                Top:{" "}
-                                {(detection.boundingBox.top * 100).toFixed(1)}%
-                              </div>
-                              <div>
-                                Left:{" "}
-                                {(detection.boundingBox.left * 100).toFixed(1)}%
-                              </div>
-                              <div>
-                                Width:{" "}
-                                {(detection.boundingBox.width * 100).toFixed(1)}
-                                %
-                              </div>
-                              <div>
-                                Height:{" "}
-                                {(detection.boundingBox.height * 100).toFixed(
-                                  1,
-                                )}
-                                %
-                              </div>
                             </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+
+                            {/* Bounding Box Info */}
+                            {detection.boundingBox && (
+                              <div className="text-xs text-muted-foreground bg-muted/30 p-2 rounded">
+                                <div className="grid grid-cols-2 gap-1">
+                                  <div>
+                                      X:{" "}
+                                    {(
+                                      detection.boundingBox.left * 100
+                                    ).toFixed(0)}
+                                      %
+                                  </div>
+                                  <div>
+                                      Y:{" "}
+                                    {(
+                                      detection.boundingBox.top * 100
+                                    ).toFixed(0)}
+                                      %
+                                  </div>
+                                  <div>
+                                      W:{" "}
+                                    {(
+                                      detection.boundingBox.width * 100
+                                    ).toFixed(0)}
+                                      %
+                                  </div>
+                                  <div>
+                                      H:{" "}
+                                    {(
+                                      detection.boundingBox.height * 100
+                                    ).toFixed(0)}
+                                      %
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Show all emotions button */}
+                            {/* {detection.emotions.length > 3 && ( */}
+                            {/*   <Button */}
+                            {/*     variant="ghost" */}
+                            {/*     size="sm" */}
+                            {/*     className="w-full h-6 text-xs" */}
+                            {/*     onClick={() => { */}
+                            {/*       // Toggle detailed view - you can implement this functionality */}
+                            {/*       console.log( */}
+                            {/*         "Show all emotions for detection", */}
+                            {/*         index, */}
+                            {/*       ); */}
+                            {/*     }} */}
+                            {/*   > */}
+                            {/*     +{detection.emotions.length - 3} more emotions */}
+                            {/*   </Button> */}
+                            {/* )} */}
+                          </CardContent>
+                        </Card>
+                      );
+                    },
+                  )}
                 </div>
+
+                {/* Summary Stats */}
+                {parseEmotionResults(event.result).length > 1 && (
+                  <div className="mt-4 p-3 bg-muted/30 rounded-lg">
+                    <div className="text-sm font-medium mb-2">
+                        Overall Summary
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                      <div className="text-center">
+                        <div className="font-semibold">
+                          {parseEmotionResults(event.result).length}
+                        </div>
+                        <div className="text-muted-foreground">Faces</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-semibold">
+                          {(
+                            parseEmotionResults(event.result).reduce(
+                              (sum, d) => sum + d.confidence,
+                              0,
+                            ) / parseEmotionResults(event.result).length
+                          ).toFixed(1)}
+                            %
+                        </div>
+                        <div className="text-muted-foreground">
+                            Avg Confidence
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-semibold">
+                          {
+                            parseEmotionResults(event.result)
+                              .map((d) => getTopEmotion(d.emotions)?.Type)
+                              .filter(
+                                (emotion, index, arr) =>
+                                  arr.indexOf(emotion) === index,
+                              ).length
+                          }
+                        </div>
+                        <div className="text-muted-foreground">
+                            Unique Emotions
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-semibold">
+                          {
+                            parseEmotionResults(event.result)
+                              .map((d) => getTopEmotion(d.emotions)?.Type)
+                              .reduce((acc, emotion) => {
+                                acc[emotion] = (acc[emotion] || 0) + 1;
+                                return acc;
+                              }, {}).mostCommonEmotion
+                          }
+                        </div>
+                        <div className="text-muted-foreground">
+                            Most Common
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
