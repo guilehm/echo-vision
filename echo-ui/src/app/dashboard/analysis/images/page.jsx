@@ -4,8 +4,8 @@ import ImageAnalysis from "@/components/analysis/images";
 const headerProps = {
   breadcrumbData: [
     { label: "Dashboard", href: "/dashboard/" },
-    { label: "Analysis", href: "" },
-    { label: "Images", href: "" },
+    { label: "Analysis", href: null },
+    { label: "Images", href: "/dashboard/analysis/images" },
   ],
 };
 

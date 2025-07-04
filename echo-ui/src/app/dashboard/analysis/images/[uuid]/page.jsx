@@ -1,9 +1,7 @@
-import { notFound } from "next/navigation";
+import DashboardHeader from "@/components/headers/dashboard-header";
 import { getEventById } from "@/services/client";
 import { serverRequester } from "@/services/server-requester";
-
-import DashboardHeader from "@/components/headers/dashboard-header";
-import ImageAnalysis from "@/components/analysis/images";
+import { notFound } from "next/navigation";
 
 const headerProps = {
   breadcrumbData: [
@@ -14,7 +12,7 @@ const headerProps = {
   ],
 };
 
-export default async function ImageDetailsPage({ params }) {
+export default async function ImageAnalysisDetailPage({ params }) {
   const { uuid } = params;
   const response = await getEventById(serverRequester, uuid);
   if (!response || response.status !== 200) {
