@@ -12,17 +12,25 @@ import (
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/repositories"
 	hubevents "github.com/guilehm/echo-vision/echo-hub/pkg/events"
 	"github.com/rotisserie/eris"
+
+	"github.com/guilehm/echo-vision/echo-common/pkg/filestorage"
 )
 
 type ManageEvents struct {
-	Repository repositories.Repository
-	publisher  ports.PublisherPort
+	Repository  repositories.Repository
+	publisher   ports.PublisherPort
+	fileStorage filestorage.FileStoragePort
 }
 
-func NewManageEventsUseCase(repository repositories.Repository, publisher ports.PublisherPort) ports.EventPort {
+func NewManageEventsUseCase(
+	repository repositories.Repository,
+	publisher ports.PublisherPort,
+	fs filestorage.FileStoragePort,
+) ports.EventPort {
 	return &ManageEvents{
-		Repository: repository,
-		publisher:  publisher,
+		Repository:  repository,
+		publisher:   publisher,
+		fileStorage: fs,
 	}
 }
 
@@ -56,7 +64,22 @@ func (uc *ManageEvents) FindEventByID(
 	ctx context.Context,
 	id uuid.UUID,
 ) (*domain.Event, error) {
-	return uc.Repository.FindEventByID(ctx, nil, id)
+	event, err := uc.Repository.FindEventByID(ctx, nil, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if event.File() == nil {
+		return event, nil
+	}
+
+	url, err := uc.fileStorage.GenerateFileURL(event.File().FileKey())
+	if err != nil {
+		return nil, eris.Wrap(err, "failed to generate file URL")
+	}
+	event.SetFileURL(url)
+
+	return event, nil
 }
 
 func (uc *ManageEvents) SaveEvent(

@@ -10,7 +10,7 @@ func MapEventToApiResponse(e *domain.Event) *dtos.EventResponse {
 	var fileResponse *dtos.FileResponse
 	if e.File() != nil {
 		fileResponse = &dtos.FileResponse{
-			// URL:         e.File().URL,
+			URL:         e.File().URL,
 			Filename:    e.File().Filename,
 			ContentType: e.File().ContentType,
 			Filesize:    e.File().Filesize,
