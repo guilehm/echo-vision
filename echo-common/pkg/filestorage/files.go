@@ -11,11 +11,17 @@ type FileKey struct {
 	Filepath string `json:"filepath"`
 }
 
-func NewFileKey(path, filename string) FileKey {
+func NewUploadFileKey(path, filename string) FileKey {
 	timestamp := strconv.Itoa(int(time.Now().Unix()))
 	return FileKey{
-		// URL:      fmt.Sprintf("%s/%s-%s", path, timestamp, filename),
 		Filename: filename,
 		Filepath: fmt.Sprintf("%s/%s-%s", path, timestamp, filename),
+	}
+}
+
+func NewFileKey(filepath, filename string) FileKey {
+	return FileKey{
+		Filename: filename,
+		Filepath: filepath,
 	}
 }
