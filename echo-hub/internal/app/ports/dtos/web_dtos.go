@@ -14,8 +14,16 @@ type EventResponse struct {
 	SubType   string          `json:"subType"`
 	Status    string          `json:"status"`
 	Result    json.RawMessage `json:"result,omitempty"`
+	File      *FileResponse   `json:"file,omitempty"`
 	CreatedAt time.Time       `json:"createdAt"`
 	UpdateAt  time.Time       `json:"updatedAt"`
+}
+
+type FileResponse struct {
+	Filename    string `json:"filename"`
+	Filepath    string `json:"filepath"`
+	ContentType string `json:"contentType"`
+	Filesize    int64  `json:"filesize"`
 }
 
 type EventCreateResponse struct {
