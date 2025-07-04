@@ -20,11 +20,26 @@ import {
   Hash,
   Tag,
   Activity,
+  ImageIcon,
 } from "lucide-react";
 import { useState } from "react";
 
 export default function ImageAnalysisDetail({ event }) {
   const [copiedField, setCopiedField] = useState(null);
+
+  const isImageFile = (contentType) => {
+    return contentType.startsWith("image/");
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return (
+      Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+    );
+  };
 
   const copyToClipboard = async (text, field) => {
     await navigator.clipboard.writeText(text);
@@ -254,43 +269,163 @@ export default function ImageAnalysisDetail({ event }) {
           </Card>
         </div>
 
-        {/* Analysis Results */}
-        {event.result && (
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Tag className="w-4 h-4" />
-                Analysis Results
-              </CardTitle>
-              <CardDescription>
-                Detailed results from the image analysis process
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="relative">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="absolute top-2 right-2 z-10 bg-transparent"
-                  onClick={() =>
-                    copyToClipboard(formatResult(event.result) || "", "result")
-                  }
-                >
-                  <Copy className="w-3 h-3 mr-1" />
-                  Copy
+        <div className="py-6 space-y-6">
+          {/* Image Display Section */}
+          {event.file && isImageFile(event.file.contentType) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4" />
+                  Image Preview
+                </CardTitle>
+                <CardDescription>
+                  Original image that was analyzed
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col lg:flex-row gap-6">
+                  <div className="flex-1">
+                    <div className="relative bg-muted rounded-lg overflow-hidden">
+                      <img
+                        // src={event.file.url || "/placeholder.svg"}
+                        alt={event.file.filename}
+                        className="w-full h-auto max-h-96 object-contain"
+                        onError={(e) => {
+                          e.currentTarget.src =
+                            "/placeholder.svg?height=400&width=600";
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="lg:w-80 space-y-4">
+                    <div className="space-y-2">
+                      <span className="text-sm font-medium text-muted-foreground">
+                        Filename
+                      </span>
+                      <p className="text-sm font-mono bg-muted p-2 rounded">
+                        {event.file.filename}
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <span className="text-sm font-medium text-muted-foreground">
+                        Content Type
+                      </span>
+                      <Badge variant="secondary">
+                        {event.file.contentType}
+                      </Badge>
+                    </div>
+                    <div className="space-y-2">
+                      <span className="text-sm font-medium text-muted-foreground">
+                        File Size
+                      </span>
+                      <p className="text-sm">
+                        {formatFileSize(event.file.filesize)}
+                      </p>
+                    </div>
+                    <Button className="w-full bg-transparent" variant="outline">
+                      <Download className="w-4 h-4 mr-2" />
+                      Download Original
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* File Info for non-images */}
+          {event.file && !isImageFile(event.file.contentType) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  File Information
+                </CardTitle>
+                <CardDescription>
+                  Details about the processed file
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      Filename
+                    </span>
+                    <p className="text-sm font-mono bg-muted p-2 rounded">
+                      {event.file.filename}
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      Content Type
+                    </span>
+                    <Badge variant="secondary">{event.file.contentType}</Badge>
+                  </div>
+                  <div className="space-y-2">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      File Size
+                    </span>
+                    <p className="text-sm">
+                      {formatFileSize(event.file.filesize)}
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      File Path
+                    </span>
+                    <p className="font-mono bg-muted p-2 rounded text-xs break-all">
+                      {event.file.filepath}
+                    </p>
+                  </div>
+                </div>
+                <Button className="mt-4 bg-transparent" variant="outline">
+                  <Download className="w-4 h-4 mr-2" />
+                  Download File
                 </Button>
-                <pre className="bg-muted p-4 rounded-lg text-xs overflow-auto max-h-96 font-mono">
-                  {formatResult(event.result)}
-                </pre>
-                {copiedField === "result" && (
-                  <p className="text-xs text-green-600 mt-2">
-                    Results copied to clipboard!
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Analysis Results */}
+          {event.result && (
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Tag className="w-4 h-4" />
+                  Analysis Results
+                </CardTitle>
+                <CardDescription>
+                  Detailed results from the image analysis process
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="relative">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="absolute top-2 right-2 z-10 bg-transparent"
+                    onClick={() =>
+                      copyToClipboard(
+                        formatResult(event.result) || "",
+                        "result",
+                      )
+                    }
+                  >
+                    <Copy className="w-3 h-3 mr-1" />
+                    Copy
+                  </Button>
+                  <pre className="bg-muted p-4 rounded-lg text-xs overflow-auto max-h-96 font-mono">
+                    {formatResult(event.result)}
+                  </pre>
+                  {copiedField === "result" && (
+                    <p className="text-xs text-green-600 mt-2">
+                      Results copied to clipboard!
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   );
