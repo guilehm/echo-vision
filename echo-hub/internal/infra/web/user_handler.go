@@ -130,7 +130,30 @@ func (h *UserHandler) MeUser(w http.ResponseWriter, r *http.Request) {
 
 // Logout implements ports.UserWebPort.
 func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	panic("unimplemented")
+	http.SetCookie(w, &http.Cookie{
+		Name:     "accessToken",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: false,
+		// TODO: control based on env
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   -1,
+	})
+
+	http.SetCookie(w, &http.Cookie{
+		Name:  "refreshToken",
+		Value: "",
+		// TODO: do not use / as path for refresh token
+		Path:     "/",
+		HttpOnly: false,
+		// TODO: control based on env
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   -1,
+	})
+
+	handleApiResponse(w, apiResponse[any](nil, nil))
 }
 
 // RefreshToken implements ports.UserWebPort.
