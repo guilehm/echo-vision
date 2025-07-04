@@ -11,6 +11,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import {
+  FileText,
   Copy,
   Download,
   Eye,
