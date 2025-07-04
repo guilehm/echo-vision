@@ -52,6 +52,7 @@ func NewRouter(
 	r.Route("/events", func(r chi.Router) {
 		r.Use(authMiddleware)
 		r.With(paginationMiddleware).Get("/", eh.ListOwnEvents)
+		r.Get("/{eventID}", eh.EventByID)
 		r.Post("/", eh.CreateEvent)
 	})
 

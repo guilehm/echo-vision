@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain/valueobjects"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
@@ -89,6 +90,33 @@ func (h *EventHandler) ListOwnEvents(w http.ResponseWriter, r *http.Request) {
 		Results:    ports.MapEventsToApiResponse(events),
 		NextCursor: nextCursor,
 	}, nil))
+}
+
+func (h *EventHandler) EventByID(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	eventIDParam := chi.URLParam(r, "eventID")
+	eventID, err := uuid.Parse(eventIDParam)
+	if err != nil {
+		logger.Error("error parsing event ID", slog.String("error", err.Error()))
+		handleApiResponse(w, apiResponse[any](nil, newApiError(
+			http.StatusBadRequest,
+			"Invalid event ID",
+		)))
+		return
+	}
+
+	event, err := h.eventPort.FindEventByID(ctx, eventID)
+	if err != nil {
+		logger.Error("error finding event by ID", slog.String("error", err.Error()))
+		handleApiResponse(w, apiResponse[any](nil, newApiError(
+			http.StatusNotFound,
+			"Event not found",
+		)))
+		return
+	}
+
+	handleApiResponse(w, apiResponse(ports.MapEventToApiResponse(event), nil))
 }
 
 func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
