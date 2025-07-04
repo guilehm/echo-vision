@@ -2,6 +2,7 @@
 
 import { jwtDecode } from "jwt-decode";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export async function getSession() {
   const cookiesList = await cookies();
@@ -19,4 +20,12 @@ export async function getSession() {
     console.error("could not decode session", error);
     return null;
   }
+}
+
+export async function withAuth() {
+  const session = await getSession();
+  if (!session) {
+    redirect("/sign-in");
+  }
+  return session;
 }
