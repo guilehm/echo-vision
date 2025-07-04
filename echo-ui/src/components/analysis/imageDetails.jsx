@@ -819,6 +819,103 @@ export default function ImageAnalysisDetail({ event }) {
           )}
         </div>
       </div>
+
+      {selectedDetection !== null && (
+        <div
+          onClick={() => setSelectedDetection(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-sm"
+        >
+          <div className="bg-white rounded-lg shadow-lg max-w-sm w-full p-4 relative">
+            {/* <button */}
+            {/*   className="absolute top-2 right-2 text-muted-foreground hover:text-black" */}
+            {/*   onClick={() => setSelectedDetection(null)} */}
+            {/* > */}
+            {/*   ✕ */}
+            {/* </button> */}
+
+            {(() => {
+              const detection = parseEmotionResults(event.result)[
+                selectedDetection
+              ];
+              const topEmotion = getTopEmotion(detection.emotions);
+              const topEmotions = detection.emotions
+                .sort((a, b) => b.Confidence - a.Confidence)
+                .slice(0, 3);
+
+              return (
+                <>
+                  <h3 className="text-sm font-semibold mb-2">
+                    Face #{selectedDetection + 1}
+                  </h3>
+
+                  <div className="space-y-3">
+                    {topEmotion && (
+                      <div className="text-center p-2 rounded-lg bg-muted/50">
+                        <Badge
+                          className={`${getEmotionColor(topEmotion.Type)} mb-1`}
+                        >
+                          {topEmotion.Type}
+                        </Badge>
+                        <div className="text-lg font-bold">
+                          {topEmotion.Confidence.toFixed(1)}%
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="space-y-1">
+                      {topEmotions.map((emotion, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between text-xs"
+                        >
+                          <span
+                            className={`px-2 py-1 rounded ${getEmotionColor(emotion.Type)}`}
+                          >
+                            {emotion.Type}
+                          </span>
+                          <div className="flex items-center gap-1 flex-1 ml-2">
+                            <div className="flex-1 bg-muted rounded-full h-1.5">
+                              <div
+                                className="bg-primary h-1.5 rounded-full"
+                                style={{
+                                  width: `${Math.min(emotion.Confidence, 100)}%`,
+                                }}
+                              />
+                            </div>
+                            <span className="text-xs text-muted-foreground min-w-[2.5rem] text-right">
+                              {emotion.Confidence.toFixed(1)}%
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {detection.boundingBox && (
+                      <div className="text-xs text-muted-foreground bg-muted/30 p-2 rounded">
+                        <div className="grid grid-cols-2 gap-1">
+                          <div>
+                            X: {(detection.boundingBox.left * 100).toFixed(0)}%
+                          </div>
+                          <div>
+                            Y: {(detection.boundingBox.top * 100).toFixed(0)}%
+                          </div>
+                          <div>
+                            W: {(detection.boundingBox.width * 100).toFixed(0)}%
+                          </div>
+                          <div>
+                            H: {(detection.boundingBox.height * 100).toFixed(0)}
+                            %
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
