@@ -1,5 +1,6 @@
 "use client";
 
+import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -26,15 +27,35 @@ import {
 import { useState } from "react";
 import { imagePlaceholder } from "@/utils";
 
-const emotionColors = {
-  CALM: "#3b82f6", // blue
-  HAPPY: "#f59e0b", // yellow
-  SAD: "#6366f1", // indigo
-  ANGRY: "#ef4444", // red
-  SURPRISED: "#10b981", // green
-  FEAR: "#8b5cf6", // purple
-  DISGUSTED: "#ec4899", // pink
-  CONFUSED: "#64748b", // slate
+const getEmotionColor = (emotionType) => {
+  const colors = {
+    HAPPY: "text-yellow-600 bg-yellow-50 border-yellow-200",
+    SAD: "text-blue-600 bg-blue-50 border-blue-200",
+    ANGRY: "text-red-600 bg-red-50 border-red-200",
+    FEAR: "text-purple-600 bg-purple-50 border-purple-200",
+    SURPRISED: "text-orange-600 bg-orange-50 border-orange-200",
+    DISGUSTED: "text-green-600 bg-green-50 border-green-200",
+    CALM: "text-teal-600 bg-teal-50 border-teal-200",
+    CONFUSED: "text-gray-600 bg-gray-50 border-gray-200",
+  };
+  return colors[emotionType] || "text-gray-600 bg-gray-50 border-gray-200";
+};
+
+const parseEmotionResults = (result) => {
+  if (!result || !Array.isArray(result)) return [];
+  return result.map((detection, index) => ({
+    id: index,
+    emotions: detection.emotions || [],
+    confidence: detection.confidence || 0,
+    boundingBox: detection.boundingBox || null,
+  }));
+};
+
+const getTopEmotion = (emotions) => {
+  if (!emotions || emotions.length === 0) return null;
+  return emotions.reduce((prev, current) =>
+    prev.Confidence > current.Confidence ? prev : current,
+  );
 };
 
 export default function ImageAnalysisDetail({ event }) {
@@ -240,7 +261,7 @@ export default function ImageAnalysisDetail({ event }) {
                     <Copy className="w-3 h-3" />
                   </Button>
                 </div>
-                <p className="text-sm font-mono bg-muted p-2 rounded text-xs break-all">
+                <p className="font-mono bg-muted p-2 rounded text-xs break-all">
                   {event.userID}
                 </p>
                 {copiedField === "userID" && (
@@ -333,26 +354,6 @@ export default function ImageAnalysisDetail({ event }) {
                       <p className="text-sm">
                         {formatFileSize(event.file.filesize)}
                       </p>
-                    </div>
-                    {/* Emotion Legend */}
-                    <div className="space-y-2">
-                      <span className="text-sm font-medium text-muted-foreground">
-                        Emotion Colors
-                      </span>
-                      <div className="grid grid-cols-2 gap-2">
-                        {event.result?.[0]?.emotions?.map((emotion) => (
-                          <div key={emotion.Type} className="flex items-center">
-                            <div
-                              className="w-3 h-3 mr-2 rounded-full"
-                              style={{
-                                backgroundColor:
-                                  emotionColors[emotion.Type] || "#000",
-                              }}
-                            />
-                            <span className="text-xs">{emotion.Type}</span>
-                          </div>
-                        ))}
-                      </div>
                     </div>
 
                     <Button className="w-full bg-transparent" variant="outline">
@@ -454,6 +455,122 @@ export default function ImageAnalysisDetail({ event }) {
                       Results copied to clipboard!
                     </p>
                   )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Emotion Analysis Results */}
+          {event.result && parseEmotionResults(event.result).length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Tag className="w-4 h-4" />
+                  Emotion Analysis Results
+                </CardTitle>
+                <CardDescription>
+                  Detected emotions with confidence scores
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {parseEmotionResults(event.result).map((detection, index) => {
+                    const topEmotion = getTopEmotion(detection.emotions);
+                    return (
+                      <div
+                        key={index}
+                        className="border rounded-lg p-4 space-y-4"
+                      >
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-semibold">
+                            Detection #{index + 1}
+                          </h4>
+                          <Badge
+                            variant="outline"
+                            className="bg-green-50 text-green-700 border-green-200"
+                          >
+                            {detection.confidence.toFixed(2)}% Confidence
+                          </Badge>
+                        </div>
+
+                        {topEmotion && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-muted-foreground">
+                              Primary Emotion:
+                            </span>
+                            <Badge className={getEmotionColor(topEmotion.Type)}>
+                              {topEmotion.Type} (
+                              {topEmotion.Confidence.toFixed(1)}%)
+                            </Badge>
+                          </div>
+                        )}
+
+                        <div className="space-y-3">
+                          <span className="text-sm font-medium text-muted-foreground">
+                            All Emotions:
+                          </span>
+                          <div className="grid gap-2">
+                            {detection.emotions
+                              .sort((a, b) => b.Confidence - a.Confidence)
+                              .map((emotion, emotionIndex) => (
+                                <div
+                                  key={emotionIndex}
+                                  className="flex items-center justify-between gap-4"
+                                >
+                                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                                    <Badge
+                                      variant="outline"
+                                      className={`${getEmotionColor(emotion.Type)} text-xs`}
+                                    >
+                                      {emotion.Type}
+                                    </Badge>
+                                    <span className="text-sm text-muted-foreground">
+                                      {emotion.Confidence.toFixed(2)}%
+                                    </span>
+                                  </div>
+                                  <div className="flex-1 max-w-32">
+                                    <Progress
+                                      value={emotion.Confidence}
+                                      className="h-2"
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+
+                        {detection.boundingBox && (
+                          <div className="space-y-2">
+                            <span className="text-sm font-medium text-muted-foreground">
+                              Bounding Box:
+                            </span>
+                            <div className="grid grid-cols-2 gap-2 text-xs font-mono bg-muted p-2 rounded">
+                              <div>
+                                Top:{" "}
+                                {(detection.boundingBox.top * 100).toFixed(1)}%
+                              </div>
+                              <div>
+                                Left:{" "}
+                                {(detection.boundingBox.left * 100).toFixed(1)}%
+                              </div>
+                              <div>
+                                Width:{" "}
+                                {(detection.boundingBox.width * 100).toFixed(1)}
+                                %
+                              </div>
+                              <div>
+                                Height:{" "}
+                                {(detection.boundingBox.height * 100).toFixed(
+                                  1,
+                                )}
+                                %
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
