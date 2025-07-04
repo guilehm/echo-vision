@@ -6,11 +6,11 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/guilehm/echo-vision/echo-common/pkg/logging"
 	"github.com/guilehm/echo-vision/echo-common/pkg/rabbitmq"
 	"github.com/guilehm/echo-vision/echo-common/pkg/s3"
+	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/usecases"
 	bcrypthasher "github.com/guilehm/echo-vision/echo-hub/internal/infra/bcrypt_hasher"
 	"github.com/guilehm/echo-vision/echo-hub/internal/infra/consumers"
@@ -95,8 +95,8 @@ func main() {
 
 	jwtAdapter := jwtadapter.NewJWTManager(
 		os.Getenv("JWT_SECRET"),
-		1*time.Hour,
-		24*time.Hour,
+		ports.AccessTokenLifetime,
+		ports.RefreshTokenLifetime,
 	)
 	passwordAdapter := bcrypthasher.NewBcryptAdapter()
 	userUseCase := usecases.NewManageUsersUseCase(repo, jwtAdapter, passwordAdapter)

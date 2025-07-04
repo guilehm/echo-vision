@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/domain"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
@@ -94,6 +95,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		// TODO: control based on env
 		Secure:   false,
 		SameSite: http.SameSiteLaxMode,
+		Expires:  time.Now().Add(ports.AccessTokenLifetime),
 	})
 
 	http.SetCookie(w, &http.Cookie{
@@ -105,6 +107,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		// TODO: control based on env
 		Secure:   false,
 		SameSite: http.SameSiteLaxMode,
+		Expires:  time.Now().Add(ports.RefreshTokenLifetime),
 	})
 
 	handleApiResponse(w, apiResponse(&dtos.UserLoginResponse{
@@ -180,6 +183,19 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		handleApiResponse(w, apiResponse[any](nil, err))
 		return
 	}
+
+	// TODO: setup cookie expiration
+	http.SetCookie(w, &http.Cookie{
+		Name:     "accessToken",
+		Value:    u.AccessToken(),
+		Path:     "/",
+		HttpOnly: false,
+		// TODO: control based on env
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+		Expires:  time.Now().Add(ports.AccessTokenLifetime),
+	})
+
 	handleApiResponse(w, apiResponse[dtos.RefreshTokenResponse](&dtos.RefreshTokenResponse{
 		AccessToken: u.AccessToken(),
 	}, nil))
