@@ -42,6 +42,14 @@ func main() {
 	//
 	// fmt.Println("URL", url)
 
+	s3port, err := s3.NewS3Adapter(
+		os.Getenv("AWS_BUCKET_NAME"),
+		os.Getenv("AWS_REGION"),
+	)
+	if err != nil {
+		log.Fatalln("could not create s3 adapter: ", err)
+	}
+
 	client, err := rabbitmq.NewRabbitMQClient(
 		os.Getenv("RABBITMQ_URL"),
 		logger,
@@ -92,7 +100,7 @@ func main() {
 	)
 	passwordAdapter := bcrypthasher.NewBcryptAdapter()
 	userUseCase := usecases.NewManageUsersUseCase(repo, jwtAdapter, passwordAdapter)
-	eventUseCase := usecases.NewManageEventsUseCase(repo, publisherGroup)
+	eventUseCase := usecases.NewManageEventsUseCase(repo, publisherGroup, s3port)
 
 	consumerGroup := consumers.NewConsumerGroup(eventUseCase)
 	adapter := rabbitmqadapter.NewRabbitMQAdapter(consumerGroup)
@@ -141,16 +149,8 @@ func main() {
 	// 	fmt.Println("published messages")
 	// }
 
-	uploadPort, err := s3.NewS3Adapter(
-		os.Getenv("AWS_BUCKET_NAME"),
-		os.Getenv("AWS_REGION"),
-	)
-	if err != nil {
-		log.Fatalln("could not create s3 adapter: ", err)
-	}
-
 	// router := web.NewRouter(userUseCase, eventUseCase, uploadPort, publisher)
-	router := web.NewRouter(userUseCase, eventUseCase, uploadPort, publisherGroup)
+	router := web.NewRouter(userUseCase, eventUseCase, s3port, publisherGroup)
 	err = http.ListenAndServe("0.0.0.0:80", router)
 	if err != nil {
 		log.Fatalln("could not start server: ", err)
