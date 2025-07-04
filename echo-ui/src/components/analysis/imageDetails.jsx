@@ -1,6 +1,8 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+
+import { formatDate } from "@/utils";
 import {
   Card,
   CardContent,
@@ -62,8 +64,7 @@ const getTopEmotion = (emotions) => {
 
 export default function ImageAnalysisDetail({ event }) {
   const [copiedField, setCopiedField] = useState(null);
-  const [hoveredDetection, setHoveredDetection] = useState(null);
-  const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
+  const [selectedDetection, setSelectedDetection] = useState(null);
 
   const isImageFile = (contentType) => {
     return contentType.startsWith("image/");
@@ -99,17 +100,6 @@ export default function ImageAnalysisDetail({ event }) {
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
   };
 
   const formatResult = (result) => {
@@ -334,12 +324,10 @@ export default function ImageAnalysisDetail({ event }) {
                             e.currentTarget.src = imagePlaceholder;
                           }}
                           onLoad={(e) => {
-                            // Draw bounding boxes when image loads
                             const img = e.currentTarget;
                             const container = img.parentElement;
                             if (!container) return;
 
-                            // Remove existing overlays
                             const existingOverlays = container.querySelectorAll(
                               ".bounding-box-overlay",
                             );
@@ -347,7 +335,6 @@ export default function ImageAnalysisDetail({ event }) {
                               overlay.remove(),
                             );
 
-                            // Add new overlays with hover functionality
                             const emotionResults = parseEmotionResults(
                               event.result,
                             );
@@ -355,37 +342,16 @@ export default function ImageAnalysisDetail({ event }) {
                               if (detection.boundingBox) {
                                 const overlay = document.createElement("div");
                                 overlay.className =
-                                  "bounding-box-overlay absolute border-2 border-red-500 bg-red-500/10 pointer-events-auto cursor-pointer transition-all hover:border-red-600 hover:bg-red-500/20";
+                                  "bounding-box-overlay absolute border-2 border-red-500 bg-red-500/10 pointer-events-auto cursor-pointer transition-all";
                                 overlay.style.left = `${detection.boundingBox.left * 100}%`;
                                 overlay.style.top = `${detection.boundingBox.top * 100}%`;
                                 overlay.style.width = `${detection.boundingBox.width * 100}%`;
                                 overlay.style.height = `${detection.boundingBox.height * 100}%`;
 
-                                // Add hover event listeners
-                                overlay.addEventListener("mouseenter", (e) => {
-                                  setHoveredDetection(index);
-                                  const rect =
-                                    container.getBoundingClientRect();
-                                  setHoverPosition({
-                                    x: e.clientX + rect.left,
-                                    y: e.clientY + rect.top,
-                                  });
-                                });
+                                overlay.onclick = () => {
+                                  setSelectedDetection(index);
+                                };
 
-                                overlay.addEventListener("mousemove", (e) => {
-                                  const rect =
-                                    container.getBoundingClientRect();
-                                  setHoverPosition({
-                                    x: e.clientX + rect.left,
-                                    y: e.clientY + rect.top,
-                                  });
-                                });
-
-                                overlay.addEventListener("mouseleave", () => {
-                                  setHoveredDetection(null);
-                                });
-
-                                // Add label
                                 const topEmotion = getTopEmotion(
                                   detection.emotions,
                                 );
@@ -404,22 +370,11 @@ export default function ImageAnalysisDetail({ event }) {
                         />
                       </div>
                     </div>
-                    {/* Hover Card */}
-                    {hoveredDetection !== null && (
-                      <div
-                        className="absolute z-50 pointer-events-none"
-                        style={{
-                          left: `${hoverPosition.x + 10}px`,
-                          top: `${hoverPosition.y - 10}px`,
-                          transform:
-                            hoverPosition.x > 300
-                              ? "translateX(-100%)"
-                              : "translateX(0)",
-                        }}
-                      >
+                    {selectedDetection !== null && (
+                      <div className="mt-4">
                         {(() => {
                           const detection = parseEmotionResults(event.result)[
-                            hoveredDetection
+                            selectedDetection
                           ];
                           const topEmotion = getTopEmotion(detection.emotions);
                           const topEmotions = detection.emotions
@@ -427,11 +382,11 @@ export default function ImageAnalysisDetail({ event }) {
                             .slice(0, 3);
 
                           return (
-                            <Card className="w-64 shadow-lg border-2 bg-white/95 backdrop-blur-sm">
+                            <Card className="w-full max-w-sm">
                               <CardHeader className="pb-2">
                                 <div className="flex items-center justify-between">
                                   <CardTitle className="text-sm">
-                                    Face #{hoveredDetection + 1}
+                                    Face #{selectedDetection + 1}
                                   </CardTitle>
                                   <Badge
                                     variant="outline"
@@ -442,7 +397,6 @@ export default function ImageAnalysisDetail({ event }) {
                                 </div>
                               </CardHeader>
                               <CardContent className="pt-0 space-y-3">
-                                {/* Primary Emotion */}
                                 {topEmotion && (
                                   <div className="text-center p-2 rounded-lg bg-muted/50">
                                     <Badge
@@ -456,7 +410,6 @@ export default function ImageAnalysisDetail({ event }) {
                                   </div>
                                 )}
 
-                                {/* Top 3 Emotions */}
                                 <div className="space-y-1">
                                   {topEmotions.map((emotion, emotionIndex) => (
                                     <div
@@ -464,14 +417,14 @@ export default function ImageAnalysisDetail({ event }) {
                                       className="flex items-center justify-between text-xs"
                                     >
                                       <span
-                                        className={`px-2 py-1 rounded text-xs ${getEmotionColor(emotion.Type)}`}
+                                        className={`px-2 py-1 rounded ${getEmotionColor(emotion.Type)}`}
                                       >
                                         {emotion.Type}
                                       </span>
                                       <div className="flex items-center gap-1 flex-1 ml-2">
                                         <div className="flex-1 bg-muted rounded-full h-1.5">
                                           <div
-                                            className="bg-primary h-1.5 rounded-full transition-all"
+                                            className="bg-primary h-1.5 rounded-full"
                                             style={{
                                               width: `${Math.min(emotion.Confidence, 100)}%`,
                                             }}
@@ -485,7 +438,6 @@ export default function ImageAnalysisDetail({ event }) {
                                   ))}
                                 </div>
 
-                                {/* Bounding Box Info */}
                                 {detection.boundingBox && (
                                   <div className="text-xs text-muted-foreground bg-muted/30 p-2 rounded">
                                     <div className="grid grid-cols-2 gap-1">
