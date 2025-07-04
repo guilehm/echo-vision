@@ -2,6 +2,18 @@ import { notFound } from "next/navigation";
 import { getEventById } from "@/services/client";
 import { serverRequester } from "@/services/server-requester";
 
+import DashboardHeader from "@/components/headers/dashboard-header";
+import ImageAnalysis from "@/components/analysis/images";
+
+const headerProps = {
+  breadcrumbData: [
+    { label: "Dashboard", href: "/dashboard/" },
+    { label: "Analysis", href: null },
+    { label: "Images", href: "/dashboard/analysis/images" },
+    { label: "Details", href: null },
+  ],
+};
+
 export default async function ImageDetailsPage({ params }) {
   const { uuid } = params;
   const response = await getEventById(serverRequester, uuid);
@@ -15,9 +27,12 @@ export default async function ImageDetailsPage({ params }) {
   }
 
   return (
-    <div>
-      <h1>Image Details for UUID: {uuid}</h1>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
-    </div>
+    <>
+      <DashboardHeader {...headerProps} />
+      <div>
+        <h1>Image Details for UUID: {uuid}</h1>
+        <pre>{JSON.stringify(data, null, 2)}</pre>
+      </div>
+    </>
   );
 }
