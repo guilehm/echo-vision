@@ -342,25 +342,32 @@ export default function ImageAnalysisDetail({ event }) {
                             emotionResults.forEach((detection, index) => {
                               if (detection.boundingBox) {
                                 const overlay = document.createElement("div");
-                                overlay.className =
-                                  "bounding-box-overlay absolute border-2 border-red-500 bg-red-500/10 pointer-events-auto cursor-pointer transition-all";
+                                const topEmotion = getTopEmotion(
+                                  detection.emotions,
+                                );
+                                const emotionColorClass = topEmotion
+                                  ? getEmotionColor(topEmotion.Type)
+                                  : "text-gray-600 bg-gray-50 border-gray-200";
+
+                                const [textColor, bgColor, borderColor] =
+                                  emotionColorClass.split(" ");
+
+                                overlay.className = `bounding-box-overlay absolute pointer-events-auto cursor-pointer transition-all border-2 ${borderColor} ${bgColor}/20 hover:${bgColor}/30`;
                                 overlay.style.left = `${detection.boundingBox.left * 100}%`;
                                 overlay.style.top = `${detection.boundingBox.top * 100}%`;
                                 overlay.style.width = `${detection.boundingBox.width * 100}%`;
                                 overlay.style.height = `${detection.boundingBox.height * 100}%`;
 
-                                overlay.onclick = () => {
+                                overlay.onclick = () =>
                                   setSelectedDetection(index);
-                                };
 
-                                const topEmotion = getTopEmotion(
-                                  detection.emotions,
-                                );
                                 if (topEmotion) {
                                   const label = document.createElement("div");
                                   label.className =
-                                    "absolute -top-6 left-0 bg-red-500 text-white text-xs px-2 py-1 rounded whitespace-nowrap pointer-events-none";
-                                  label.textContent = `${topEmotion.Type} (${topEmotion.Confidence.toFixed(1)}%)`;
+                                    "absolute -top-6 left-0 text-white text-xs px-2 py-1 rounded whitespace-nowrap pointer-events-none bg-black/80";
+                                  label.textContent = `Face: ${index + 1} ${topEmotion.Type} (${topEmotion.Confidence.toFixed(
+                                    1,
+                                  )}%)`;
                                   overlay.appendChild(label);
                                 }
 
