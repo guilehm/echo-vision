@@ -8,7 +8,7 @@ import (
 )
 
 type EventResponse struct {
-	UserID    uuid.UUID       `json:"userId"`
+	UserID    uuid.UUID       `json:"userID"`
 	ID        uuid.UUID       `json:"id"`
 	EventType string          `json:"eventType"`
 	SubType   string          `json:"subType"`

@@ -27,6 +27,12 @@ export async function getOwnEvents(requester, limit, cursor) {
   });
 }
 
+export async function getEventById(requester, eventID) {
+  return await makeRequest(requester, `/events/${eventID}`, {
+    method: "GET",
+  });
+}
+
 export async function signUp(requester, data = {}) {
   return await makeRequest(requester, "/users", {
     method: "POST",
