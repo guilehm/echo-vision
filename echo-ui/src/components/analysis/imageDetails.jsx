@@ -1,71 +1,67 @@
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ImageUpload from "@/components/uploads/image-upload";
-import { format } from "date-fns";
+"use client";
+
+import { Badge } from "@/components/ui/badge";
 import {
-  CalendarDays,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import {
+  Copy,
+  Download,
+  Eye,
+  Calendar,
   Clock,
+  User,
   Hash,
-  Layers,
-  RefreshCw,
-  ShieldAlert,
-  ShieldCheck,
-  Type,
+  Tag,
+  Activity,
 } from "lucide-react";
-import { AnalysisListTable } from "./analysisTable";
+import { useState } from "react";
 
-export default async function ImageAnalysisDetail({ event }) {
-  // Helper function to parse and display the result data if it exists
-  const renderResultData = () => {
-    if (!event.result || event.result.length === 0) return null;
+export default function ImageAnalysisDetail({ event }) {
+  const [copiedField, setCopiedField] = useState(null);
 
-    return (
-      <div className="mt-6">
-        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-          <Layers className="h-5 w-5" />
-          Analysis Results
-        </h3>
-        <div className="bg-muted rounded-lg p-4 text-sm overflow-x-auto">
-          {JSON.stringify(event.result, null, 2)}
-        </div>
-      </div>
-    );
+  const copyToClipboard = async (text, field) => {
+    await navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
   };
 
-  // Status badge with appropriate colors
-  const getStatusBadge = () => {
-    const baseClasses =
-      "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium";
-
-    switch (event.status.toLowerCase()) {
+  const getStatusColor = (status) => {
+    switch (status.toLowerCase()) {
       case "completed":
-        return (
-          <span className={`${baseClasses} bg-green-100 text-green-800`}>
-            <ShieldCheck className="h-3 w-3 mr-1" />
-            Completed
-          </span>
-        );
-      case "failed":
-        return (
-          <span className={`${baseClasses} bg-red-100 text-red-800`}>
-            <ShieldAlert className="h-3 w-3 mr-1" />
-            Failed
-          </span>
-        );
+      case "success":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "pending":
       case "processing":
-        return (
-          <span className={`${baseClasses} bg-blue-100 text-blue-800`}>
-            <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-            Processing
-          </span>
-        );
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "failed":
+      case "error":
+        return "bg-red-100 text-red-800 border-red-200";
       default:
-        return (
-          <span className={`${baseClasses} bg-gray-100 text-gray-800`}>
-            {event.Status}
-          </span>
-        );
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  };
+
+  const formatResult = (result) => {
+    if (!result) return null;
+    return JSON.stringify(result, null, 2);
   };
 
   return (
@@ -75,104 +71,226 @@ export default async function ImageAnalysisDetail({ event }) {
           <h2 className="text-3xl font-bold tracking-tight">
             Image Analysis Detail
           </h2>
-          {getStatusBadge()}
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm">
+              <Download className="w-4 h-4 mr-2" />
+              Export
+            </Button>
+            <Button variant="outline" size="sm">
+              <Eye className="w-4 h-4 mr-2" />
+              View Raw
+            </Button>
+          </div>
         </div>
       </div>
 
       <div className="h-full flex-col md:flex">
         <div className="container flex flex-col items-start justify-between space-y-2 py-4 sm:flex-row sm:items-center sm:space-y-0 md:h-16">
-          <h2 className="text-lg font-semibold">Event Information</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold">Event Information</h2>
+            <Badge className={getStatusColor(event.status)}>
+              {event.status}
+            </Badge>
+          </div>
         </div>
         <Separator />
 
-        <div className="grid gap-6 py-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Event ID */}
-            <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-              <div className="flex flex-col space-y-1.5">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Hash className="h-4 w-4" />
-                  Event ID
+        {/* Status Summary */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="w-4 h-4" />
+              Processing Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="text-center p-4 bg-muted/50 rounded-lg">
+                <div className="text-2xl font-bold">{event.eventType}</div>
+                <div className="text-sm text-muted-foreground">Event Type</div>
+              </div>
+              <div className="text-center p-4 bg-muted/50 rounded-lg">
+                <div
+                  className={`text-2xl font-bold ${event.status.toLowerCase() === "completed"
+                    ? "text-green-600"
+                    : event.status.toLowerCase() === "pending"
+                      ? "text-yellow-600"
+                      : event.status.toLowerCase() === "failed"
+                        ? "text-red-600"
+                        : "text-gray-600"
+                  }`}
+                >
+                  {event.status}
                 </div>
-                <p className="font-medium overflow-hidden text-ellipsis">
+                <div className="text-sm text-muted-foreground">
+                  Current Status
+                </div>
+              </div>
+              <div className="text-center p-4 bg-muted/50 rounded-lg">
+                <div className="text-2xl font-bold">
+                  {Math.round(
+                    (new Date(event.updatedAt).getTime() -
+                      new Date(event.createdAt).getTime()) /
+                    1000,
+                  )}
+                  s
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Processing Time
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 py-6">
+          {/* Event Metadata */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Hash className="w-4 h-4" />
+                Event Metadata
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Event ID
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => copyToClipboard(event.id, "id")}
+                    className="h-6 px-2"
+                  >
+                    <Copy className="w-3 h-3" />
+                  </Button>
+                </div>
+                <p className="text-sm font-mono bg-muted p-2 rounded text-xs break-all">
                   {event.id}
                 </p>
+                {copiedField === "id" && (
+                  <p className="text-xs text-green-600">Copied!</p>
+                )}
               </div>
-            </div>
 
-            {/* User ID */}
-            <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-              <div className="flex flex-col space-y-1.5">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Hash className="h-4 w-4" />
-                  User ID
+              <div className="space-y-2">
+                <span className="text-sm font-medium text-muted-foreground">
+                  Event Type
+                </span>
+                <div className="flex gap-2">
+                  <Badge variant="secondary">{event.eventType}</Badge>
+                  {event.subType && (
+                    <Badge variant="outline">{event.subType}</Badge>
+                  )}
                 </div>
-                <p className="font-medium overflow-hidden text-ellipsis">
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* User Information */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <User className="w-4 h-4" />
+                User Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-muted-foreground">
+                    User ID
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => copyToClipboard(event.userID, "userID")}
+                    className="h-6 px-2"
+                  >
+                    <Copy className="w-3 h-3" />
+                  </Button>
+                </div>
+                <p className="text-sm font-mono bg-muted p-2 rounded text-xs break-all">
                   {event.userID}
                 </p>
+                {copiedField === "userID" && (
+                  <p className="text-xs text-green-600">Copied!</p>
+                )}
               </div>
-            </div>
+            </CardContent>
+          </Card>
 
-            {/* Event Type */}
-            <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-              <div className="flex flex-col space-y-1.5">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Type className="h-4 w-4" />
-                  Event Type
-                </div>
-                <p className="font-medium">{event.eventType}</p>
-              </div>
-            </div>
-
-            {/* Sub Type */}
-            <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-              <div className="flex flex-col space-y-1.5">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Type className="h-4 w-4" />
-                  Sub Type
-                </div>
-                <p className="font-medium">{event.subType}</p>
-              </div>
-            </div>
-
-            {/* Created At */}
-            <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-              <div className="flex flex-col space-y-1.5">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <CalendarDays className="h-4 w-4" />
-                  Created At
-                </div>
-                <p className="font-medium">
-                  {format(new Date(event.createdAt), "PPP")}
-                  <span className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-                    <Clock className="h-3 w-3" />
-                    {format(new Date(event.createdAt), "pp")}
+          {/* Timestamps */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Clock className="w-4 h-4" />
+                Timeline
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-3 h-3 text-muted-foreground" />
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Created
                   </span>
-                </p>
-              </div>
-            </div>
-
-            {/* Updated At */}
-            <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-              <div className="flex flex-col space-y-1.5">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <RefreshCw className="h-4 w-4" />
-                  Updated At
                 </div>
-                <p className="font-medium">
-                  {format(new Date(event.updatedAt), "PPP")}
-                  <span className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-                    <Clock className="h-3 w-3" />
-                    {format(new Date(event.updatedAt), "pp")}
-                  </span>
-                </p>
+                <p className="text-sm">{formatDate(event.createdAt)}</p>
               </div>
-            </div>
-          </div>
 
-          {/* Result Data */}
-          {renderResultData()}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Activity className="w-3 h-3 text-muted-foreground" />
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Updated
+                  </span>
+                </div>
+                <p className="text-sm">{formatDate(event.updatedAt)}</p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Analysis Results */}
+        {event.result && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Tag className="w-4 h-4" />
+                Analysis Results
+              </CardTitle>
+              <CardDescription>
+                Detailed results from the image analysis process
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="relative">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="absolute top-2 right-2 z-10 bg-transparent"
+                  onClick={() =>
+                    copyToClipboard(formatResult(event.result) || "", "result")
+                  }
+                >
+                  <Copy className="w-3 h-3 mr-1" />
+                  Copy
+                </Button>
+                <pre className="bg-muted p-4 rounded-lg text-xs overflow-auto max-h-96 font-mono">
+                  {formatResult(event.result)}
+                </pre>
+                {copiedField === "result" && (
+                  <p className="text-xs text-green-600 mt-2">
+                    Results copied to clipboard!
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
