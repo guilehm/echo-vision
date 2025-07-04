@@ -16,6 +16,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { logout } from "@/services/client";
 import { getInitials } from "@/utils";
 import {
   BadgeCheck,
@@ -25,6 +26,7 @@ import {
   LogOut,
   Sparkles,
 } from "lucide-react";
+import { clientRequester } from "@/services/client-requester";
 
 export function NavUser({ user }) {
   const { isMobile } = useSidebar();
@@ -92,7 +94,7 @@ export function NavUser({ user }) {
               {/* </DropdownMenuItem> */}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => logout(clientRequester)}>
               <LogOut />
               Log out
             </DropdownMenuItem>
