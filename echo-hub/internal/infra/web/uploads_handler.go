@@ -17,9 +17,9 @@ type UploadHandler struct {
 	filestoragePort filestorage.FileStoragePort
 }
 
-func NewUploadHandler(uph filestorage.FileStoragePort) *UploadHandler {
+func NewUploadHandler(fsp filestorage.FileStoragePort) *UploadHandler {
 	return &UploadHandler{
-		filestoragePort: uph,
+		filestoragePort: fsp,
 	}
 }
 
@@ -63,7 +63,7 @@ func (h *UploadHandler) PresignedURL(w http.ResponseWriter, r *http.Request) {
 		path = fmt.Sprintf("%s/%s", path, "image-analysis")
 	}
 
-	fk := filestorage.NewFileKey(
+	fk := filestorage.NewUploadFileKey(
 		path,
 		input.Filename,
 	)
