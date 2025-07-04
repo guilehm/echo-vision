@@ -20,8 +20,8 @@ type EventResponse struct {
 }
 
 type FileResponse struct {
+	URL         string `json:"url"`
 	Filename    string `json:"filename"`
-	Filepath    string `json:"filepath"`
 	ContentType string `json:"contentType"`
 	Filesize    int64  `json:"filesize"`
 }
