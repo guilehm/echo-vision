@@ -319,7 +319,8 @@ export default function ImageAnalysisDetail({ event }) {
                           id="analysis-image"
                           src={event.file.url || imagePlaceholder}
                           alt={event.file.filename}
-                          className="w-full h-auto max-h-96 object-contain"
+                          className="w-full h-auto max-h-[80vh] object-contain"
+                          // className="w-full h-auto max-h-96 object-contain"
                           onError={(e) => {
                             e.currentTarget.src = imagePlaceholder;
                           }}
