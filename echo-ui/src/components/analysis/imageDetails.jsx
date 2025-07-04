@@ -67,11 +67,11 @@ export default function ImageAnalysisDetail({ event }) {
   return (
     <div className="flex flex-col gap-4 p-4 pt-0">
       <div className="flex-1 space-y-4 pt-6">
-        <div className="flex items-center justify-between space-y-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0">
           <h2 className="text-3xl font-bold tracking-tight">
             Image Analysis Detail
           </h2>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm">
               <Download className="w-4 h-4 mr-2" />
               Export
