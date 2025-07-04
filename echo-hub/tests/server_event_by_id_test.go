@@ -56,7 +56,7 @@ var _ = Describe("Event By ID Handler", func() {
 
 		It("should return an event with file by ID successfully", func() {
 			// Arrange
-			event := saveEvent(validEventWithFile)
+			event := saveEvent(validEventWithFile(u))
 
 			req, err := http.NewRequest(
 				http.MethodGet,
