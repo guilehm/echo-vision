@@ -1,4 +1,5 @@
 import DashboardHeader from "@/components/headers/dashboard-header";
+import ImageAnalysisDetail from "@/components/analysis/imageDetails";
 import { getEventById } from "@/services/client";
 import { serverRequester } from "@/services/server-requester";
 import { notFound } from "next/navigation";
@@ -27,6 +28,7 @@ export default async function ImageAnalysisDetailPage({ params }) {
   return (
     <>
       <DashboardHeader {...headerProps} />
+      <ImageAnalysisDetail event={data} />
       <div>
         <h1>Image Details for UUID: {uuid}</h1>
         <pre>{JSON.stringify(data, null, 2)}</pre>
