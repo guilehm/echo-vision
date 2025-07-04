@@ -14,7 +14,7 @@ const headerProps = {
 };
 
 export default async function ImageAnalysisDetailPage({ params }) {
-  const { uuid } = params;
+  const { uuid } = await params;
   const response = await getEventById(serverRequester, uuid);
   if (!response || response.status !== 200) {
     notFound();
@@ -29,10 +29,6 @@ export default async function ImageAnalysisDetailPage({ params }) {
     <>
       <DashboardHeader {...headerProps} />
       <ImageAnalysisDetail event={data} />
-      <div>
-        <h1>Image Details for UUID: {uuid}</h1>
-        <pre>{JSON.stringify(data, null, 2)}</pre>
-      </div>
     </>
   );
 }
