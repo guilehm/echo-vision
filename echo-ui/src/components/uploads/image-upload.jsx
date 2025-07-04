@@ -14,6 +14,7 @@ import { clientRequester } from "@/services/client-requester";
 import { createEvent, getPresignedUrl } from "@/services/server-requester";
 import Image from "next/image";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 
@@ -23,6 +24,7 @@ const handleErrors = (error) => {
 };
 
 export default function ImageUpload() {
+  const router = useRouter();
   const [file, setFile] = useState(null);
   const [eventSubType, setEventSubType] = useState("detect_labels");
 
@@ -92,6 +94,7 @@ export default function ImageUpload() {
         return;
       }
       toast.success("Event successfully created");
+      router.push(`/dashboard/analysis/images/${response.data.id}`);
     };
 
     getPresignedUrl(data).then(handlePresignedSuccess).catch(handleErrors);
