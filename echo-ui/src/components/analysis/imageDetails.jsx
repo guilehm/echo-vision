@@ -23,6 +23,7 @@ import {
   ImageIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { imagePlaceholder } from "@/utils";
 
 export default function ImageAnalysisDetail({ event }) {
   const [copiedField, setCopiedField] = useState(null);
@@ -126,13 +127,14 @@ export default function ImageAnalysisDetail({ event }) {
               </div>
               <div className="text-center p-4 bg-muted/50 rounded-lg">
                 <div
-                  className={`text-2xl font-bold ${event.status.toLowerCase() === "completed"
-                    ? "text-green-600"
-                    : event.status.toLowerCase() === "pending"
-                      ? "text-yellow-600"
-                      : event.status.toLowerCase() === "failed"
-                        ? "text-red-600"
-                        : "text-gray-600"
+                  className={`text-2xl font-bold ${
+                    event.status.toLowerCase() === "completed"
+                      ? "text-green-600"
+                      : event.status.toLowerCase() === "pending"
+                        ? "text-yellow-600"
+                        : event.status.toLowerCase() === "failed"
+                          ? "text-red-600"
+                          : "text-gray-600"
                   }`}
                 >
                   {event.status}
@@ -146,7 +148,7 @@ export default function ImageAnalysisDetail({ event }) {
                   {Math.round(
                     (new Date(event.updatedAt).getTime() -
                       new Date(event.createdAt).getTime()) /
-                    1000,
+                      1000,
                   )}
                   s
                 </div>
@@ -287,7 +289,7 @@ export default function ImageAnalysisDetail({ event }) {
                   <div className="flex-1">
                     <div className="relative bg-muted rounded-lg overflow-hidden">
                       <img
-                        // src={event.file.url || "/placeholder.svg"}
+                        src={event.file.url || imagePlaceholder}
                         alt={event.file.filename}
                         className="w-full h-auto max-h-96 object-contain"
                         onError={(e) => {

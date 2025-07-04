@@ -49,3 +49,6 @@ export function getInitials(name, addDots) {
   }
   return `${firstWord[0]}${lastWord[0]}`.toUpperCase();
 }
+
+export const imagePlaceholder =
+  "https://kzmh535366wcq8wtoinu.lite.vusercontent.net/placeholder.svg?height=400&width=600";
