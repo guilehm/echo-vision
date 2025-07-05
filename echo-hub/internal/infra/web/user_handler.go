@@ -91,7 +91,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Name:     "accessToken",
 		Value:    user.AccessToken(),
 		Path:     "/",
-		HttpOnly: false,
+		HttpOnly: true,
 		// TODO: control based on env
 		Secure:   false,
 		SameSite: http.SameSiteLaxMode,
@@ -103,7 +103,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Value: user.RefreshToken(),
 		// TODO: do not use / as path for refresh token
 		Path:     "/",
-		HttpOnly: false,
+		HttpOnly: true,
 		// TODO: control based on env
 		Secure:   false,
 		SameSite: http.SameSiteLaxMode,
@@ -137,7 +137,7 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		Name:     "accessToken",
 		Value:    "",
 		Path:     "/",
-		HttpOnly: false,
+		HttpOnly: true,
 		// TODO: control based on env
 		Secure:   false,
 		SameSite: http.SameSiteLaxMode,
@@ -149,7 +149,7 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		Value: "",
 		// TODO: do not use / as path for refresh token
 		Path:     "/",
-		HttpOnly: false,
+		HttpOnly: true,
 		// TODO: control based on env
 		Secure:   false,
 		SameSite: http.SameSiteLaxMode,
@@ -189,7 +189,7 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		Name:     "accessToken",
 		Value:    u.AccessToken(),
 		Path:     "/",
-		HttpOnly: false,
+		HttpOnly: true,
 		// TODO: control based on env
 		Secure:   false,
 		SameSite: http.SameSiteLaxMode,
