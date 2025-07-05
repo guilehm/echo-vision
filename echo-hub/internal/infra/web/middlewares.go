@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/cors"
 	"github.com/guilehm/echo-vision/echo-hub/internal/app/ports"
@@ -25,6 +26,7 @@ func corsMiddleware(next http.Handler) http.Handler {
 
 func logRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
 		logger.InfoContext(
 			r.Context(),
 			"request received",
@@ -33,7 +35,16 @@ func logRequest(next http.Handler) http.Handler {
 			slog.String("remoteAddr", r.RemoteAddr),
 			slog.String("userAgent", r.UserAgent()),
 		)
-		next.ServeHTTP(w, r)
+
+		rw := &responseWriter{ResponseWriter: w, status: http.StatusOK}
+		next.ServeHTTP(rw, r)
+
+		logger.InfoContext(
+			r.Context(),
+			"response sent",
+			slog.Int("status", rw.status),
+			slog.Duration("duration", time.Since(start)),
+		)
 	})
 }
 

@@ -9,6 +9,16 @@ import (
 	"github.com/lib/pq"
 )
 
+type responseWriter struct {
+	http.ResponseWriter
+	status int
+}
+
+func (rw *responseWriter) WriteHeader(code int) {
+	rw.status = code
+	rw.ResponseWriter.WriteHeader(code)
+}
+
 type ApiResponse[T any] struct {
 	Status int    `json:"status,omitempty"`
 	Data   *T     `json:"data,omitempty"`
