@@ -1,6 +1,5 @@
 "use client";
 import * as badge from "@/components/ui/badge";
-import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -10,12 +9,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { clientRequester } from "@/services/client-requester";
-import { getOwnEvents } from "@/services/client";
 import { formatDate, statusStyles } from "@/utils";
+import Link from "next/link";
 import { useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { toast } from "sonner";
+import { fetchMoreData } from "./analysisActions";
 
 export function AnalysisListTable({ initialData, initialCursor }) {
   const [analyses, setAnalyses] = useState(initialData);
@@ -27,17 +26,19 @@ export function AnalysisListTable({ initialData, initialCursor }) {
     return;
   }
 
-  async function fetchMoreData() {
-    const response = await getOwnEvents(clientRequester, limit, cursor);
-    if (response.status !== 200) {
-      toast.error("Failed to load more analyses");
-      return;
+  const handleFetchMore = async () => {
+    try {
+      const { newAnalyses, nextCursor } = await fetchMoreData({
+        limit,
+        cursor,
+      });
+      setAnalyses((prev) => [...prev, ...newAnalyses]);
+      setCursor(nextCursor || null);
+      setHasMore(!!nextCursor);
+    } catch (error) {
+      toast.error(`Failed to fetch more analyses: ${error.message}.`);
     }
-    const newAnalyses = response.data?.results || [];
-    setAnalyses((prev) => [...prev, ...newAnalyses]);
-    setCursor(response.data.nextCursor || null);
-    setHasMore(!!response.data.nextCursor);
-  }
+  };
 
   return (
     <div className="mt-8">
@@ -53,7 +54,7 @@ export function AnalysisListTable({ initialData, initialCursor }) {
           ) : (
             <InfiniteScroll
               dataLength={analyses.length}
-              next={fetchMoreData}
+              next={handleFetchMore}
               hasMore={hasMore}
               loader={
                 <p className="mt-2 text-center text-muted-foreground">
